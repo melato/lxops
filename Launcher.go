@@ -31,7 +31,8 @@ func (t *Launcher) Configured() error {
 	if t.DryRun {
 		t.Trace = true
 	}
-	return t.ConfigOptions.Configured(t.Client)
+	t.ConfigOptions.ConfigureProject(t.Client)
+	return t.ConfigOptions.Configured()
 }
 
 func (t *Launcher) NewScript() *script.Script {

@@ -33,7 +33,8 @@ func (t *Snapshot) Configured() error {
 	if t.Recursive && !t.Destroy {
 		return errors.New("cannot use -R without -d")
 	}
-	return t.ConfigOptions.Configured(t.Client)
+	t.ConfigOptions.ConfigureProject(t.Client)
+	return t.ConfigOptions.Configured()
 }
 
 func (t *Snapshot) DestroySnapshot(instance *Instance) error {

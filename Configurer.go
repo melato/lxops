@@ -20,7 +20,8 @@ func (t *Configurer) Init() error {
 }
 
 func (t *Configurer) Configured() error {
-	return t.ConfigOptions.Configured(t.Client)
+	t.ConfigOptions.ConfigureProject(t.Client)
+	return t.ConfigOptions.Configured()
 }
 
 /** run things inside the container:  install packages, create users, run scripts */

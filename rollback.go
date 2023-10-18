@@ -22,7 +22,8 @@ func (t *Rollback) Configured() error {
 	if t.Snapshot == "" {
 		return errors.New("empty snapshot name")
 	}
-	return t.ConfigOptions.Configured(t.Client)
+	t.ConfigOptions.ConfigureProject(t.Client)
+	return t.ConfigOptions.Configured()
 }
 
 func (t *Rollback) Run(instance *Instance) error {

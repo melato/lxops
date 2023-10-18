@@ -23,10 +23,13 @@ func (t *ConfigOptions) Init() error {
 	return t.PropertyOptions.Init()
 }
 
-func (t *ConfigOptions) Configured(context ConfigContext) error {
+func (t *ConfigOptions) ConfigureProject(client ConfigContext) {
 	if t.Project == "" {
-		t.Project = context.CurrentProject()
+		t.Project = client.CurrentProject()
 	}
+}
+
+func (t *ConfigOptions) Configured() error {
 	return t.PropertyOptions.Configured()
 }
 
