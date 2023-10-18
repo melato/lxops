@@ -30,6 +30,7 @@ type InstanceServer interface {
 
 	// images
 	ExportImage(image string, path string) error
+	ImportImage(image string, path string) error
 
 	// informational methods, may be removed.
 	GetInstanceDevices(name string) (map[string]*Device, error)

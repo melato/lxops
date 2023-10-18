@@ -103,7 +103,11 @@ func (t *ExportOps) Import(configFile string) error {
 		return err
 	}
 	if t.Image {
-		err := t.Run("lxc", "image", "import", filepath.Join(dir, instance.Name+".tar.gz"), "--alias="+instance.Name)
+		server, err := t.Client.CurrentInstanceServer()
+		if err != nil {
+			return err
+		}
+		err = server.ImportImage(instance.Name, filepath.Join(dir, "image.tar.gz"))
 		if err != nil {
 			return err
 		}
