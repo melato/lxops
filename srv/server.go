@@ -28,6 +28,9 @@ type InstanceServer interface {
 	WaitForNetwork(instance string) error
 	CreateInstanceSnapshot(instance string, snapshot string) error
 
+	// images
+	ExportImage(image string, path string) error
+
 	// informational methods, may be removed.
 	GetInstanceDevices(name string) (map[string]*Device, error)
 	GetHwaddresses() ([]Hwaddr, error)

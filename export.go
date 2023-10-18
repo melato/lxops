@@ -5,11 +5,14 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+
+	"melato.org/lxops/srv"
 )
 
 var TraceExport bool
 
 type ExportOps struct {
+	Client srv.Client `name:"-"`
 	ConfigOptions
 	Dir      string `name:"d" usage:"import/export directory"`
 	Snapshot string `name:"snapshot" usage:"short name of snapshot to export"`
@@ -39,7 +42,11 @@ func (t *ExportOps) Export(configFile string) error {
 		return err
 	}
 	if t.Image {
-		err := t.Run("lxc", "image", "export", instance.Name, filepath.Join(dir, instance.Name))
+		server, err := t.Client.CurrentInstanceServer()
+		if err != nil {
+			return err
+		}
+		err = server.ExportImage(instance.Name, filepath.Join(dir, "image"))
 		if err != nil {
 			return err
 		}

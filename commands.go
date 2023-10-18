@@ -84,7 +84,7 @@ func RootCommand(client srv.Client) *command.SimpleCommand {
 	numberOp := &cli.AssignNumbers{Client: client}
 	containerCmd.Command("number").Flags(numberOp).RunFunc(numberOp.Run)
 
-	exportOps := &ExportOps{}
+	exportOps := &ExportOps{Client: client}
 	cmd.Command("export").Flags(exportOps).RunFunc(exportOps.Export)
 	cmd.Command("import").Flags(exportOps).RunFunc(exportOps.Import)
 
