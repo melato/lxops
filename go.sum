@@ -1,0 +1,10 @@
+gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405 h1:yhCVgyC4o1eVCa2tZl7eS0r+SDo693bJlVdllGtEeKM=
+gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
+gopkg.in/yaml.v2 v2.4.0 h1:D8xgwECY7CYvx+Y2n4sBz93Jn9JRvxdiyyo8CTfuKaY=
+gopkg.in/yaml.v2 v2.4.0/go.mod h1:RDklbk79AGWmwhnvt/jBztapEOGDOx6ZbXqjP6csGnQ=
+melato.org/command v1.0.1 h1:wum5goU7oW3B/0xF4Z4sQ7tugy/qQklek2MSpQmFo5I=
+melato.org/command v1.0.1/go.mod h1:1f8kdvW0OvX8TOUr4M7Wyad2geJMfBGbs+bN3sBx3eg=
+melato.org/script v1.0.0 h1:ytNRMPI5u6JyCVX7AZSTuqOOb5QPcA6Cyioos3XBVKg=
+melato.org/script v1.0.0/go.mod h1:vO7ex/iDKE5xa5LtElJ5H7EDpSHxef/IgwnAWreec2Q=
+melato.org/table3 v0.0.0-20220501091508-83fb75c200b0 h1:cPJUB+UVKOVPuiyOwVZAPvREda58SSa5+BVyskqA+ss=
+melato.org/table3 v0.0.0-20220501091508-83fb75c200b0/go.mod h1:BzbDE0raDonQ15jDjVZVBxb5VkTE+DoxjvABBvgETRI=
