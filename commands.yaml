@@ -30,8 +30,8 @@ commands:
     use: <config-file> ...
     examples:
     - configure -name c1 demo.yaml
-  container:
-    short: LXD container utilities
+  instance:
+    short: LXD instance utilities
     commands:
       addresses:
         short: export network addresses for all containers
@@ -55,16 +55,9 @@ commands:
       devices:
         short: print container disk devices
         use: <container>
-      statistics:
-        short: print statistics about containers, devices
-      config:
-        short: print container configuration
-        use: <container>
-      info:
-        short: print container information in yaml
-      state:
-        short: print container state, in yaml
-        use: <container>
+      publish:
+        short: publish an instance into an image
+        use: <instance> <snapshot> <alias>
       wait: 
         short: wait until all the requested containers have an ipv4 address
         use: <container>...
@@ -100,7 +93,7 @@ commands:
         use: <config-file> <script-name>
       includes:
         short: list included files
-  instance:
+  i:
     short: show information about an instance/config
     commands:
       project:

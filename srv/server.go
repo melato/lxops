@@ -29,6 +29,7 @@ type InstanceServer interface {
 	CreateInstanceSnapshot(instance string, snapshot string) error
 
 	// images
+	PublishInstance(instance, snapshot, alias string) error
 	ExportImage(image string, path string) error
 	ImportImage(image string, path string) error
 

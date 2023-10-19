@@ -9,7 +9,7 @@ import (
 	table "melato.org/table3"
 )
 
-// InstanceOps - operations on LXD instances (formerly ContainerOps)
+// InstanceOps - operations on instances
 type InstanceOps struct {
 	Client srv.Client `name:"-"`
 	server srv.InstanceServer
@@ -118,4 +118,8 @@ func (t *InstanceOps) ListImages() error {
 	}
 	writer.End()
 	return nil
+}
+
+func (t *InstanceOps) PublishInstance(instance, snapshot, alias string) error {
+	return t.server.PublishInstance(instance, snapshot, alias)
 }

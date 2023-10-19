@@ -34,7 +34,7 @@ func RootCommand(client srv.Client) *command.SimpleCommand {
 	cmd.Command("configure").Flags(configurer).RunFunc(configurer.InstanceFunc(configurer.ConfigureContainer, false))
 
 	instanceOps := &InstanceOps{Client: client}
-	instanceCmd := cmd.Command("instance").Flags(instanceOps)
+	instanceCmd := cmd.Command("i").Flags(instanceOps)
 	instanceCmd.Command("verify").RunFunc(instanceOps.InstanceFunc(instanceOps.Verify, true))
 	instanceCmd.Command("description").RunFunc(instanceOps.InstanceFunc(instanceOps.Description, false))
 	instanceCmd.Command("properties").RunFunc(instanceOps.InstanceFunc(instanceOps.Properties, false))
@@ -70,13 +70,14 @@ func RootCommand(client srv.Client) *command.SimpleCommand {
 	configCmd.Command("script").RunFunc(configOps.Script)
 
 	containerOps := &cli.InstanceOps{Client: client}
-	containerCmd := cmd.Command("container")
+	containerCmd := cmd.Command("instance")
 	containerCmd.Flags(containerOps)
 	containerCmd.Command("profiles").RunFunc(containerOps.Profiles)
 	containerCmd.Command("wait").RunFunc(containerOps.Wait)
 	containerCmd.Command("devices").RunFunc(containerOps.Devices)
 	containerCmd.Command("hwaddr").RunFunc(containerOps.ListHwaddr)
 	containerCmd.Command("images").RunFunc(containerOps.ListImages)
+	containerCmd.Command("publish").RunFunc(containerOps.PublishInstance)
 
 	networkOp := &cli.NetworkOp{Client: client}
 	containerCmd.Command("addresses").Flags(networkOp).RunFunc(networkOp.ExportAddresses)
