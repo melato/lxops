@@ -30,6 +30,14 @@ commands:
     use: <config-file> ...
     examples:
     - configure -name c1 demo.yaml
+  image:
+    commands:
+      instances:
+        short: list image aliases for containers
+        long: |
+          print a table of all intances with columns:
+          - image aliases
+          - instance name
   instance:
     short: LXD instance utilities
     commands:
@@ -37,12 +45,6 @@ commands:
         short: export network addresses for all containers
       hwaddr:
         short: export hwaddr for all containers
-      images:
-        short: list image aliases for containers
-        long: |
-          print a table of all intances with columns:
-          - instance name
-          - image aliases
       number:
         short: assign numbers to containers
         use: -first <number> [-a] [-r] [-project <project>] <container>...]
