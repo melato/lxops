@@ -4,6 +4,7 @@ import (
 	"errors"
 	"time"
 
+	"melato.org/lxops/srv"
 	"melato.org/script"
 )
 
@@ -16,7 +17,7 @@ type SnapshotParams struct {
 }
 
 type Snapshot struct {
-	Client ConfigContext `name:"-"`
+	Client srv.Client `name:"-"`
 	ConfigOptions
 	SnapshotParams
 }
@@ -61,11 +62,11 @@ func (t *Snapshot) Run(instance *Instance) error {
 		return t.DestroySnapshot(instance)
 	} else {
 		if t.Container {
-			s := &script.Script{Trace: true}
-			s.Run("lxc", "snapshot", instance.Container(), t.Snapshot)
-			if s.HasError() {
-				return s.Error()
+			server, err := t.Client.CurrentInstanceServer()
+			if err != nil {
+				return err
 			}
+			return server.CreateInstanceSnapshot(instance.Container(), t.Snapshot)
 		}
 		return instance.Snapshot(t.Snapshot)
 	}

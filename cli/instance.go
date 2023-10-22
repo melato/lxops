@@ -105,6 +105,7 @@ func (t *InstanceOps) ListImages() error {
 	if err != nil {
 		return err
 	}
+	sort.Sort(InstanceImageSorter(list))
 	var im srv.InstanceImage
 	writer := &table.FixedWriter{Writer: os.Stdout}
 	writer.Columns(
