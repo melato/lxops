@@ -46,14 +46,6 @@ func (t *ParseOp) Print(file string) error {
 type ConfigOps struct {
 }
 
-func (t *ConfigOps) printScript(scripts []*Script, script string) {
-	for _, s := range scripts {
-		if script == s.Name {
-			fmt.Println(s.Body)
-		}
-	}
-}
-
 func (t *ConfigOps) PrintProperties(file string) error {
 	config, err := ReadConfig(file)
 	if err != nil {

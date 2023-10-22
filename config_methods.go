@@ -3,9 +3,7 @@ package lxops
 import (
 	"fmt"
 	"os"
-	"os/user"
 	"path/filepath"
-	"regexp"
 
 	"melato.org/lxops/util"
 )
@@ -29,37 +27,6 @@ func (t *Config) VerifyFileExists(file HostPath) bool {
 		return false
 	}
 	return true
-}
-
-func (u *User) EffectiveUser() *User {
-	if u.Name == "" {
-		currentUser, err := user.Current()
-		if err == nil {
-			var u2 User
-			u2 = *u
-			u2.Name = currentUser.Username
-			if u.Uid == "" {
-				u2.Uid = currentUser.Uid
-			}
-			return &u2
-		}
-	}
-	return u
-}
-
-func (u *User) HasAuthorizedKeys() bool {
-	return u.AuthorizedKeys != "" || u.Ssh
-}
-
-func (user *User) HomeDir() string {
-	if user.Name == "root" {
-		return "/root"
-	}
-	if user.Home != "" {
-		return user.Home
-	} else {
-		return "/home/" + user.Name
-	}
 }
 
 func (config *Config) verifyDevices() bool {
@@ -100,11 +67,6 @@ func (config *Config) Verify() bool {
 	}
 
 	return valid
-}
-
-func (u *User) IsValidName() bool {
-	re := regexp.MustCompile("^[A-Za-z][A-Za-z0-9_]+$")
-	return u.Name == "" || re.MatchString(u.Name)
 }
 
 func (t *Config) Print() error {
