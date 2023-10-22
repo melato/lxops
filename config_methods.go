@@ -9,15 +9,11 @@ import (
 )
 
 func (t *OS) String() string {
-	if t.Version == "" {
-		return t.Name
-	} else {
-		return t.Name + "/" + string(t.Version)
-	}
+	return t.Name
 }
 
 func (t *OS) Equals(x *OS) bool {
-	return t.Name == x.Name && t.Version == x.Version
+	return t.Name == x.Name
 }
 
 /** Check that the requirements are met */

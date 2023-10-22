@@ -157,10 +157,6 @@ type OS struct {
 	// Image is the image name (with optional remote), used when launching a container.
 	// If Image is missing, an image name is constructed from Version.
 	Image Pattern `yaml:"image"`
-
-	// Version is used if Image is not specified.  The image name is composed of Name/Version
-	// Version is optional in configuration files, but the final assembled configuration file should have a OS Version.
-	Version Pattern `yaml:"version"`
 }
 
 // Filesystem is a ZFS filesystem or a plain directory that is created when an instance is created

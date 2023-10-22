@@ -32,14 +32,6 @@ func (t *OS) Merge(c *OS) error {
 	}
 	if t.Name != c.Name {
 		return fmt.Errorf("cannot merge incompatible OSs: %s, %s", t.Name, c.Name)
-	} else if t.Version != c.Version {
-		if t.Version == "" {
-			t.Version = c.Version
-		} else if c.Version == "" {
-			// keep the one we have
-		} else {
-			return fmt.Errorf("cannot merge incompatible os versions: %s, %s", t.Version, c.Version)
-		}
 	}
 	return nil
 }
