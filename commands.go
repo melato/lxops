@@ -79,6 +79,9 @@ func RootCommand(client srv.Client) *command.SimpleCommand {
 	containerCmd.Command("images").RunFunc(containerOps.ListImages)
 	containerCmd.Command("publish").RunFunc(containerOps.PublishInstance)
 
+	imageCmd := cmd.Command("image")
+	imageCmd.Command("instances").Flags(containerOps).RunFunc(containerOps.ListImages)
+
 	networkOp := &cli.NetworkOp{Client: client}
 	containerCmd.Command("addresses").Flags(networkOp).RunFunc(networkOp.ExportAddresses)
 
