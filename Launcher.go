@@ -16,10 +16,11 @@ import (
 type Launcher struct {
 	Client srv.Client `name:"-"`
 	ConfigOptions
-	RebuildProfiles bool `name:"profiles" usage:"if true, rebuild profiles according to config, otherwise keep existing profiles"`
-	WaitInterval    int  `name:"wait" usage:"# seconds to wait before snapshot"`
-	Trace           bool `name:"t" usage:"trace print what is happening"`
-	DryRun          bool `name:"dry-run" usage:"show the commands to run, but do not change anything"`
+	SkipProfiles bool `name:"skip.profiles" usage:"Do not preserve profiles.  Use config profiles"`
+	SkipNetwork  bool `name:"skip.ip" usage:"Do not try to preserve network ip addresses."`
+	WaitInterval int  `name:"wait" usage:"# seconds to wait before snapshot"`
+	Trace        bool `name:"t" usage:"trace print what is happening"`
+	DryRun       bool `name:"dry-run" usage:"show the commands to run, but do not change anything"`
 }
 
 func (t *Launcher) Init() error {
@@ -52,15 +53,17 @@ func (t *Launcher) getRebuildOptions(instance *Instance) (*rebuildOptions, error
 		return nil, err
 	}
 	var options rebuildOptions
-	if t.RebuildProfiles {
+	if !t.SkipProfiles {
 		options.Profiles, err = server.GetInstanceProfiles(container)
 		if err != nil {
 			return nil, err
 		}
 	}
-	options.Network, err = server.GetInstanceNetwork(container)
-	if err != nil {
-		return nil, err
+	if !t.SkipNetwork {
+		options.Network, err = server.GetInstanceNetwork(container)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return &options, nil
 }
@@ -102,7 +105,9 @@ func (t *Launcher) lxcLaunch(instance *Instance, server srv.InstanceServer, opti
 	launch.Image = image
 	launch.Profiles = options.Profiles
 	launch.LxcOptions = config.LxcOptions
-	launch.Network = options.RebuildOptions.Network
+	if !t.SkipNetwork {
+		launch.Network = options.RebuildOptions.Network
+	}
 	return server.LaunchInstance(&launch)
 }
 
