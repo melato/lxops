@@ -3,13 +3,15 @@ package lxops
 import (
 	"sort"
 	"strings"
+
+	"melato.org/lxops/cfg"
 )
 
 type InstanceFS struct {
 	Id         string
 	Path       string
 	IsNew      bool
-	Filesystem *Filesystem
+	Filesystem *cfg.Filesystem
 }
 
 func (t *InstanceFS) IsDir() bool {

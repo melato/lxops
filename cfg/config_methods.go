@@ -1,4 +1,4 @@
-package lxops
+package cfg
 
 import (
 	"fmt"
@@ -7,14 +7,6 @@ import (
 
 	"melato.org/lxops/util"
 )
-
-func (t *OS) String() string {
-	return t.Name
-}
-
-func (t *OS) Equals(x *OS) bool {
-	return t.Name == x.Name
-}
 
 /** Check that the requirements are met */
 func (t *Config) VerifyFileExists(file HostPath) bool {

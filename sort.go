@@ -3,11 +3,13 @@ package lxops
 import (
 	"sort"
 	"strings"
+
+	"melato.org/lxops/cfg"
 )
 
 type NamedDevice struct {
 	Name   string
-	Device *Device
+	Device *cfg.Device
 }
 
 type DeviceSorter []NamedDevice
@@ -30,7 +32,7 @@ func (t DeviceSorter) Swap(i, j int) {
 	t[i], t[j] = t[j], t[i]
 }
 
-func SortDevices(devices map[string]*Device) []NamedDevice {
+func SortDevices(devices map[string]*cfg.Device) []NamedDevice {
 	nd := make([]NamedDevice, 0, len(devices))
 	for name, device := range devices {
 		nd = append(nd, NamedDevice{name, device})

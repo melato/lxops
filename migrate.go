@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"melato.org/lxops/cfg"
 	"melato.org/script"
 )
 
@@ -57,8 +58,8 @@ func (t *Migrate) hostCommand(host, command string, args ...string) *exec.Cmd {
 }
 
 func (t *Migrate) CopyFilesystems() error {
-	var config *Config
-	config, err := ReadConfig(t.ConfigFile)
+	var config *cfg.Config
+	config, err := cfg.ReadConfig(t.ConfigFile)
 	if err != nil {
 		return err
 	}

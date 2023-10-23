@@ -2,10 +2,11 @@ package lxops
 
 import (
 	"melato.org/cloudconfig/ostype"
+	"melato.org/lxops/cfg"
 )
 
 func InitOSTypes() {
-	OSTypes["alpine"] = &ostype.Alpine{}
-	OSTypes["debian"] = &ostype.Debian{}
-	OSTypes["ubuntu"] = &ostype.Debian{}
+	cfg.OSTypes["alpine"] = &ostype.Alpine{}
+	cfg.OSTypes["debian"] = &ostype.Debian{}
+	cfg.OSTypes["ubuntu"] = &ostype.Debian{}
 }

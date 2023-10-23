@@ -5,13 +5,14 @@ import (
 	"fmt"
 	"os"
 
+	"melato.org/lxops/cfg"
 	"melato.org/lxops/srv"
 	"melato.org/lxops/util"
 	"melato.org/script"
 )
 
 type DeviceConfigurer struct {
-	Config *Config
+	Config *cfg.Config
 	Owner  string
 	// NoRsync - do not rsync devices.  Use when importing.
 	NoRsync bool

@@ -1,4 +1,4 @@
-package lxops
+package cfg
 
 // HostPath is a file path on the host, which is either absolute or relative to a base directory
 // When a config file includes another config file, the base directory is the directory of the including file

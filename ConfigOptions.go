@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"path/filepath"
 	"strings"
+
+	"melato.org/lxops/cfg"
 )
 
 type ConfigContext interface {
@@ -48,7 +50,7 @@ func (t *ConfigOptions) initProperties() error {
 	return nil
 }
 
-func (t *ConfigOptions) UpdateConfig(config *Config) {
+func (t *ConfigOptions) UpdateConfig(config *cfg.Config) {
 	if t.Project != "" {
 		config.Project = t.Project
 	}
@@ -60,13 +62,13 @@ func (t *ConfigOptions) UpdateConfig(config *Config) {
 	}
 }
 
-func (t *ConfigOptions) ReadConfig(file string) (*Config, error) {
+func (t *ConfigOptions) ReadConfig(file string) (*cfg.Config, error) {
 	err := t.initProperties()
 	if err != nil {
 		return nil, err
 	}
-	var config *Config
-	config, err = ReadConfig(file)
+	var config *cfg.Config
+	config, err = cfg.ReadConfig(file)
 	if err != nil {
 		return nil, err
 	}

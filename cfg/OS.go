@@ -1,4 +1,4 @@
-package lxops
+package cfg
 
 import (
 	"fmt"
@@ -20,6 +20,10 @@ func (t *OS) Type() cloudconfig.OSType {
 	return osType
 }
 
-func (t *OS) IsAlpine() bool {
-	return t.Name == "alpine"
+func (t *OS) String() string {
+	return t.Name
+}
+
+func (t *OS) Equals(x *OS) bool {
+	return t.Name == x.Name
 }

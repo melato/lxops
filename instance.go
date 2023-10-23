@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"melato.org/lxops/cfg"
 	"melato.org/lxops/srv"
 	"melato.org/lxops/util"
 	"melato.org/script"
@@ -13,7 +14,7 @@ import (
 
 type Instance struct {
 	GlobalProperties map[string]string
-	Config           *Config
+	Config           *cfg.Config
 	Name             string
 	container        string
 	profile          string
@@ -21,10 +22,10 @@ type Instance struct {
 	deviceSource     *DeviceSource
 	Properties       *util.PatternProperties
 	fspaths          map[string]*InstanceFS
-	sourceConfig     *Config
+	sourceConfig     *cfg.Config
 }
 
-func (t *Instance) substitute(e *error, pattern Pattern, defaultPattern Pattern) string {
+func (t *Instance) substitute(e *error, pattern cfg.Pattern, defaultPattern cfg.Pattern) string {
 	if pattern == "" {
 		pattern = defaultPattern
 	}
@@ -59,7 +60,7 @@ func (instance *Instance) newProperties() *util.PatternProperties {
 	return properties
 }
 
-func newInstance(globalProperties map[string]string, config *Config, name string, includeSource bool) (*Instance, error) {
+func newInstance(globalProperties map[string]string, config *cfg.Config, name string, includeSource bool) (*Instance, error) {
 	t := &Instance{GlobalProperties: globalProperties, Config: config, Name: name}
 	t.Properties = t.newProperties()
 	var err error
@@ -84,7 +85,7 @@ func newInstance(globalProperties map[string]string, config *Config, name string
 	return t, nil
 }
 
-func NewInstance(globalProperties map[string]string, config *Config, name string) (*Instance, error) {
+func NewInstance(globalProperties map[string]string, config *cfg.Config, name string) (*Instance, error) {
 	return newInstance(globalProperties, config, name, true)
 }
 
@@ -152,7 +153,7 @@ func (t *Instance) DeviceList() ([]InstanceDevice, error) {
 	return devices, nil
 }
 
-func (t *Instance) DeviceDir(deviceId string, device *Device) (string, error) {
+func (t *Instance) DeviceDir(deviceId string, device *cfg.Device) (string, error) {
 	dir, err := device.Dir.Substitute(t.Properties)
 	if err != nil {
 		return "", err
@@ -215,12 +216,12 @@ func (instance *Instance) Rollback(name string) error {
 // GetSourceConfig returns the parsed configuration specified by Config.SourceConfig
 // If there is no Config.SourceConfig, it returns this instance's config
 // It returns a non nil *Config or an error.
-func (t *Instance) GetSourceConfig() (*Config, error) {
+func (t *Instance) GetSourceConfig() (*cfg.Config, error) {
 	if t.Config.SourceConfig == "" {
 		return t.Config, nil
 	}
 	if t.sourceConfig == nil {
-		config, err := ReadConfig(string(t.Config.SourceConfig))
+		config, err := cfg.ReadConfig(string(t.Config.SourceConfig))
 		if err != nil {
 			return nil, err
 		}

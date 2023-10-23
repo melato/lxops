@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"sort"
 
+	"melato.org/lxops/cfg"
 	"melato.org/table3"
 )
 
@@ -15,11 +16,11 @@ type ParseOp struct {
 	//Script string `usage:"print the body of the script with the specified name"`
 }
 
-func (t *ParseOp) parseConfig(file string) (*Config, error) {
+func (t *ParseOp) parseConfig(file string) (*cfg.Config, error) {
 	if t.Raw {
-		return ReadRawConfig(file)
+		return cfg.ReadRawConfig(file)
 	} else {
-		r := &ConfigReader{Warn: true, Verbose: t.Verbose}
+		r := &cfg.ConfigReader{Warn: true, Verbose: t.Verbose}
 		return r.Read(file)
 	}
 }
@@ -47,7 +48,7 @@ type ConfigOps struct {
 }
 
 func (t *ConfigOps) PrintProperties(file string) error {
-	config, err := ReadConfig(file)
+	config, err := cfg.ReadConfig(file)
 	if err != nil {
 		return err
 	}
@@ -83,7 +84,7 @@ func (t *ConfigOps) Script(file string, script string) error {
 }
 
 func (t *ConfigOps) readIncludes(file string, included map[string]bool) error {
-	config, err := ReadRawConfig(file)
+	config, err := cfg.ReadRawConfig(file)
 	if err != nil {
 		return err
 	}

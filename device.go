@@ -2,10 +2,12 @@ package lxops
 
 import (
 	"sort"
+
+	"melato.org/lxops/cfg"
 )
 
 type InstanceDevice struct {
-	Device *Device
+	Device *cfg.Device
 	Name   string
 	Source string
 }
