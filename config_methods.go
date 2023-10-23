@@ -126,3 +126,14 @@ func (t *Config) GetProfilesConfig(profiles []string) []string {
 	profiles = util.StringSlice(t.ProfilesConfig).Union(profiles)
 	return profiles
 }
+
+func (t *Config) AbsFilename() string {
+	filename := t.File
+	if !filepath.IsAbs(filename) {
+		dir, err := os.Getwd()
+		if err == nil {
+			filename = filepath.Join(dir, filename)
+		}
+	}
+	return filename
+}

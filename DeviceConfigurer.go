@@ -195,7 +195,7 @@ func (t *DeviceConfigurer) CreateProfile(client srv.Client, instance *Instance) 
 	}
 	profile := &srv.Profile{
 		Name:        profileName,
-		Description: t.Config.File,
+		Description: t.Config.AbsFilename(),
 		Devices:     devices,
 	}
 
