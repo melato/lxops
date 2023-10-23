@@ -195,5 +195,10 @@ func (r *ConfigReader) Read(file string) (*Config, error) {
 
 func ReadConfig(file string) (*Config, error) {
 	r := &ConfigReader{}
-	return r.Read(file)
+	c, err := r.Read(file)
+	if err != nil {
+		return nil, err
+	}
+	c.File = file
+	return c, nil
 }

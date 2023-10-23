@@ -195,7 +195,7 @@ func (t *DeviceConfigurer) CreateProfile(client srv.Client, instance *Instance) 
 	}
 	profile := &srv.Profile{
 		Name:        profileName,
-		Description: "lxdops profile",
+		Description: t.Config.File,
 		Devices:     devices,
 	}
 

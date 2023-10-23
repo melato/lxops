@@ -16,6 +16,8 @@ type HostPath string
 // - Scripts
 // - Passwords
 type Config struct {
+	// File is the file of the top config file, for reference
+	File string `yaml:"yaml:"-"`
 	// ConfigTop fields are not merged with included files
 	ConfigTop `yaml:",inline"`
 	// ConfigInherit fields are merged with all included files, depth first
