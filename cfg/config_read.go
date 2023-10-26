@@ -158,8 +158,12 @@ func (r *ConfigReader) mergeFile(t *Config, file string) error {
 		t.ConfigTop = config.ConfigTop
 	}
 	r.addIncluded(file)
-	t.Ostype = config.Ostype
-	t.Image = config.Image
+	if config.Ostype != "" {
+		t.Ostype = config.Ostype
+	}
+	if config.Image != "" {
+		t.Image = config.Image
+	}
 	for _, f := range config.Include {
 		err := r.mergeFile(t, string(f))
 		if err != nil {
