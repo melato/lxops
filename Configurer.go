@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"melato.org/cloudconfig"
+	"melato.org/lxops/cfg"
 	"melato.org/lxops/srv"
 )
 
@@ -45,9 +46,9 @@ func (t *Configurer) ConfigureContainer(instance *Instance) error {
 			return err
 		}
 		configurer := cloudconfig.NewConfigurer(base)
-		configurer.OS = config.OS.Type()
+		configurer.OS = cfg.OSType(config.Ostype)
 		if configurer.OS == nil {
-			return fmt.Errorf("unsupported OS type: %s", config.OS.Name)
+			return fmt.Errorf("unsupported OS type: %s", config.Ostype)
 		}
 		configurer.Log = os.Stdout
 		files := make([]string, len(config.CloudConfigFiles))

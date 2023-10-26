@@ -65,6 +65,7 @@ func RootCommand(client srv.Client) *command.SimpleCommand {
 	configCmd.Command("parse").Flags(parse).RunFunc(parse.Parse)
 	configCmd.Command("print").Flags(parse).RunFunc(parse.Print)
 	configOps := &ConfigOps{}
+	configCmd.Command("formats").RunFunc(configOps.Formats)
 	configCmd.Command("properties").RunFunc(configOps.PrintProperties)
 	configCmd.Command("includes").RunFunc(configOps.Includes)
 	configCmd.Command("script").RunFunc(configOps.Script)

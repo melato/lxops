@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"time"
 
+	"melato.org/lxops/cfg"
 	"melato.org/lxops/srv"
 	"melato.org/lxops/util"
 	"melato.org/script"
@@ -88,13 +89,13 @@ func (t *Launcher) NewConfigurer() *Configurer {
 
 func (t *Launcher) lxcLaunch(instance *Instance, server srv.InstanceServer, options *launch_options) error {
 	config := instance.Config
-	osType := config.OS.Type()
+	osType := cfg.OSType(config.Ostype)
 	if osType == nil {
-		return errors.New("unsupported OS type: " + config.OS.Name)
+		return errors.New("unsupported OS type: " + config.Ostype)
 	}
 	var launch srv.Launch
 	launch.Name = instance.Container()
-	image, err := config.OS.Image.Substitute(instance.Properties)
+	image, err := config.Image.Substitute(instance.Properties)
 	if err != nil {
 		return err
 	}

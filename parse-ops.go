@@ -114,3 +114,16 @@ func (t *ConfigOps) Includes(file ...string) error {
 	}
 	return nil
 }
+
+func (t *ConfigOps) Formats() {
+	formats := make([]string, 0, len(cfg.ConfigFormats))
+	for format, _ := range cfg.ConfigFormats {
+		formats = append(formats, format)
+	}
+	sort.Strings(formats)
+	fmt.Printf("current format: %s\n", cfg.Comment)
+	fmt.Printf("supported formats:\n")
+	for _, format := range formats {
+		fmt.Printf("%s\n", format)
+	}
+}

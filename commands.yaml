@@ -81,6 +81,8 @@ commands:
   config:
     short: config .yaml utilities
     commands:
+      formats:
+        short: print supported config formats        
       parse:
         short: parse a config file
         use: <config-file>

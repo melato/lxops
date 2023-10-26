@@ -6,5 +6,5 @@ import (
 )
 
 func InitConfigTypes() {
-	cfg.SetMigrateFunc("#new", migrate.MigrateNew)
+	cfg.SetMigrateFunc("#lxdops", migrate.MigrateLxdops)
 }

@@ -1,0 +1,4 @@
+#lxdops
+os:
+  name: os1
+  image: image1

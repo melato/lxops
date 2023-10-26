@@ -158,14 +158,8 @@ func (r *ConfigReader) mergeFile(t *Config, file string) error {
 		t.ConfigTop = config.ConfigTop
 	}
 	r.addIncluded(file)
-	if t.OS == nil {
-		t.OS = config.OS
-	} else {
-		err := t.OS.Merge(config.OS)
-		if err != nil {
-			return err
-		}
-	}
+	t.Ostype = config.Ostype
+	t.Image = config.Image
 	for _, f := range config.Include {
 		err := r.mergeFile(t, string(f))
 		if err != nil {
@@ -186,9 +180,6 @@ func (r *ConfigReader) Read(file string) (*Config, error) {
 	err := r.mergeFile(result, file)
 	if err != nil {
 		return nil, err
-	}
-	if result.OS == nil {
-		result.OS = &OS{}
 	}
 	return result, err
 }

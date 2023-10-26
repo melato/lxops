@@ -9,15 +9,15 @@ import (
 
 var Trace bool
 
-const Comment = "#lxdops"
+const Comment = "#lxops-v1"
 
 // MigrateFunc migrates a config file (represented by []byte) to another format.
 type MigrateFunc func([]byte) ([]byte, error)
 
-var migrators = make(map[string]MigrateFunc)
+var ConfigFormats = make(map[string]MigrateFunc)
 
 func SetMigrateFunc(comment string, fn MigrateFunc) {
-	migrators[comment] = fn
+	ConfigFormats[comment] = fn
 }
 
 /** Read raw config from yaml */
@@ -43,7 +43,7 @@ func ReadConfigYaml(file string) (*Config, error) {
 		}
 		migrated[comment] = true
 
-		fn, supported := migrators[comment]
+		fn, supported := ConfigFormats[comment]
 		if !supported {
 			return nil, fmt.Errorf("no migration from config type %s", comment)
 		}
