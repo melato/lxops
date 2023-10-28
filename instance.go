@@ -65,7 +65,7 @@ func newInstance(globalProperties map[string]string, config *cfg.Config, name st
 	t.Properties = t.newProperties()
 	var err error
 	t.container = t.substitute(&err, config.Container, "(instance)")
-	t.profile = t.substitute(&err, config.Profile, "(instance).lxdops")
+	t.profile = t.substitute(&err, config.Profile, "(instance).lxops")
 	if err != nil {
 		return nil, err
 	}

@@ -115,7 +115,7 @@ func (t *Launcher) lxcLaunch(instance *Instance, server srv.InstanceServer, opti
 func (t *Launcher) createEmptyProfile(server srv.InstanceServer, profile string) error {
 	return server.CreateProfile(&srv.Profile{
 		Name:        profile,
-		Description: "lxdops placeholder profile",
+		Description: "lxops placeholder profile",
 	})
 }
 
@@ -202,7 +202,7 @@ func (t *Launcher) CreateProfile(instance *Instance) error {
 		fmt.Println(profileName)
 		return dev.CreateProfile(t.Client, instance)
 	} else {
-		fmt.Printf("skipping instance %s: no lxdops profile\n", instance.Name)
+		fmt.Printf("skipping instance %s: no lxops profile\n", instance.Name)
 		return nil
 	}
 

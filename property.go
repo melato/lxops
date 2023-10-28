@@ -19,7 +19,7 @@ func (t *PropertyOptions) Init() error {
 	if err != nil {
 		return err
 	}
-	t.PropertiesFile = filepath.Join(configDir, "lxdops", "properties.yaml")
+	t.PropertiesFile = filepath.Join(configDir, "lxops", "properties.yaml")
 	return nil
 }
 

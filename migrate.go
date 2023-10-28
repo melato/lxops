@@ -85,7 +85,7 @@ func (t *Migrate) CopyFilesystems() error {
 	}
 	s := script.Script{Trace: true, DryRun: t.DryRun}
 	if t.makeSnapshot {
-		s.RunCmd(t.hostCommand(t.FromHost, "lxdops", "snapshot", "-s", t.Snapshot, "--name", t.FromContainer, t.ConfigFile))
+		s.RunCmd(t.hostCommand(t.FromHost, "lxops", "snapshot", "-s", t.Snapshot, "--name", t.FromContainer, t.ConfigFile))
 	}
 	for _, fs := range filesystems {
 		if fs.IsZfs() && !fs.Filesystem.Transient {
