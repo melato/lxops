@@ -68,13 +68,17 @@ For ZFS devices, lxops will:
 - add these directories as disk devices to the lxops profile associated with the container.
 
 I typically attach disk devices to all these directories:
-- /var/log
-- /tmp
 - /home
 - /etc/opt
 - /var/opt
 - /opt
 - /usr/local/bin
+- /var/log
+- /tmp
+
+And make sure I put all application data in one of these directories (except /tmp, of course).
+
+When I replace the root filesystem with a new image, my data persists.
 
 An image may already have /log populated with files and directories, without which the image might not function properly.
 For this reason, the configuration file has a *device-template* field that specifies another container whose devices will
