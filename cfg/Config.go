@@ -42,12 +42,6 @@ type ConfigInherit struct {
 	// in order to avoid unexpected behavior that depends on the order of included files.
 	Properties map[string]string `yaml:"properties"`
 
-	// Name if the name of the container image, without the version number.
-	// All included configuration files should have the same OS Name.
-	// Supported OS names are "alpine", "debian", "ubuntu".
-	// Support for an OS is the ability to determine the LXD image, install packages, create users, set passwords
-	Name string `yaml:"name"`
-
 	// ostype - OS type for cloudconfig.  "alpine", "debian", etc.
 	Ostype string `yaml:"ostype"`
 
