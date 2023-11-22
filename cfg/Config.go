@@ -54,10 +54,6 @@ type ConfigInherit struct {
 	// Experimental: The name of the container. Defaults to (instance)
 	Container Pattern `yaml:"container,omitempty"`
 
-	// ProfilePattern specifies how the instance profile should be named.
-	// It defaults to "(instance).lxdops"
-	Profile Pattern `yaml:"profile-pattern"`
-
 	// ProfileConfig specifies Config entries to be added to the instance profile.
 	// This was meant for creating templates with boot.autostart: "false",
 	// without needing to use profiles external to lxdops.
@@ -73,6 +69,13 @@ type ConfigInherit struct {
 	// Include paths are either absolute or relative to the path of the including config.
 	Include []HostPath `yaml:"include,omitempty"`
 
+	// ProfilePattern specifies how the instance profile should be named.
+	// It defaults to "(instance).lxdops"
+	Profile Pattern `yaml:"profile-pattern"`
+
+	// The owner (uid:gid) for new devices
+	DeviceOwner Pattern `yaml:"device-owner"`
+
 	// Filesystems are zfs filesystems or plain directories that are created
 	// when an instance is created.  Devices are created inside filesystems.
 	Filesystems map[string]*Filesystem `yaml:"filesystems"`
@@ -80,9 +83,6 @@ type ConfigInherit struct {
 	// They are created and attached to the container via the instance profile
 	Devices map[string]*Device `yaml:"devices"`
 	// Profiles are attached to the container.  The instance profile should not be listed here.
-
-	// The owner (uid:gid) for new devices
-	DeviceOwner Pattern `yaml:"device-owner"`
 
 	// Profiles are the profiles of an instance.
 	// After an instance is created and configured, it is left with these profiles
@@ -173,11 +173,11 @@ type Filesystem struct {
 	// If it does not begin with '/', it is a zfs filesystem name
 	Pattern Pattern
 	// Zfsproperties is a list of properties that are set when a zfs filesystem is created or cloned
-	Zfsproperties map[string]string `yaml:""`
+	Zfsproperties map[string]string `yaml:"zfsproperties,omitempty"`
 	// Destroy allows lxdops destroy the filesystem when requested.
-	Destroy bool
+	Destroy bool `yaml:"destroy,omitempty"`
 	// Transient filesystems are not backed-up, exported, or imported.
-	Transient bool `yaml:"transient"`
+	Transient bool `yaml:"transient,omitempty"`
 }
 
 // A Device is an LXD disk device that is attached to the instance profile, which in turn is attached to a container
@@ -194,5 +194,5 @@ type Device struct {
 	// Rarely used:
 	// Dir goes through pattern substitution, using parenthesized tokens, for example (instance)
 	// Dir may be absolute, but this is no longer necessary now that filesystems are specified, since one can define the "/" filesystem.
-	Dir Pattern `yaml:""`
+	Dir Pattern `yaml:"dir,omitempty"`
 }
