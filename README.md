@@ -1,71 +1,29 @@
 lxops launches and configures LXD or Incus containers,
-using configuration files that have instructions about how to build and configure a container.
+using configuration files that specify how to build and configure a container.
 It can also create and attach disk devices to these containers.
 
-# Example
+Configuration inside a container is specified using standard [cloud-config](https://cloud-init.io/) files,
+which are applied using the InstanceServer API, without using any cloud-init packages.
+See [github.com/melato/cloudconfig](https://github.com/melato/cloudconfig) for what is supported.
+
+
+# Examples
 You can find examples in the separate [lxops.examples](https://github.com/melato/lxops.examples) repository.
 
-A simple example of an lxops configuration file is:
+Here is a simple configuration file:
 
-[(alpine/containers/example.yaml)](https://github.com/melato/lxops.examples/blob/main/alpine/containers/example.yaml)
 ```
 #lxops-v1
 ostype: alpine
 image: images:alpine/3.18
-description: launch container from images:
 profiles:
 - default
 cloud-config-files:  
+- ../packages/base.cfg
+- ../packages/bash.cfg
 - ../cfg/doas.cfg
-- ../cfg/dhcpcd.cfg
-- ../cfg/interfaces.cfg
+- ../cfg/user.cfg
 ```
-
-For getting started, you can delete the cloud-config-files section,
-so the configuration file can be used without any other files.
-Or run them in the lxops.examples project, so you have all the dependencies.
-
-lxops can use this file above as follows:
-
-## launch
-	lxops launch -name example1 example.yaml
-
-This launches a container called "example1".
-It applies the specified profiles (in this case just "default"),
-plus an additional lxops profile that it creates just for this container (e.g. example1.lxops).
-It also runs the specified #cloud-config files inside the container.
-
-The cloud-config files are applied using the InstanceServer API.  It does not use any cloud-init packages.
-See [github.com/melato/cloudconfig](https://github.com/melato/cloudconfig) for what is supported.
-
-
-## delete
-	lxops delete -name example1 example.yaml
-
-This deletes the container and its lxops profile.
-The container must already be stopped.
-
-## rebuild
-	lxops rebuild -name example1 example.yaml
-	
-	
-Rebuilding stops the container, deletes it, and launches it again.
-
-This is useful if the container is configured to keep persistent configuration and data in
-attached disk devices that are preserved during the rebuilding.
-
-lxops provides the ability to manage attached disk devices.  This is not shown in the basic example above.
-
-This way, you can replace the container guest OS, without losing your data.
-
-Rebuilding preserves the old container's profiles and IP addresses.  This behavior can be disabled by flags.
-
-## destroy
-	lxops destroy -name example1 example.yaml
-
-In this example, destroy is the same as delete.
-
-More advanced configuration files can specify disk devices that lxops create during launch and destroys with the "destroy" command.
 
 # Disk Devices
 A central feature of lxops is the ability to create and attach external disk devices to a container it launches.
@@ -76,10 +34,10 @@ makes it possible to rebuild a container with a new image without losing data.
 ZFS and plain directory devices are supported.  ZFS is the implementation tested most.
 
 For ZFS devices, lxops will:
-- create 0 or more ZFS filesystems with names that include the container name.
+- create ZFS filesystems with names that include the container name.
 - create directories in these filesystems, one for each device.
 - change the permission of these directories so that they appear as owned by root:root in the container.
-- optionally copy files in these directories from template directories.
+- copy files in these directories from template directories, if a device template is specified.
 - add these directories as disk devices to the lxops profile associated with the container.
 
 I typically attach disk devices to all these directories:
@@ -95,6 +53,53 @@ An image may already have /log populated with files and directories, without whi
 For this reason, the configuration file has a *device-template* field that specifies another container whose devices will
 be copied to the current container during lxops launch, using rsync.
 
+## lxops files
+An lxops file is a yaml configuration file that specifies how to launch an instance.
+You can find documentation for lxops files [here](config.md).
+
+# commands
+Here are the basic commands for managing a container with lxops. 
+
+-name <container-name> can be omitted if it is the same as the config-file base name.
+
+## launch
+	lxops launch -name <container> <config-file.yaml>
+	
+- creates any zfs filesystems that are specified in the config file.
+  The filesystem names typically include the container name, so they are unique for each container.
+- creates subdirectories in these filesystems
+- copies files from template filesystems, if specified
+- adds the subdirectories as disk devices to a new profile named <container>.lxops
+- creates a container named with the profiles specified in the config file and the <container>.lxops profile
+- configures the container by running the specified cloud-config files
+
+If the device directories already exist, they are used without overwriting them.
+
+## delete
+	lxops delete -name <container> <config-file.yaml>
+
+- deletes the container (it must already be stopped)
+- deletes the container profile (<container>.lxops)
+
+
+## rebuild
+	lxops rebuild -name <container> <config-file.yaml>
+	
+- stops the container
+- deletes the container
+- launches the container again
+
+Since the device directories exist, they are are preserved across the rebuild.
+The result is that the container has a new guest OS, but runs with the old data.
+For this to work, the container must be configured properly, via the cloud-config files.
+	
+## destroy
+	lxops destroy -name <container> <config-file.yaml>
+
+- deletes the container
+- deletes the container profile (<container>.lxops)
+- destroys the container filesystems
+
 # Compile
 This project is a Go library that communicates with an instance server via a backend interface.
 It does not produce an executable.
@@ -109,8 +114,7 @@ To build lxops_lxd:
 ```
     git clone https://github.com/melato/lxops_lxd.git
     cd lxops_lxd/main
-    git log -1 --format=%cd > version
-    # or: date > version
+    date > version
     go build lxops-lxd.go
     ln -s lxops-lxd lxops
 ```
@@ -138,9 +142,9 @@ which I have been using for years to manage containers with numerous configurati
 Therefore, I have a personal interest to keep it working and maintain backward compatibility with the lxops configuration file format.  Nevertheless, I want to simplify it, so changes may happen.  Some half-baked features may be removed.
 
 ## configuration file format
-lxops supports multiple configuration file formats.  There are currently two formats:
-  - lxdops - the same format that lxdops used
-  - lxops-v1 - a simpler format with os replaced with ostype, image.
+lxops supports multiple configuration file formats.  There are currently two supported formats:
+  - lxops-v1 - The latest format.
+  - lxdops - the format that lxdops used
 
 backward compatibility is maintained by using migrators that convert a format to a newer format.
 - "lxdops" files are converted to "lxops-v1" files.
