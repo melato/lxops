@@ -1,8 +1,10 @@
 package lxops
 
 import (
+	"bytes"
 	_ "embed"
-	"regexp"
+	"fmt"
+	"text/template"
 
 	"melato.org/command"
 	"melato.org/command/usage"
@@ -10,13 +12,27 @@ import (
 	"melato.org/lxops/srv"
 )
 
-//go:embed commands.yaml
-var usageData []byte
+//go:embed commands.yaml.tpl
+var usageTemplate []byte
+
+func usageForServerType(serverType string) ([]byte, error) {
+	tpl, err := template.New("").Parse(string(usageTemplate))
+	if err != nil {
+		return usageTemplate, nil
+	}
+	var buf bytes.Buffer
+	err = tpl.Execute(&buf, map[string]string{"ServerType": serverType})
+	if err != nil {
+		return usageTemplate, nil
+	}
+	return buf.Bytes(), nil
+}
 
 func RootCommand(client srv.Client) *command.SimpleCommand {
-	re := regexp.MustCompile("LXD")
-	productUsage := re.ReplaceAll(usageData, []byte(client.ServerType()))
-
+	usageData, err := usageForServerType(client.ServerType())
+	if err != nil {
+		fmt.Printf("%v\n", err)
+	}
 	var cmd command.SimpleCommand
 	cmd.Flags(client)
 	launcher := &Launcher{Client: client}
@@ -100,7 +116,7 @@ func RootCommand(client srv.Client) *command.SimpleCommand {
 	var migrate Migrate
 	cmd.Command("copy-filesystems").Flags(&migrate).RunFunc(migrate.CopyFilesystems)
 
-	usage.Apply(&cmd, productUsage)
+	usage.Apply(&cmd, usageData)
 
 	return &cmd
 }
