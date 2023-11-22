@@ -12,11 +12,11 @@ import (
 
 type Migrate struct {
 	PropertyOptions
-	FromHost      string
-	ToHost        string
+	FromHost      string `name:"from-host" usage:"optional source host"`
+	ToHost        string `name:"to-host" usage:"optional destination host"`
 	ConfigFile    string `name:"c" usage:"configFile"`
-	FromContainer string
-	Container     string
+	FromContainer string `name:"from-container" usage:"source instance"`
+	Container     string `name:"container" usage:"destination instance"`
 	Snapshot      string `name:"s" usage:"snapshot name"`
 	DryRun        bool   `name:"dry-run" usage:"show the commands to run, but do not change anything"`
 	makeSnapshot  bool
@@ -27,13 +27,6 @@ func (t *Migrate) Init() error {
 }
 
 func (t *Migrate) Configured() error {
-	if len(t.Snapshot) == 0 {
-		t.Snapshot = time.Now().UTC().Format("20060102150405")
-		t.makeSnapshot = true
-	}
-	if (t.FromHost == "") == (t.ToHost == "") {
-		return errors.New("need to provide either -from-host or -to-host")
-	}
 	if t.ConfigFile == "" {
 		return errors.New("missing config file")
 	}
@@ -43,8 +36,15 @@ func (t *Migrate) Configured() error {
 	if t.FromContainer == "" {
 		t.FromContainer = t.Container
 	}
-	if !filepath.IsAbs(t.ConfigFile) {
-		return errors.New("config file should be absolute")
+	if t.FromHost != "" && t.ToHost != "" {
+		return errors.New("cannot use both -from-host and -to-host")
+	}
+	if t.Snapshot == "" {
+		t.Snapshot = time.Now().UTC().Format("20060102150405")
+		t.makeSnapshot = true
+		if !filepath.IsAbs(t.ConfigFile) {
+			return errors.New("config file should be absolute to make a remote snapshot ")
+		}
 	}
 	return t.PropertyOptions.Configured()
 }

@@ -199,9 +199,17 @@ commands:
     long: |
       import the filesystems of an instance from tar.gz files
   copy-filesystems:
-    short: copy instance filesystems from another host
+    short: copy zfs filesystems from instance to another.
     long: |
-      Uses ssh to ssh to the other host.
-      Uses sudo zfs send/receive.
+      Uses ssh and zfs send/receive to copy a snapshot of the instance filesystems
+      between hosts.
+      If a short snapshot name is provided, it is used in the zfs send commands.
+      Otherwise, a new snapshot is generated using "lxops snapshot".
+      
+      		[ssh <from-host>] lxops snapshot -s <generated-snapshot> ...
+
+        , using the current date,
+      and a snapshot is created in the source filesystems.
+      
       Assumes that the config file is at the same path on the other host,
       and has the same filesystems.
