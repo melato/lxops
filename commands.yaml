@@ -1,13 +1,13 @@
 short: manage LXD containers together with attached ZFS disk devices
 long: |
-  lxdops launches LXD containers and creates or clones ZFS filesystem devices for them.
-  lxdops launches an "instance" by:
+  lxops launches LXD containers and creates or clones ZFS filesystem devices for them.
+  lxops launches an "instance" by:
     - Creating or cloning a set of ZFS filesystems
     - Creating and initializing a set of sub-directories under these filesystems
     - Creating an LXD profile with disk devices for these directories
     - Launching or copying an LXD container with this profile
     
-  lxdops can also install packages, create users, setup .ssh/authorized_keys for users,
+  lxops can also install packages, create users, setup .ssh/authorized_keys for users,
   push files from the host to the container, attach profiles, and run scripts.
   
   One of its goals is to separate the container OS files from user files,
@@ -39,7 +39,7 @@ commands:
           - image aliases
           - instance name
   instance:
-    short: LXD instance utilities
+    short: instance utilities
     commands:
       addresses:
         short: export network addresses for all containers
@@ -66,7 +66,7 @@ commands:
   create-devices:
     short: create devices
   create-profile:
-    short: create lxdops profile for instance
+    short: create lxops profile for instance
   delete:
     short: delete a container
     use: <configfile>...
