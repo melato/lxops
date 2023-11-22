@@ -10,7 +10,7 @@ See [github.com/melato/cloudconfig](https://github.com/melato/cloudconfig) for w
 # Examples
 You can find examples in the separate [lxops.examples](https://github.com/melato/lxops.examples) repository.
 
-Here is a simple configuration file:
+Here is a simple configuration file (example.yaml):
 
 ```
 #lxops-v1
@@ -24,6 +24,33 @@ cloud-config-files:
 - ../cfg/doas.cfg
 - ../cfg/user.cfg
 ```
+
+You can create containers a1, a2, using these commands:
+```
+	lxops launch -name a1 example.yaml
+	lxops launch -name a2 example.yaml
+```
+It's even better if you create an image from this configuration, and create the containers from your image.
+The examples repository demonstrates that.
+
+# Compile
+This project is a Go library that communicates with an instance server via a backend interface.
+It does not have a main.
+
+It is used by two other projects:
+- [lxops_lxd](https://github.com/melato/lxops_lxd): lxops for LXD
+- [lxops_incus](https://github.com/melato/lxops_incus): lxops for Incus
+
+Once you build one of these two executables, rename it to "lxops" (or link "lxops" to it).
+
+To build lxops_lxd:
+```
+    git clone https://github.com/melato/lxops_lxd.git
+    cd lxops_lxd/main
+    go build lxops-lxd.go
+    ln -s lxops-lxd lxops
+```
+
 
 # Disk Devices
 A central feature of lxops is the ability to create and attach external disk devices to a container it launches.
@@ -99,25 +126,6 @@ For this to work, the container must be configured properly, via the cloud-confi
 - deletes the container
 - deletes the container profile (<container>.lxops)
 - destroys the container filesystems
-
-# Compile
-This project is a Go library that communicates with an instance server via a backend interface.
-It does not produce an executable.
-
-It is used by two other projects that implement this interface for LXD or for Incus:
-- [lxops_lxd](https://github.com/melato/lxops_lxd)
-- [lxops_incus](https://github.com/melato/lxops_incus)
-
-Once you build one of these two executables, rename it to "lxops" (or link "lxops" to it).
-
-To build lxops_lxd:
-```
-    git clone https://github.com/melato/lxops_lxd.git
-    cd lxops_lxd/main
-    date > version
-    go build lxops-lxd.go
-    ln -s lxops-lxd lxops
-```
 
 # External Programs
 
