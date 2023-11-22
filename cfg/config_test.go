@@ -1,4 +1,4 @@
-package lxops
+package cfg
 
 import (
 	"testing"

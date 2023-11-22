@@ -39,7 +39,7 @@ commands:
           - image aliases
           - instance name
   instance:
-    short: instance utilities
+    short: LXD instance utilities
     commands:
       addresses:
         short: export network addresses for all containers

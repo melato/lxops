@@ -5,4 +5,5 @@ type Client interface {
 	ProjectInstanceServer(project string) (InstanceServer, error)
 	Projects() ([]string, error)
 	CurrentProject() string
+	ServerType() string
 }

@@ -2,6 +2,7 @@ package lxops
 
 import (
 	_ "embed"
+	"regexp"
 
 	"melato.org/command"
 	"melato.org/command/usage"
@@ -13,6 +14,9 @@ import (
 var usageData []byte
 
 func RootCommand(client srv.Client) *command.SimpleCommand {
+	re := regexp.MustCompile("LXD")
+	productUsage := re.ReplaceAll(usageData, []byte(client.ServerType()))
+
 	var cmd command.SimpleCommand
 	cmd.Flags(client)
 	launcher := &Launcher{Client: client}
@@ -96,7 +100,7 @@ func RootCommand(client srv.Client) *command.SimpleCommand {
 	var migrate Migrate
 	cmd.Command("copy-filesystems").Flags(&migrate).RunFunc(migrate.CopyFilesystems)
 
-	usage.Apply(&cmd, usageData)
+	usage.Apply(&cmd, productUsage)
 
 	return &cmd
 }
