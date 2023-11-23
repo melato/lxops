@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"melato.org/lxops/util"
 	"melato.org/table3"
 )
 
@@ -39,7 +40,8 @@ func (t *InstanceOps) Description(instance *Instance) error {
 
 // Properties prints the instance properties
 func (t *InstanceOps) Properties(instance *Instance) error {
-	instance.Properties.ShowHelp(os.Stdout)
+	fmt.Printf("Effective Properties:\n")
+	util.PrintProperties(instance.EffectiveProperties())
 	return nil
 }
 

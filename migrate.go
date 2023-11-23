@@ -63,13 +63,13 @@ func (t *Migrate) CopyFilesystems() error {
 	if err != nil {
 		return err
 	}
-	instance, err := NewInstance(t.GlobalProperties, config, t.Container)
+	instance, err := NewInstance(nil, t.GlobalProperties, config, t.Container)
 	if err != nil {
 		return err
 	}
 	fromInstance := instance
 	if t.FromContainer != t.Container {
-		fromInstance, err = NewInstance(t.GlobalProperties, config, t.FromContainer)
+		fromInstance, err = NewInstance(nil, t.GlobalProperties, config, t.FromContainer)
 		if err != nil {
 			return err
 		}

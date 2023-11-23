@@ -14,10 +14,10 @@ type ConfigContext interface {
 }
 
 type ConfigOptions struct {
-	Project    string   `name:"project" usage:"the LXD project to use.  Overrides Config.Project"`
-	Name       string   `name:"name" usage:"The name of the container to launch or configure.  If missing, use a separate container for each config, using the name of the config."`
-	Properties []string `name:"P" usage:"a command-line property in the form <key>=<value>.  Command-line properties override instance and global properties"`
-	properties map[string]string
+	Project       string   `name:"project" usage:"the LXD project to use.  Overrides Config.Project"`
+	Name          string   `name:"name" usage:"The name of the container to launch or configure.  If missing, use a separate container for each config, using the name of the config."`
+	Properties    []string `name:"P" usage:"a command-line property in the form <key>=<value>.  Command-line properties override instance and global properties"`
+	cliProperties map[string]string
 	PropertyOptions
 }
 
@@ -32,43 +32,19 @@ func (t *ConfigOptions) ConfigureProject(client ConfigContext) {
 }
 
 func (t *ConfigOptions) Configured() error {
-	return t.PropertyOptions.Configured()
-}
-
-func (t *ConfigOptions) initProperties() error {
-	if t.properties != nil {
-		return nil
-	}
-	t.properties = make(map[string]string)
+	t.cliProperties = make(map[string]string)
 	for _, property := range t.Properties {
 		i := strings.Index(property, "=")
 		if i < 0 {
-			return errors.New("missing value from property: " + property)
+			return fmt.Errorf("missing value from property: %s", property)
 		}
-		t.properties[property[0:i]] = property[i+1:]
+		t.cliProperties[property[0:i]] = property[i+1:]
 	}
-	return nil
-}
-
-func (t *ConfigOptions) UpdateConfig(config *cfg.Config) {
-	if t.Project != "" {
-		config.Project = t.Project
-	}
-	for key, value := range t.properties {
-		if config.Properties == nil {
-			config.Properties = make(map[string]string)
-		}
-		config.Properties[key] = value
-	}
+	return t.PropertyOptions.Configured()
 }
 
 func (t *ConfigOptions) ReadConfig(file string) (*cfg.Config, error) {
-	err := t.initProperties()
-	if err != nil {
-		return nil, err
-	}
-	var config *cfg.Config
-	config, err = cfg.ReadConfig(file)
+	config, err := cfg.ReadConfig(file)
 	if err != nil {
 		return nil, err
 	}
@@ -76,7 +52,6 @@ func (t *ConfigOptions) ReadConfig(file string) (*cfg.Config, error) {
 	if !config.Verify() {
 		return nil, errors.New("invalid config")
 	}
-	t.UpdateConfig(config)
 	return config, nil
 }
 
@@ -97,7 +72,7 @@ func (t *ConfigOptions) instance2(file string, includeSource bool) (*Instance, e
 	if err != nil {
 		return nil, err
 	}
-	return newInstance(t.GlobalProperties, config, name, includeSource)
+	return newInstance(t.cliProperties, t.GlobalProperties, config, name, includeSource)
 }
 
 func (t *ConfigOptions) Instance(file string) (*Instance, error) {

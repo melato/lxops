@@ -13,14 +13,15 @@ import (
 )
 
 type Instance struct {
-	GlobalProperties map[string]string
+	globalProperties map[string]string
 	Config           *cfg.Config
+	cliProperties    map[string]string
 	Name             string
 	container        string
 	profile          string
 	containerSource  *ContainerSource
 	deviceSource     *DeviceSource
-	Properties       *util.PatternProperties
+	Properties       cfg.PatternSubstitution
 	fspaths          map[string]*InstanceFS
 	sourceConfig     *cfg.Config
 }
@@ -36,15 +37,11 @@ func (t *Instance) substitute(e *error, pattern cfg.Pattern, defaultPattern cfg.
 	return value
 }
 
-func (instance *Instance) newProperties() *util.PatternProperties {
-	config := instance.Config
+func (instance *Instance) createBuiltins() map[string]string {
+	properties := make(map[string]string)
 	name := instance.Name
-	properties := &util.PatternProperties{Properties: config.Properties}
-	for key, value := range instance.GlobalProperties {
-		properties.SetConstant(key, value)
-	}
-	properties.SetConstant("instance", name)
-	project := config.Project
+	properties["instance"] = name
+	project := instance.Config.Project
 	var projectSlash, project_instance string
 	if project == "" || project == "default" {
 		project = "default"
@@ -54,14 +51,42 @@ func (instance *Instance) newProperties() *util.PatternProperties {
 		projectSlash = project + "/"
 		project_instance = project + "_" + name
 	}
-	properties.SetConstant("project", project)
-	properties.SetConstant("project/", projectSlash)
-	properties.SetConstant("project_instance", project_instance)
+	properties["project"] = project
+	properties["project/"] = projectSlash
+	properties["project_instance"] = project_instance
 	return properties
 }
 
-func newInstance(globalProperties map[string]string, config *cfg.Config, name string, includeSource bool) (*Instance, error) {
-	t := &Instance{GlobalProperties: globalProperties, Config: config, Name: name}
+func mergeProperties(a, b map[string]string) {
+	for k, v := range b {
+		a[k] = v
+	}
+}
+
+func (instance *Instance) EffectiveProperties() map[string]string {
+	properties := make(map[string]string)
+	mergeProperties(properties, instance.globalProperties)
+	mergeProperties(properties, instance.Config.Properties)
+	mergeProperties(properties, instance.cliProperties)
+	return properties
+}
+
+func (instance *Instance) newProperties() cfg.PatternSubstitution {
+	cascade := &util.CascadingProperties{}
+	cascade.AddMap(instance.createBuiltins())
+	cascade.AddMap(instance.cliProperties)
+	cascade.AddMap(instance.Config.Properties)
+	cascade.AddMap(instance.globalProperties)
+
+	return cascade
+}
+
+func newInstance(cliProperties, globalProperties map[string]string, config *cfg.Config, name string, includeSource bool) (*Instance, error) {
+	t := &Instance{
+		globalProperties: globalProperties,
+		cliProperties:    cliProperties,
+		Config:           config,
+		Name:             name}
 	t.Properties = t.newProperties()
 	var err error
 	t.container = t.substitute(&err, config.Container, "(instance)")
@@ -85,12 +110,12 @@ func newInstance(globalProperties map[string]string, config *cfg.Config, name st
 	return t, nil
 }
 
-func NewInstance(globalProperties map[string]string, config *cfg.Config, name string) (*Instance, error) {
-	return newInstance(globalProperties, config, name, true)
+func NewInstance(cliProperties, globalProperties map[string]string, config *cfg.Config, name string) (*Instance, error) {
+	return newInstance(cliProperties, globalProperties, config, name, true)
 }
 
 func (t *Instance) NewInstance(name string) (*Instance, error) {
-	return NewInstance(t.GlobalProperties, t.Config, name)
+	return NewInstance(nil, t.globalProperties, t.Config, name)
 }
 
 func (t *Instance) ContainerSource() *ContainerSource {
