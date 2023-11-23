@@ -2,15 +2,17 @@ package util
 
 import (
 	"fmt"
-
-	"melato.org/lxops/template"
+	"regexp"
 )
 
 /*
-* Uses template.Paren and a list of map[string]string to implement pattern substitution on strings,
+* Uses Paren and a list of map[string]string to implement pattern substitution on strings,
 Replaces parenthesized expressions as follows:
-(key) ->
+(key) -> with the first value it finds in one of the maps, searching them in order.
 */
+
+var reParen = regexp.MustCompile(`\([^()]*\)`)
+
 type CascadingProperties struct {
 	Maps []map[string]string
 }
@@ -22,23 +24,37 @@ func (t *CascadingProperties) AddMap(m map[string]string) {
 	t.Maps = append(t.Maps, m)
 }
 
-func (t *CascadingProperties) Get(key string) (string, error) {
+type substitution struct {
+	Error error
+	Maps  []map[string]string
+}
+
+func (t *substitution) Get(key string) string {
 	for _, properties := range t.Maps {
 		value, found := properties[key]
 		if found {
-			return value, nil
+			return value
 		}
 	}
-	return "", fmt.Errorf("no such key: %s", key)
+	if t.Error != nil {
+		t.Error = fmt.Errorf("no such key: %s", key)
+	}
+	return ""
+}
+
+func (t *substitution) Replace(key string) string {
+	key = key[0 : len(key)-1]
+	return t.Get(key)
 }
 
 func (t *CascadingProperties) Substitute(pattern string) (string, error) {
 	if pattern == "" {
 		return "", nil
 	}
-	tpl, err := template.Paren.NewTemplate(pattern)
-	if err != nil {
-		return "", err
+	var sub substitution
+	value := reParen.ReplaceAllStringFunc(pattern, sub.Replace)
+	if sub.Error != nil {
+		return "", sub.Error
 	}
-	return tpl.Applyf(t.Get)
+	return value, nil
 }
