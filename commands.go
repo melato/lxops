@@ -13,17 +13,17 @@ import (
 )
 
 //go:embed commands.yaml.tpl
-var usageTemplate []byte
+var usageTemplate string
 
 func usageForServerType(serverType string) ([]byte, error) {
-	tpl, err := template.New("").Parse(string(usageTemplate))
+	tpl, err := template.New("").Parse(usageTemplate)
 	if err != nil {
-		return usageTemplate, nil
+		return nil, nil
 	}
 	var buf bytes.Buffer
 	err = tpl.Execute(&buf, map[string]string{"ServerType": serverType})
 	if err != nil {
-		return usageTemplate, nil
+		return nil, nil
 	}
 	return buf.Bytes(), nil
 }
@@ -32,6 +32,7 @@ func RootCommand(client srv.Client) *command.SimpleCommand {
 	usageData, err := usageForServerType(client.ServerType())
 	if err != nil {
 		fmt.Printf("%v\n", err)
+		usageData = []byte(usageTemplate)
 	}
 	var cmd command.SimpleCommand
 	cmd.Flags(client)
