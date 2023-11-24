@@ -6,14 +6,15 @@ import (
 
 func TestCascadingProperties(t *testing.T) {
 	var properties CascadingProperties
+	//properties.AddMap(nil)
 	properties.AddMap(map[string]string{
 		"a": "A",
 	})
 	s, err := properties.Substitute("a(a)b(a)c")
 	if err != nil {
-		t.Fail()
+		t.Fatalf("substitution error: %v", err)
 	}
 	if s != "aAbAc" {
-		t.Fail()
+		t.Fatalf("wrong value: %s", s)
 	}
 }

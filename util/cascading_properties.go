@@ -43,7 +43,7 @@ func (t *substitution) Get(key string) string {
 }
 
 func (t *substitution) Replace(key string) string {
-	key = key[0 : len(key)-1]
+	key = key[1 : len(key)-1]
 	return t.Get(key)
 }
 
@@ -52,6 +52,7 @@ func (t *CascadingProperties) Substitute(pattern string) (string, error) {
 		return "", nil
 	}
 	var sub substitution
+	sub.Maps = t.Maps
 	value := reParen.ReplaceAllStringFunc(pattern, sub.Replace)
 	if sub.Error != nil {
 		return "", sub.Error
