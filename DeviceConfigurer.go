@@ -3,7 +3,6 @@ package lxops
 import (
 	"errors"
 	"fmt"
-	"os"
 
 	"melato.org/lxops/cfg"
 	"melato.org/lxops/srv"
@@ -145,15 +144,17 @@ func (t *DeviceConfigurer) ConfigureDevices(instance *Instance) error {
 
 	script := t.NewScript()
 	devices := SortDevices(t.Config.Devices)
-	for _, d := range devices {
+	for key, d := range devices {
+		if d.Device.Filesystem == "" {
+			continue
+		}
 		dir, err := instance.DeviceDir(d.Name, d.Device)
 		if err != nil {
 			return err
 		}
 		fs, found := filesystems[d.Device.Filesystem]
 		if !found {
-			fmt.Fprintf(os.Stderr, "missing filesystem: %s\n", d.Device.Filesystem)
-			continue
+			return fmt.Errorf("missing filesystem: %s device: \n", d.Device.Filesystem, key)
 		}
 		if !fs.IsNew && util.DirExists(dir) {
 			continue

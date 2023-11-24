@@ -1,6 +1,7 @@
 package lxops
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -185,6 +186,9 @@ func (t *Instance) DeviceDir(deviceId string, device *cfg.Device) (string, error
 	}
 	if strings.HasPrefix(dir, "/") {
 		return dir, nil
+	}
+	if device.Filesystem == "" {
+		return "", fmt.Errorf("device %s has no filesystem but relative dir: %s", deviceId, dir)
 	}
 	if dir == "" {
 		dir = deviceId

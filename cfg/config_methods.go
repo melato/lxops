@@ -17,11 +17,24 @@ func (t *Config) VerifyFileExists(file HostPath) bool {
 	return true
 }
 
+func (config *Config) verifyFilesystems() bool {
+	f, emptyKey := config.Filesystems[""]
+	if emptyKey {
+		fmt.Fprintf(os.Stderr, "empty filesystem key.  pattern=%s\n", f.Pattern)
+		return false
+	}
+	return true
+}
+
 func (config *Config) verifyDevices() bool {
 	valid := true
 	devicePaths := make(map[string]bool)
-	for _, d := range config.Devices {
-		if config.Filesystems[d.Filesystem] == nil {
+	for key, d := range config.Devices {
+		if key == "" {
+			valid = false
+			fmt.Fprintf(os.Stderr, "empty device key.  path=%s\n", d.Path)
+		}
+		if d.Filesystem != "" && config.Filesystems[d.Filesystem] == nil {
 			valid = false
 			fmt.Fprintf(os.Stderr, "unknown filesystem id: %s\n", d.Filesystem)
 		}
@@ -42,6 +55,9 @@ func (config *Config) Verify() bool {
 		}
 	}
 	if !config.VerifyFileExists(config.SourceConfig) {
+		valid = false
+	}
+	if !config.verifyFilesystems() {
 		valid = false
 	}
 	if !config.verifyDevices() {
