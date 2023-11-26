@@ -98,7 +98,6 @@ func RootCommand(client srv.Client) *command.SimpleCommand {
 	containerCmd.Command("wait").RunFunc(containerOps.Wait)
 	containerCmd.Command("devices").RunFunc(containerOps.Devices)
 	containerCmd.Command("hwaddr").RunFunc(containerOps.ListHwaddr)
-	containerCmd.Command("images").RunFunc(containerOps.ListImages)
 	containerCmd.Command("publish").RunFunc(containerOps.PublishInstance)
 
 	cloudconfigOps := &cli.CloudconfigOps{InstanceOps: containerOps}
