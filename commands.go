@@ -45,6 +45,9 @@ func RootCommand(client srv.Client) *command.SimpleCommand {
 	cmd.Command("create-devices").Flags(launcher).RunFunc(launcher.InstanceFunc(launcher.CreateDevices, true))
 	cmd.Command("create-profile").Flags(launcher).RunFunc(launcher.InstanceFunc(launcher.CreateProfile, false))
 
+	var info cli.InfoOps
+	cmd.Command("ostypes").RunFunc(info.ListOSTypes)
+
 	snapshot := &Snapshot{Client: client}
 	cmd.Command("snapshot").Flags(snapshot).RunFunc(snapshot.InstanceFunc(snapshot.Run, false))
 

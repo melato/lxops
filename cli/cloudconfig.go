@@ -15,9 +15,6 @@ type CloudconfigOps struct {
 }
 
 func (t *CloudconfigOps) Apply(configFiles ...string) error {
-	if t.Instance == "" {
-		return fmt.Errorf("missing instance")
-	}
 	var ostype cloudconfig.OSType
 	var err error
 	if t.OSType != "" {
@@ -25,6 +22,9 @@ func (t *CloudconfigOps) Apply(configFiles ...string) error {
 		if err != nil {
 			return err
 		}
+	}
+	if t.Instance == "" {
+		return fmt.Errorf("missing instance")
 	}
 	base, err := t.InstanceOps.server.NewConfigurer(t.Instance)
 	if err != nil {
@@ -34,7 +34,7 @@ func (t *CloudconfigOps) Apply(configFiles ...string) error {
 	configurer := cloudconfig.NewConfigurer(base)
 	configurer.OS = ostype
 	configurer.Log = os.Stdout
-	if len(configFiles) == 1 && configFiles[0] == "-" {
+	if len(configFiles) == 0 {
 		return configurer.ApplyStdin()
 	} else {
 		return configurer.ApplyConfigFiles(configFiles...)
