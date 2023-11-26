@@ -182,17 +182,21 @@ type Filesystem struct {
 
 // A Device is an LXD disk device that is attached to the instance profile, which in turn is attached to a container
 type Device struct {
-	// Path is the device "path" in the LXD disk device
+	// path is the device "path" in the LXD disk device
 	Path string
 
-	// Filesystem is the Filesystem Id that this device belongs to
+	// filesystem is the Filesystem Id that this device belongs to
+	// If it is empty, dir should be an absolute path on the host
 	Filesystem string `yaml:"filesystem"`
 
-	// Dir is the subdirectory of the Device, relative to its Filesystem
+	// dir is the subdirectory of the Device, relative to its Filesystem
 	// If empty, it default to the device Name
-	// If Dir == ".", the device source is the same as the Filesystem directory
+	// If dir == ".", the device source is the same as the Filesystem directory
 	// Rarely used:
-	// Dir goes through pattern substitution, using parenthesized tokens, for example (instance)
-	// Dir may be absolute, but this is no longer necessary now that filesystems are specified, since one can define the "/" filesystem.
+	// dir goes through pattern substitution, using parenthesized tokens, for example (instance)
+	// dir may be absolute, but this is no longer necessary now that filesystems are specified, since one can define the "/" filesystem.
 	Dir Pattern `yaml:"dir,omitempty"`
+
+	// readonly - make the device readonly
+	Readonly bool `yaml:"readonly,omitempty"`
 }

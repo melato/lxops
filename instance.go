@@ -272,8 +272,10 @@ func (t *Instance) NewDeviceMap() (map[string]*srv.Device, error) {
 			return nil, err
 		}
 		devices[deviceName] = &srv.Device{
-			Path:   device.Path,
-			Source: dir}
+			Path:     device.Path,
+			Source:   dir,
+			Readonly: device.Readonly,
+		}
 	}
 	return devices, nil
 }

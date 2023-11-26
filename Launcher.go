@@ -89,9 +89,9 @@ func (t *Launcher) NewConfigurer() *Configurer {
 
 func (t *Launcher) lxcLaunch(instance *Instance, server srv.InstanceServer, options *launch_options) error {
 	config := instance.Config
-	osType := cfg.OSType(config.Ostype)
-	if osType == nil {
-		return errors.New("unsupported OS type: " + config.Ostype)
+	_, err := cfg.OSType(config.Ostype)
+	if err != nil {
+		return err
 	}
 	var launch srv.Launch
 	launch.Name = instance.Container()

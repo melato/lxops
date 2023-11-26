@@ -12,10 +12,11 @@ func init() {
 	OSTypes = make(map[string]cloudconfig.OSType)
 }
 
-func OSType(ostype string) cloudconfig.OSType {
-	os, exists := OSTypes[ostype]
+func OSType(name string) (cloudconfig.OSType, error) {
+	ostype, exists := OSTypes[name]
 	if !exists {
-		fmt.Println("Unknown OS type: " + ostype)
+		return nil, fmt.Errorf("unsupported OS type: %s", name)
+
 	}
-	return os
+	return ostype, nil
 }

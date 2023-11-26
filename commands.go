@@ -101,6 +101,9 @@ func RootCommand(client srv.Client) *command.SimpleCommand {
 	containerCmd.Command("images").RunFunc(containerOps.ListImages)
 	containerCmd.Command("publish").RunFunc(containerOps.PublishInstance)
 
+	cloudconfigOps := &cli.CloudconfigOps{InstanceOps: containerOps}
+	containerCmd.Command("cloudconfig").Flags(cloudconfigOps).RunFunc(cloudconfigOps.Apply)
+
 	imageCmd := cmd.Command("image")
 	imageCmd.Command("instances").Flags(containerOps).RunFunc(containerOps.ListImages)
 
