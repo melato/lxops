@@ -11,8 +11,8 @@ import (
 type Configurer struct {
 	Client srv.Client `name:"-"`
 	ConfigOptions
-	Trace  bool `name:"trace,t" usage:"print exec arguments"`
-	DryRun bool `name:"dry-run" usage:"show the commands to run, but do not change anything"`
+	Trace bool `name:"trace,t" usage:"print exec arguments"`
+	DryRunFlag
 }
 
 func (t *Configurer) Init() error {

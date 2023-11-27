@@ -13,7 +13,7 @@ type ProfileConfigurer struct {
 	ConfigOptions
 	Config bool `name:"config" usage:"use config profiles"`
 	Trace  bool
-	DryRun bool `name:"dry-run" usage:"show the commands to run, but do not change anything"`
+	DryRunFlag
 }
 
 func (t *ProfileConfigurer) Init() error {

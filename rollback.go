@@ -9,9 +9,9 @@ import (
 type Rollback struct {
 	Client ConfigContext `name:"-"`
 	ConfigOptions
-	DryRun    bool   `name:"dry-run" usage:"show the commands to run, but do not change anything"`
 	Snapshot  string `name:"s" usage:"short snapshot name"`
 	Container bool   `name:"c" usage:"also restore container snapshot"`
+	DryRunFlag
 }
 
 func (t *Rollback) Init() error {

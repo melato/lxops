@@ -11,8 +11,8 @@ import (
 type InstanceOps struct {
 	Client ConfigContext `name:"-"`
 	ConfigOptions
-	Trace  bool
-	DryRun bool `name:"dry-run" usage:"show the commands to run, but do not change anything"`
+	Trace bool
+	DryRunFlag
 }
 
 func (t *InstanceOps) Init() error {

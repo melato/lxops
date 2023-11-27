@@ -12,6 +12,7 @@ type InstanceServer interface {
 
 	// instances
 	LaunchInstance(launch *Launch) error
+	RebuildInstance(image, instance string) error
 	CopyInstance(cp *Copy) error
 	RenameInstance(oldname, newname string) error
 	NewConfigurer(instance string) (InstanceConfigurer, error)

@@ -18,8 +18,8 @@ type Migrate struct {
 	FromContainer string `name:"from-container" usage:"source instance"`
 	Container     string `name:"container" usage:"destination instance"`
 	Snapshot      string `name:"s" usage:"snapshot name"`
-	DryRun        bool   `name:"dry-run" usage:"show the commands to run, but do not change anything"`
-	makeSnapshot  bool
+	DryRunFlag
+	makeSnapshot bool
 }
 
 func (t *Migrate) Init() error {

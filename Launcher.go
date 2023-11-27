@@ -21,7 +21,7 @@ type Launcher struct {
 	SkipNetwork  bool `name:"skip.ip" usage:"Do not try to preserve network ip addresses."`
 	WaitInterval int  `name:"wait" usage:"# seconds to wait before snapshot"`
 	Trace        bool `name:"t" usage:"trace print what is happening"`
-	DryRun       bool `name:"dry-run" usage:"show the commands to run, but do not change anything"`
+	DryRunFlag
 }
 
 func (t *Launcher) Init() error {
@@ -71,19 +71,45 @@ func (t *Launcher) getRebuildOptions(instance *Instance) (*rebuildOptions, error
 
 func (t *Launcher) Rebuild(instance *Instance) error {
 	t.Trace = true
-	options, err := t.getRebuildOptions(instance)
+	config := instance.Config
+	source := instance.ContainerSource()
+	if source.IsDefined() {
+		return fmt.Errorf("cannot rebuild from origin")
+	}
+	image, err := config.Image.Substitute(instance.Properties)
 	if err != nil {
 		return err
 	}
-	err = t.deleteContainer(instance, true)
+	if image == "" {
+		return fmt.Errorf("cannot rebuild without image")
+	}
+	server, err := t.Client.ProjectInstanceServer(config.Project)
 	if err != nil {
 		return err
 	}
-	return t.launchContainer(instance, options)
+	err = server.RebuildInstance(image, instance.Name)
+	if err != nil {
+		return err
+	}
+	configurer := t.NewConfigurer()
+	return configurer.ConfigureContainer(instance)
+
+	/*
+		options, err := t.getRebuildOptions(instance)
+		if err != nil {
+			return err
+		}
+		err = t.deleteContainer(instance, true)
+		if err != nil {
+			return err
+		}
+		return t.launchContainer(instance, options)
+	*/
+
 }
 
 func (t *Launcher) NewConfigurer() *Configurer {
-	var c = &Configurer{Client: t.Client, Trace: t.Trace, DryRun: t.DryRun}
+	var c = &Configurer{Client: t.Client, Trace: t.Trace, DryRunFlag: t.DryRunFlag}
 	return c
 }
 
