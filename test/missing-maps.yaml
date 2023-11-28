@@ -1,0 +1,7 @@
+#lxops-v1
+ostype: alpine
+image: (base-template)
+filesystems:
+  empty:
+devices:
+  empty:

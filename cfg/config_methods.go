@@ -18,6 +18,12 @@ func (t *Config) VerifyFileExists(file HostPath) bool {
 }
 
 func (config *Config) verifyFilesystems() bool {
+	for key, f := range config.Filesystems {
+		if f == nil {
+			fmt.Fprintf(os.Stderr, "missing filesystem, key=%s\n", key)
+			return false
+		}
+	}
 	f, emptyKey := config.Filesystems[""]
 	if emptyKey {
 		fmt.Fprintf(os.Stderr, "empty filesystem key.  pattern=%s\n", f.Pattern)
@@ -30,6 +36,10 @@ func (config *Config) verifyDevices() bool {
 	valid := true
 	devicePaths := make(map[string]bool)
 	for key, d := range config.Devices {
+		if d == nil {
+			fmt.Fprintf(os.Stderr, "missing device, key=%s\n", key)
+			return false
+		}
 		if key == "" {
 			valid = false
 			fmt.Fprintf(os.Stderr, "empty device key.  path=%s\n", d.Path)

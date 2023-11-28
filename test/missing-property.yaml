@@ -1,0 +1,5 @@
+#lxops-v1
+ostype: alpine
+image: (bad-template)
+profiles:
+- default
