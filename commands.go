@@ -8,7 +8,6 @@ import (
 
 	"melato.org/command"
 	"melato.org/command/usage"
-	"melato.org/lxops/cfg"
 	"melato.org/lxops/cli"
 	"melato.org/lxops/srv"
 )
@@ -30,7 +29,6 @@ func usageForServerType(serverType string) ([]byte, error) {
 }
 
 func RootCommand(client srv.Client) *command.SimpleCommand {
-	cfg.Trace = true
 	usageData, err := usageForServerType(client.ServerType())
 	if err != nil {
 		fmt.Printf("%v\n", err)
