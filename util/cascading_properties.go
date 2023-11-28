@@ -36,7 +36,7 @@ func (t *substitution) Get(key string) string {
 			return value
 		}
 	}
-	if t.Error != nil {
+	if t.Error == nil {
 		t.Error = fmt.Errorf("no such key: %s", key)
 	}
 	return ""

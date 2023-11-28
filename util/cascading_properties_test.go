@@ -17,4 +17,8 @@ func TestCascadingProperties(t *testing.T) {
 	if s != "aAbAc" {
 		t.Fatalf("wrong value: %s", s)
 	}
+	_, err = properties.Substitute("(x)")
+	if err == nil {
+		t.Fatalf("should have failed")
+	}
 }
