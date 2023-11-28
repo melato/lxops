@@ -11,10 +11,15 @@ import (
 
 type ProfileOps struct {
 	Client srv.Client `name:"-"`
-	Dir    string     `name:"d" usage:"export directory"`
 }
 
-func (t *ProfileOps) ExportProfile(server srv.InstanceServer, name string) error {
+type ProfileExportOps struct {
+	Client srv.Client `name:"-"`
+	Dir    string     `name:"d" usage:"export directory"`
+	All    bool       `name:"all" usage:"export all profiles"`
+}
+
+func (t *ProfileExportOps) ExportProfile(server srv.InstanceServer, name string) error {
 	data, err := server.ExportProfile(name)
 	if err != nil {
 		return err
@@ -24,10 +29,19 @@ func (t *ProfileOps) ExportProfile(server srv.InstanceServer, name string) error
 	return os.WriteFile(file, []byte(data), 0644)
 }
 
-func (t *ProfileOps) Export(profiles ...string) error {
+func (t *ProfileExportOps) Export(profiles ...string) error {
+	if t.All && len(profiles) > 0 {
+		return fmt.Errorf("-all should be used without arguments")
+	}
 	server, err := t.Client.CurrentInstanceServer()
 	if err != nil {
 		return err
+	}
+	if t.All {
+		profiles, err = server.GetProfileNames()
+		if err != nil {
+			return err
+		}
 	}
 	for _, profile := range profiles {
 		err = t.ExportProfile(server, profile)

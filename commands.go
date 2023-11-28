@@ -8,6 +8,7 @@ import (
 
 	"melato.org/command"
 	"melato.org/command/usage"
+	"melato.org/lxops/cfg"
 	"melato.org/lxops/cli"
 	"melato.org/lxops/srv"
 )
@@ -29,6 +30,7 @@ func usageForServerType(serverType string) ([]byte, error) {
 }
 
 func RootCommand(client srv.Client) *command.SimpleCommand {
+	cfg.Trace = true
 	usageData, err := usageForServerType(client.ServerType())
 	if err != nil {
 		fmt.Printf("%v\n", err)
@@ -73,9 +75,10 @@ func RootCommand(client srv.Client) *command.SimpleCommand {
 	profile.Command("apply").Flags(profileConfigurer).RunFunc(profileConfigurer.InstanceFunc(profileConfigurer.Apply, false))
 	profile.Command("reorder").Flags(profileConfigurer).RunFunc(profileConfigurer.InstanceFunc(profileConfigurer.Reorder, false))
 	profileOps := &cli.ProfileOps{Client: client}
-	profile.Command("export").Flags(profileOps).RunFunc(profileOps.Export)
 	profile.Command("import").Flags(profileOps).RunFunc(profileOps.Import)
 	profile.Command("exists").RunFunc(profileOps.ProfileExists)
+	profileExportOps := &cli.ProfileExportOps{Client: client}
+	profile.Command("export").Flags(profileExportOps).RunFunc(profileExportOps.Export)
 
 	propertyOps := &PropertyOptions{}
 	propertyCmd := cmd.Command("property").Flags(propertyOps)
