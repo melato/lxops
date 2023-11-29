@@ -4,6 +4,7 @@ import (
 	"bytes"
 	_ "embed"
 	"fmt"
+	"os"
 	"text/template"
 
 	"melato.org/command"
@@ -16,14 +17,29 @@ import (
 var usageTemplate string
 
 func usageForServerType(serverType string) ([]byte, error) {
-	tpl, err := template.New("").Parse(usageTemplate)
+	data := usageTemplate
+	envVar := "USAGE"
+	if envVar != "" {
+		file, ok := os.LookupEnv(envVar)
+		if ok {
+			if _, err := os.Stat(file); err == nil {
+				fileContent, err := os.ReadFile(file)
+				if err == nil {
+					data = string(fileContent)
+				} else {
+					return nil, fmt.Errorf("%s: %v\n", file, err)
+				}
+			}
+		}
+	}
+	tpl, err := template.New("").Parse(data)
 	if err != nil {
-		return nil, nil
+		return nil, err
 	}
 	var buf bytes.Buffer
 	err = tpl.Execute(&buf, map[string]string{"ServerType": serverType})
 	if err != nil {
-		return nil, nil
+		return nil, err
 	}
 	return buf.Bytes(), nil
 }
@@ -32,7 +48,6 @@ func RootCommand(client srv.Client) *command.SimpleCommand {
 	usageData, err := usageForServerType(client.ServerType())
 	if err != nil {
 		fmt.Printf("%v\n", err)
-		usageData = []byte(usageTemplate)
 	}
 	var cmd command.SimpleCommand
 	cmd.Flags(client)
@@ -104,8 +119,12 @@ func RootCommand(client srv.Client) *command.SimpleCommand {
 	containerCmd.Command("hwaddr").RunFunc(containerOps.ListHwaddr)
 	containerCmd.Command("publish").RunFunc(containerOps.PublishInstance)
 
-	cloudconfigOps := &cli.CloudconfigOps{InstanceOps: containerOps}
-	containerCmd.Command("cloudconfig").Flags(cloudconfigOps).RunFunc(cloudconfigOps.Apply)
+	cloudconfig := &cli.Cloudconfig{Client: client}
+	cloudconfigInstanceOps := &cli.CloudconfigInstanceOps{Cloudconfig: cloudconfig}
+	containerCmd.Command("cloudconfig").Flags(cloudconfigInstanceOps).RunFunc(cloudconfigInstanceOps.Apply)
+
+	cloudconfigFileOps := &cli.CloudconfigFileOps{Cloudconfig: cloudconfig}
+	cmd.Command("cloudconfig").Flags(cloudconfigFileOps).RunFunc(cloudconfigFileOps.Apply)
 
 	imageCmd := cmd.Command("image")
 	imageCmd.Command("instances").Flags(containerOps).RunFunc(containerOps.ListImages)

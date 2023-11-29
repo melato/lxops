@@ -38,21 +38,37 @@ commands:
           print a table of all intances with columns:
           - image aliases
           - instance name
+  cloudconfig:
+    short: applies one cloud-config file to instances
+    use: "[instance]..."
+    examples:
+    - -ostype alpine -f myconfig.cfg mycontainer
+    - -ostype alpine mycontainer < myconfig.cfg
+    long: |
+      Uses the {{.ServerType}} API to apply the config to {{.ServerType}} instances.
+      See also the "instance cloudconfig" command.
+      The following cloud-init modules (sections) are supported and applied in this order:
+        - packages
+        - write_files (defer: false)
+        - users
+        - runcmd
+        - write_files (defer: true)
+      See github.com/melato/cloudconfig
   instance:
     short: {{.ServerType}} instance utilities
     commands:
       addresses:
         short: export network addresses for all containers
       cloudconfig:
-        short: applies cloud-config files to images
+        short: applies cloud-config files to an instance
         use: "[cloud-config-file]..."
         examples:
         - -i mycontainer -ostype alpine myconfig.cfg
         - -i mycontainer -ostype alpine < myconfig.cfg
         long: |
-          If a single file named "-" is provided, read from stdin.
-          configures {{.ServerType}} instances by applying cloud-init config files,
+          configures one {{.ServerType}} instance by applying cloud-init config files,
           using the {{.ServerType}} API.
+          See also the "cloudconfig" command.
           The following cloud-init modules (sections) are supported and applied in this order:
             - packages
             - write_files (defer: false)

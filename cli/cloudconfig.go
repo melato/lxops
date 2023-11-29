@@ -1,42 +1,46 @@
 package cli
 
 import (
-	"fmt"
 	"os"
 
 	"melato.org/cloudconfig"
 	"melato.org/lxops/cfg"
+	"melato.org/lxops/srv"
 )
 
-type CloudconfigOps struct {
-	InstanceOps *InstanceOps `name:"-"`
-	Instance    string       `name:"i" usage:"LXD instance to configure"`
-	OSType      string       `name:"ostype" usage:"OS type"`
+// CloudconfigOps - cloudconfig operations
+type Cloudconfig struct {
+	Client srv.Client `name:"-"`
+	OSType string     `name:"ostype" usage:"OS type"`
+	ostype cloudconfig.OSType
+	server srv.InstanceServer `name:"-"`
 }
 
-func (t *CloudconfigOps) Apply(configFiles ...string) error {
-	var ostype cloudconfig.OSType
+func (t *Cloudconfig) Configured() error {
 	var err error
 	if t.OSType != "" {
-		ostype, err = cfg.OSType(t.OSType)
+		t.ostype, err = cfg.OSType(t.OSType)
 		if err != nil {
 			return err
 		}
 	}
-	if t.Instance == "" {
-		return fmt.Errorf("missing instance")
-	}
-	base, err := t.InstanceOps.server.NewConfigurer(t.Instance)
+
+	server, err := t.Client.CurrentInstanceServer()
 	if err != nil {
 		return err
 	}
+	t.server = server
+	return nil
+}
+
+func (t *Cloudconfig) NewConfigurer(instance string) (*cloudconfig.Configurer, error) {
+	base, err := t.server.NewConfigurer(instance)
+	if err != nil {
+		return nil, err
+	}
 	base.SetLogWriter(os.Stdout)
 	configurer := cloudconfig.NewConfigurer(base)
-	configurer.OS = ostype
+	configurer.OS = t.ostype
 	configurer.Log = os.Stdout
-	if len(configFiles) == 0 {
-		return configurer.ApplyStdin()
-	} else {
-		return configurer.ApplyConfigFiles(configFiles...)
-	}
+	return configurer, nil
 }
