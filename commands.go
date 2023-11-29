@@ -123,8 +123,8 @@ func RootCommand(client srv.Client) *command.SimpleCommand {
 	cloudconfigInstanceOps := &cli.CloudconfigInstanceOps{Cloudconfig: cloudconfig}
 	containerCmd.Command("cloudconfig").Flags(cloudconfigInstanceOps).RunFunc(cloudconfigInstanceOps.Apply)
 
-	cloudconfigFileOps := &cli.CloudconfigFileOps{Cloudconfig: cloudconfig}
-	cmd.Command("cloudconfig").Flags(cloudconfigFileOps).RunFunc(cloudconfigFileOps.Apply)
+	cloudconfigOps := &cli.CloudconfigOps{Cloudconfig: cloudconfig}
+	cmd.Command("cloudconfig").Flags(cloudconfigOps).RunFunc(cloudconfigOps.Apply)
 
 	imageCmd := cmd.Command("image")
 	imageCmd.Command("instances").Flags(containerOps).RunFunc(containerOps.ListImages)

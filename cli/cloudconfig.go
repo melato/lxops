@@ -8,7 +8,7 @@ import (
 	"melato.org/lxops/srv"
 )
 
-// CloudconfigOps - cloudconfig operations
+// Cloudconfig - cloudconfig operations
 type Cloudconfig struct {
 	Client srv.Client `name:"-"`
 	OSType string     `name:"ostype" usage:"OS type"`

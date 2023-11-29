@@ -60,15 +60,19 @@ commands:
       addresses:
         short: export network addresses for all containers
       cloudconfig:
-        short: applies cloud-config files to an instance
+        short: applies cloud-config files to instances
         use: "[cloud-config-file]..."
         examples:
-        - -i mycontainer -ostype alpine myconfig.cfg
-        - -i mycontainer -ostype alpine < myconfig.cfg
+        - -ostype alpine -i mycontainer -f config.cfg
+        - -ostype alpine -i mycontainer < config.cfg
+        - -ostype alpine -i mycontainer config.cfg...
+        - -ostype alpine -f config.cfg instance...
         long: |
-          configures one {{.ServerType}} instance by applying cloud-init config files,
+          configures {{.ServerType}} instances by applying cloud-init config to them,
           using the {{.ServerType}} API.
-          See also the "cloudconfig" command.
+          Can either apply one cloud-init file to multiple instances
+          or apply multiple cloud-init files to one instance.
+
           The following cloud-init modules (sections) are supported and applied in this order:
             - packages
             - write_files (defer: false)
