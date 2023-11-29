@@ -18,10 +18,10 @@ type HostPath string
 type Config struct {
 	// File is the file of the top config file, for reference
 	File string `yaml:"yaml:"-"`
-	// ConfigTop fields are not merged with included files
-	ConfigTop `yaml:",inline"`
 	// ConfigInherit fields are merged with all included files, depth first
 	ConfigInherit `yaml:",inline"`
+	// ConfigTop fields are not merged with included files
+	ConfigTop `yaml:",inline"`
 }
 
 type ConfigTop struct {
@@ -36,17 +36,18 @@ type ConfigTop struct {
 }
 
 type ConfigInherit struct {
-	// Properties provide key-value pairs used for pattern substitution.
-	// They override built-in properties
-	// Properties from all included files are merged before they are applied.  Properties cannot override non-empty properties,
-	// in order to avoid unexpected behavior that depends on the order of included files.
-	Properties map[string]string `yaml:"properties"`
-
 	// ostype - OS type for cloudconfig.  "alpine", "debian", etc.
 	Ostype string `yaml:"ostype"`
 
 	// image - the image name (with optional remote), used when launching a container.
 	Image Pattern `yaml:"image"`
+
+	// Profiles are the profiles of an instance.
+	// After an instance is created and configured, it is left with these profiles
+	// plus the lxdops profile.
+	// While the instance is being created and configured it has these profiles
+	// minus ProfilesRun plus ProfilesConfig
+	Profiles []string `yaml:"profiles"`
 
 	// Project is the LXD project where the container is
 	Project string `yaml:"project"`
@@ -65,10 +66,6 @@ type ConfigInherit struct {
 	// Extra options passed to lxc launch.
 	LxcOptions []string `yaml:"lxc-options,omitempty,flow"`
 
-	// Include is a list of other configs that are to be included.
-	// Include paths are either absolute or relative to the path of the including config.
-	Include []HostPath `yaml:"include,omitempty"`
-
 	// ProfilePattern specifies how the instance profile should be named.
 	// It defaults to "(instance).lxdops"
 	Profile Pattern `yaml:"profile-pattern"`
@@ -84,18 +81,21 @@ type ConfigInherit struct {
 	Devices map[string]*Device `yaml:"devices"`
 	// Profiles are attached to the container.  The instance profile should not be listed here.
 
-	// Profiles are the profiles of an instance.
-	// After an instance is created and configured, it is left with these profiles
-	// plus the lxdops profile.
-	// While the instance is being created and configured it has these profiles
-	// minus ProfilesRun plus ProfilesConfig
-	Profiles []string `yaml:"profiles"`
+	// Properties provide key-value pairs used for pattern substitution.
+	// They override built-in properties
+	// Properties from all included files are merged before they are applied.  Properties cannot override non-empty properties,
+	// in order to avoid unexpected behavior that depends on the order of included files.
+	Properties map[string]string `yaml:"properties"`
 
 	// ProfilesConfig are profiles that excluded from Profiles when running the instance.
 	ProfilesConfig []string `yaml:"profiles-config"`
 
 	// ProfilesRun are profiles that are excluded from Profiles when configuring the instance.
 	ProfilesRun []string `yaml:"profiles-run"`
+
+	// Include is a list of other configs that are to be included.
+	// Include paths are either absolute or relative to the path of the including config.
+	Include []HostPath `yaml:"include,omitempty"`
 
 	CloudConfigFiles []HostPath `yaml:"cloud-config-files"`
 }
