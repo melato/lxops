@@ -171,7 +171,7 @@ type Filesystem struct {
 	// Pattern is a pattern that is used to produce the directory or zfs filesystem
 	// If the pattern begins with '/', it is a directory
 	// If it does not begin with '/', it is a zfs filesystem name
-	Pattern Pattern
+	Pattern Pattern `yaml:"pattern"`
 	// Zfsproperties is a list of properties that are set when a zfs filesystem is created or cloned
 	Zfsproperties map[string]string `yaml:"zfsproperties,omitempty"`
 	// Destroy allows lxdops destroy the filesystem when requested.
@@ -183,7 +183,7 @@ type Filesystem struct {
 // A Device is an LXD disk device that is attached to the instance profile, which in turn is attached to a container
 type Device struct {
 	// path is the device "path" in the LXD disk device
-	Path string
+	Path string `yaml:"path"`
 
 	// filesystem is the Filesystem Id that this device belongs to
 	// If it is empty, dir should be an absolute path on the host

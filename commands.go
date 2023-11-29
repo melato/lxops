@@ -9,6 +9,7 @@ import (
 
 	"melato.org/command"
 	"melato.org/command/usage"
+	"melato.org/lxops/cfg"
 	"melato.org/lxops/cli"
 	"melato.org/lxops/srv"
 )
@@ -37,7 +38,10 @@ func usageForServerType(serverType string) ([]byte, error) {
 		return nil, err
 	}
 	var buf bytes.Buffer
-	err = tpl.Execute(&buf, map[string]string{"ServerType": serverType})
+	err = tpl.Execute(&buf, map[string]string{
+		"ServerType":    serverType,
+		"ConfigVersion": cfg.Comment,
+	})
 	if err != nil {
 		return nil, err
 	}
