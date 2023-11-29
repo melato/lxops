@@ -86,7 +86,7 @@ be copied to the current container during lxops launch, using rsync.
 
 ## lxops files
 An lxops file is a yaml configuration file that specifies how to launch an instance.
-You can find documentation for lxops files [here](config.md).
+Documentation for lxops files is provided by the "lxops help config".
 
 # commands
 Here are the basic commands for managing a container with lxops. 

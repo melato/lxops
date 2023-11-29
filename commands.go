@@ -19,7 +19,8 @@ var usageTemplate string
 
 func usageForServerType(serverType string) ([]byte, error) {
 	data := usageTemplate
-	envVar := "USAGE"
+	//envVar := "USAGE"
+	envVar := ""
 	if envVar != "" {
 		file, ok := os.LookupEnv(envVar)
 		if ok {
@@ -145,6 +146,8 @@ func RootCommand(client srv.Client) *command.SimpleCommand {
 
 	var migrate Migrate
 	cmd.Command("copy-filesystems").Flags(&migrate).RunFunc(migrate.CopyFilesystems)
+
+	cmd.AddCommand("help", helpCommand())
 
 	usage.Apply(&cmd, usageData)
 

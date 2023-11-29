@@ -1,29 +1,16 @@
-short: manage {{.ServerType}} containers together with attached ZFS disk devices
+short: manage {{.ServerType}} instances together with attached ZFS disk devices
 long: |
-  lxops launches {{.ServerType}} containers and creates or clones ZFS filesystem devices for them.
-  lxops launches an "instance" by:
-    - Creating or cloning a set of ZFS filesystems
-    - Creating and initializing a set of sub-directories under these filesystems
-    - Creating an {{.ServerType}} profile with disk devices for these directories
-    - Launching or copying an {{.ServerType}} container with this profile
-    
-  lxops can also install packages, create users, setup .ssh/authorized_keys for users,
-  push files from the host to the container, attach profiles, and run scripts.
+  lxops launches {{.ServerType}} containers from config (lxops) files that 
+  specify how the instance should be launched and configured.
   
-  One of its goals is to separate the container OS files from user files,
-  so that the container can be upgraded by swapping its OS with a new one,
-  instead of upgrading the OS in place.
-  Such rebuilding  can be done by copying a template container
-  whie keeping the existing container disk devices.
-  
-  The template container can be upgraded manually, using the OS upgrade procedure,
-  or relaunched from scratch.
-  
-  A Yaml configuration file provides the recipe for how the container should be created.
-  It can include other config files, so that common configuration
-  can be reused across instances.
-  
-  Devices are attached to the container via an instance profile.
+  Goals:
+  - launch instances from a config file
+  - configure an instance, using cloud-config files
+  - manage instance filesystems along with the instance
+  - rebuild an instance from a new image, while preserving its filesystems and configuration
+
+  Devices are attached to an instance via an instance profile.
+  For information about the config file, run "lxops config -h".
 commands:
   configure:
     short: configure an existing container
@@ -39,7 +26,7 @@ commands:
           - image aliases
           - instance name
   cloudconfig:
-    short: applies one cloud-config file to instances
+    short: (applies one cloud-config file to instances)
     use: "[instance]..."
     examples:
     - -ostype alpine -f myconfig.cfg mycontainer
@@ -116,7 +103,13 @@ commands:
       destroy is like delete, but it also destroys container filesystems
       that have the destroy flag set.  Other filesystems are left alone.
   config:
-    short: config .yaml utilities
+    short: lxops file utilities
+    long: |
+      config sub-commands examing lxops files.
+      An lxops file is a yaml file starting with a version comment.
+      The latest version is {{.ConfigVersion}}.
+      Some earlier versions are also supported.
+      Documentation of the latest config version is provided by the help commands.
     commands:
       formats:
         short: print supported config formats        
@@ -191,16 +184,18 @@ commands:
         short: reorder container profiles to match config order
         use: <config-file> ...
   rebuild:
-    short: stop, delete, launch
+    short: rebuild an instance
     use: <config-file> ...
     long: |
-      Rebuild stops, deletes, and relaunches the container.
-      It preserves the previous hwaddr from the container,
-      so the new container should have the same IP addresses as before.
+      Rebuild replaces the instance image with the one specified in the config file,
+      preserving the instance configuration.
+      It also applies the cloud-config files specified in the config file.
+      The image will be left in the Running state.
+      See {{.ServerType}} rebuild.
   rename:
-    short: rename an instance
+    short: rename an instance and its filesystems
     use: <configFile> <newname>
-    long: Renames the container, its filesystems, and its devices profile
+    long: Renames the instance, its filesystems, and its devices profile
   snapshot:
     short: snapshot instance filesystems
   rollback:
@@ -226,7 +221,7 @@ commands:
         short: get a global property
         use: <key>
   ostypes:
-    short: list supported ostypes
+    short: (list supported ostypes)
   export:
     short: export instance filesystems
     use: <config.yaml>
@@ -237,8 +232,10 @@ commands:
     use: <config.yaml>
     long: |
       import the filesystems of an instance from tar.gz files
+  help:
+    short: documentation on lxops configuration
   copy-filesystems:
-    short: copy zfs filesystems from instance to another.
+    short: (copy zfs filesystems from instance to another)
     long: |
       Uses ssh and zfs send/receive to copy a snapshot of the instance filesystems
       between hosts.

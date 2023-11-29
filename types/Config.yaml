@@ -1,0 +1,59 @@
+description:
+fields:
+  ostype: |
+    OS type determines how to run certain cloud-config sections, such as packages.
+    Two ostypes are provided:
+    - alpine, for alpine distributions.  Uses apk commands to add packages.
+    - debian, for debian-based distributions.  Uses apt-get commands to add packages.
+  
+  image: The image name used for launching an instance.
+  
+  profiles: |
+    The profiles that an instance will be launched with.
+    An extra lxops profile will always be added.
+  
+  cloud-config-files: |
+    A list of cloud-config files to apply to an instance when launching or rebuilding.
+    The files can be specified using absolute paths or paths relative to the enclosing lxops file.
+  
+  include: |
+    A list of lxops files to include.
+    Include paths are either absolute or relative to the path of the including lxops file.
+    The lxops files are merged in postorder traversal into a single lxops file.
+    The included files are merged first, in the order that they were specified, and the 
+     as follows:
+    []string types are appended.  The field values of the parent lxops file are appended last.
+    map types are merged in order in the natural way.  The parent lxops map entries are added last,
+    overriding any previously set map keys.
+    For single-valued fields a non-empty value from a later lxops file
+  
+  profile-pattern: |
+    Specifies how the instance profile should be named.
+    It defaults to "(instance).lxops"
+  
+  device-owner: |
+    The owner (uid:gid) for new devices.
+    Used to set the permissions of device directories that are created for the instance
+    
+  filesystems: |
+    Filesystems are zfs filesystems or plain directories that are created
+    when an instance is created.
+    Devices are usually created inside filesystems.
+    
+    The keys in the filesystems map are used in the devices section
+    to reference each filesystem.
+  
+  devices: |
+    Devices are disk devices that are are attached to the instance.
+    They added to the instance profile, which is attached to the instance.
+  
+  stop: |
+    Stop the instance after configuring it.
+    
+  snapshot: |
+    Create a snapshot of the instance after configuring it.
+  
+  properties: |
+    A map of properties, used for property substitution.
+    These properties override global properties,
+    and properties from included files.
