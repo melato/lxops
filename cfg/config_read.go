@@ -94,7 +94,6 @@ func (r *ConfigReader) mergeInherit(t, c *ConfigInherit) error {
 	if err != nil {
 		return err
 	}
-	t.ProfileConfig, err = r.mergeMaps(t.ProfileConfig, c.ProfileConfig)
 	if err != nil {
 		return err
 	}

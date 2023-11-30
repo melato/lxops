@@ -39,14 +39,8 @@ type ConfigInherit struct {
 	// Project is the LXD or Incus project where the container is
 	Project string `yaml:"project"`
 
-	// Experimental: The name of the container. Defaults to (instance)
-	//Container Pattern `yaml:"container,omitempty"`
-
 	// profile-config (deprecated)
-	// This was meant for creating templates with boot.autostart: "false",
-	// without needing to use profiles external to lxops.
-	// Will remove.  It's better to use a profile, and keep it out of lxops.
-	ProfileConfig map[string]string `yaml:"profile-config"`
+	// ProfileConfig map[string]string `yaml:"profile-config"`
 
 	// Source specifies where to copy or clone the instance from
 	Source `yaml:",inline"`
