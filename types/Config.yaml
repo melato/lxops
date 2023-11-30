@@ -124,3 +124,6 @@ fields:
     Or you can put a description in YAML comments.
     Putting it in a field will preserve it when going through config file migration.
   
+  lxc-options: |
+    lxc-options specifies additional flags to pass on to the LXD/Incus command.
+    Use for flags that are not handled by lxops, for example: -vm.
