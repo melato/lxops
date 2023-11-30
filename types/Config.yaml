@@ -57,3 +57,9 @@ fields:
     A map of properties, used for property substitution.
     These properties override global properties,
     and properties from included files.
+
+  description: |
+    This is not currently used.  You can put a description there for your own use.
+    Or you can put a description in YAML comments.
+    Putting it in a field will preserve it when going through config file migration.
+  

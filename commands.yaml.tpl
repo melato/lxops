@@ -10,14 +10,19 @@ long: |
   - rebuild an instance from a new image, while preserving its filesystems and configuration
 
   Devices are attached to an instance via an instance profile.
-  For information about the config file, run "lxops config -h".
+  For documentation about the config file, run "lxops help config".
+  
+  Commands with summaries in parenthesis are auxiliary utilities.
+  They may change without maintaining backward compatibility.
+
 commands:
   configure:
-    short: configure an existing container
+    short: configure an existing instance
     use: <config-file> ...
     examples:
     - configure -name c1 demo.yaml
   image:
+    short: (utilities for {{.ServerType}} instances)
     commands:
       instances:
         short: list image aliases for containers
@@ -26,28 +31,31 @@ commands:
           - image aliases
           - instance name
   cloudconfig:
-    short: (applies one cloud-config file to instances)
+    short: apply cloud-config files to instances (new)
     use: "[instance]..."
     examples:
     - -ostype alpine -f myconfig.cfg mycontainer
-    - -ostype alpine mycontainer < myconfig.cfg
+    - -ostype debian mycontainer < myconfig.cfg
     long: |
       Uses the {{.ServerType}} API to apply the config to {{.ServerType}} instances.
-      See also the "instance cloudconfig" command.
+      It does not lxops config files or properties.
       The following cloud-init modules (sections) are supported and applied in this order:
         - packages
         - write_files (defer: false)
         - users
         - runcmd
         - write_files (defer: true)
-      See github.com/melato/cloudconfig
+      See github.com/melato/cloudconfig.
+      
+      This command is marked as experimental, because it is new.
+      It may turn out to be a core functionality of lxops.
   instance:
-    short: {{.ServerType}} instance utilities
+    short: ({{.ServerType}} instance utilities)
     commands:
       addresses:
-        short: export network addresses for all containers
+        short: (export network addresses for all containers)
       cloudconfig:
-        short: applies cloud-config files to instances
+        short: (applies cloud-config files to instances)
         use: "[cloud-config-file]..."
         examples:
         - -ostype alpine -i mycontainer -f config.cfg
@@ -68,42 +76,44 @@ commands:
             - write_files (defer: true)
           See github.com/melato/cloudconfig
       hwaddr:
-        short: export hwaddr for all containers
+        short: (export hwaddr for all containers)
       number:
-        short: assign numbers to containers
+        short: (assign numbers to containers)
         use: -first <number> [-a] [-r] [-project <project>] <container>...]
       network:
-        short: print container network addresses
+        short: (print container network addresses)
         use: <container>
       profiles:
-        short: print container profiles
+        short: (print container profiles)
         use: <container>
       devices:
-        short: print container disk devices
+        short: (print container disk devices)
         use: <container>
       publish:
         short: publish an instance into an image
         use: <instance> <snapshot> <alias>
       wait: 
-        short: wait until all the requested containers have an ipv4 address
+        short: (wait until all the requested containers have an ipv4 address)
         use: <container>...
   create-devices:
-    short: create devices
+    short: (create devices)
   create-profile:
-    short: create lxops profile for instance
+    short: (create lxops profile for instance)
   delete:
-    short: delete a container
+    short: delete an instance
     use: <configfile>...
     long: |
-      delete a stopped container and its profile.
+      Delete a stopped instance and its profile.
+      Do not touch its non-root filesystems.
   destroy:
-    short: delete a container and its filesystems
+    short: delete an instance and its filesystems
     use: <configfile>...
     long: |
       destroy is like delete, but it also destroys container filesystems
       that have the destroy flag set.  Other filesystems are left alone.
+      Standalone devices without a filesystem are also left alone.
   config:
-    short: lxops file utilities
+    short: (lxops file utilities)
     long: |
       config sub-commands examing lxops files.
       An lxops file is a yaml file starting with a version comment.
@@ -128,7 +138,7 @@ commands:
       includes:
         short: list included files
   i:
-    short: show information about an instance/config
+    short: (show information about an instance/config)
     commands:
       project:
         short: print instance project
@@ -201,14 +211,11 @@ commands:
   rollback:
     short: rollback instance filesystems
   property:
-    short: manage global properties
+    short: manage user properties
     long: |
-      Properties can be located in:
-      - Global Properties File
-      - Instance Properties, inside the config .yaml file
-      - Command Line
-      Command line properties override instance and global properties.
-      Instance properties override global properties.
+      User properties in a file specified by the -properties flag,
+      with a default location in the user's config directory.
+      They can be managed by the these sub-commands, or edited manually.
     commands:
       list:
         short: list global property value
@@ -233,9 +240,9 @@ commands:
     long: |
       import the filesystems of an instance from tar.gz files
   help:
-    short: documentation on lxops configuration
+    short: (documentation on lxops configuration)
   copy-filesystems:
-    short: (copy zfs filesystems from instance to another)
+    short: (copy zfs filesystems from one instance to another)
     long: |
       Uses ssh and zfs send/receive to copy a snapshot of the instance filesystems
       between hosts.

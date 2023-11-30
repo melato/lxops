@@ -14,7 +14,7 @@ import (
 
 type Doc struct {
 	FS              fs.FS `name:"-"`
-	All             bool
+	All             bool  `usage:"include undocumented fields"`
 	typeDescriptors map[string]*TypeDescriptor
 }
 

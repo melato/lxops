@@ -14,8 +14,8 @@ type ConfigContext interface {
 }
 
 type ConfigOptions struct {
-	Project       string   `name:"project" usage:"the LXD project to use.  Overrides Config.Project"`
-	Name          string   `name:"name" usage:"The name of the container to launch or configure.  If missing, use a separate container for each config, using the name of the config."`
+	Project       string   `name:"project" usage:"the instance server project to use.  Overrides config project"`
+	Name          string   `name:"name" usage:"The name of the instance.  If missing, use the base name of the config file"`
 	Properties    []string `name:"P" usage:"a command-line property in the form <key>=<value>.  Command-line properties override instance and global properties"`
 	cliProperties map[string]string
 	PropertyOptions

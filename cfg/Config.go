@@ -5,18 +5,9 @@ package cfg
 type HostPath string
 
 // Config - Instance configuration
-// An instance is a name that is used to launch a container or create LXD disk devices, typically both.
-// The instance name, is the same as the base name of the config file, without the extension.
-// It can be overridden by the -name flag
-// Configuration sections are applied in the order that they are mentioned in the Config:
-// - PreScripts
-// - Packages
-// - Users
-// - Files
-// - Scripts
-// - Passwords
+// The fields are documented better in the "lxops help" commands.
 type Config struct {
-	// File is the file of the top config file, for reference
+	// File is the file of the top config file, for reference.  It is not read from yaml.
 	File string `yaml:"yaml:"-"`
 	// ConfigInherit fields are merged with all included files, depth first
 	ConfigInherit `yaml:",inline"`
@@ -42,22 +33,19 @@ type ConfigInherit struct {
 	// image - the image name (with optional remote), used when launching a container.
 	Image Pattern `yaml:"image"`
 
-	// Profiles are the profiles of an instance.
-	// After an instance is created and configured, it is left with these profiles
-	// plus the lxdops profile.
-	// While the instance is being created and configured it has these profiles
-	// minus ProfilesRun plus ProfilesConfig
+	// profiles - the instance profiles
 	Profiles []string `yaml:"profiles"`
 
-	// Project is the LXD project where the container is
+	// Project is the LXD or Incus project where the container is
 	Project string `yaml:"project"`
 
 	// Experimental: The name of the container. Defaults to (instance)
 	Container Pattern `yaml:"container,omitempty"`
 
-	// ProfileConfig specifies Config entries to be added to the instance profile.
+	// profile-config (deprecated)
 	// This was meant for creating templates with boot.autostart: "false",
-	// without needing to use profiles external to lxdops.
+	// without needing to use profiles external to lxops.
+	// Will remove.  It's better to use a profile, and keep it out of lxops.
 	ProfileConfig map[string]string `yaml:"profile-config"`
 
 	// Source specifies where to copy or clone the instance from
@@ -76,15 +64,14 @@ type ConfigInherit struct {
 	// Filesystems are zfs filesystems or plain directories that are created
 	// when an instance is created.  Devices are created inside filesystems.
 	Filesystems map[string]*Filesystem `yaml:"filesystems"`
+
 	// Devices are disk devices that are directories within the instance filesystems
+	// They can also be standalone, without a filesystem.
 	// They are created and attached to the container via the instance profile
 	Devices map[string]*Device `yaml:"devices"`
 	// Profiles are attached to the container.  The instance profile should not be listed here.
 
 	// Properties provide key-value pairs used for pattern substitution.
-	// They override built-in properties
-	// Properties from all included files are merged before they are applied.  Properties cannot override non-empty properties,
-	// in order to avoid unexpected behavior that depends on the order of included files.
 	Properties map[string]string `yaml:"properties"`
 
 	// ProfilesConfig are profiles that excluded from Profiles when running the instance.
@@ -97,6 +84,7 @@ type ConfigInherit struct {
 	// Include paths are either absolute or relative to the path of the including config.
 	Include []HostPath `yaml:"include,omitempty"`
 
+	// cloud-config-files is a list of cloud-config files to run during instance configuration.
 	CloudConfigFiles []HostPath `yaml:"cloud-config-files"`
 }
 
