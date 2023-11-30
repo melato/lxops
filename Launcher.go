@@ -318,11 +318,7 @@ func (t *Launcher) launchContainer(instance *Instance, rebuildOptions *rebuildOp
 			}
 		}
 	}
-	configProfiles := profiles
-	if config.HasProfilesConfig() {
-		configProfiles = config.GetProfilesConfig(profiles)
-	}
-	options := &launch_options{Profiles: configProfiles}
+	options := &launch_options{Profiles: profiles}
 	if rebuildOptions != nil {
 		options.RebuildOptions = *rebuildOptions
 	}
@@ -358,12 +354,6 @@ func (t *Launcher) launchContainer(instance *Instance, rebuildOptions *rebuildOp
 			if err != nil {
 				return err
 			}
-		}
-	}
-	if config.HasProfilesConfig() {
-		err := server.SetInstanceProfiles(container, profiles)
-		if err != nil {
-			return err
 		}
 	}
 	if config.Snapshot != "" {

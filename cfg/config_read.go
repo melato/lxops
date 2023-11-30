@@ -134,8 +134,6 @@ func (r *ConfigReader) mergeInherit(t, c *ConfigInherit) error {
 	}
 
 	t.Profiles = append(t.Profiles, c.Profiles...)
-	t.ProfilesConfig = append(t.ProfilesConfig, c.ProfilesConfig...)
-	t.ProfilesRun = append(t.ProfilesRun, c.ProfilesRun...)
 	t.CloudConfigFiles = append(t.CloudConfigFiles, c.CloudConfigFiles...)
 	return nil
 }

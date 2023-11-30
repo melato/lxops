@@ -11,8 +11,7 @@ import (
 type ProfileConfigurer struct {
 	Client srv.Client `name:"-"`
 	ConfigOptions
-	Config bool `name:"config" usage:"use config profiles"`
-	Trace  bool
+	Trace bool
 	DryRunFlag
 }
 
@@ -31,9 +30,6 @@ func (t *ProfileConfigurer) Configured() error {
 func (t *ProfileConfigurer) Profiles(instance *Instance) ([]string, error) {
 	profile := instance.ProfileName()
 	profiles := instance.Config.Profiles
-	if t.Config {
-		profiles = instance.Config.GetProfilesConfig(profiles)
-	}
 	return append(profiles, profile), nil
 }
 

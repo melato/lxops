@@ -132,19 +132,6 @@ func (t *Config) getDuplicates(lists ...[]string) []string {
 	return duplicates
 }
 
-func (t *Config) HasProfilesConfig() bool {
-	return len(t.ProfilesConfig)+len(t.ProfilesRun) > 0
-}
-
-func (t *Config) GetProfilesConfig(profiles []string) []string {
-	if !t.HasProfilesConfig() {
-		return profiles
-	}
-	profiles = util.StringSlice(profiles).Diff(t.ProfilesRun)
-	profiles = util.StringSlice(t.ProfilesConfig).Union(profiles)
-	return profiles
-}
-
 func (t *Config) AbsFilename() string {
 	filename := t.File
 	if !filepath.IsAbs(filename) {

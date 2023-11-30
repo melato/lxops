@@ -74,12 +74,6 @@ type ConfigInherit struct {
 	// Properties provide key-value pairs used for pattern substitution.
 	Properties map[string]string `yaml:"properties"`
 
-	// ProfilesConfig are profiles that excluded from Profiles when running the instance.
-	ProfilesConfig []string `yaml:"profiles-config"`
-
-	// ProfilesRun are profiles that are excluded from Profiles when configuring the instance.
-	ProfilesRun []string `yaml:"profiles-run"`
-
 	// Include is a list of other configs that are to be included.
 	// Include paths are either absolute or relative to the path of the including config.
 	Include []HostPath `yaml:"include,omitempty"`
