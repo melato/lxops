@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"fmt"
 	"os"
 
 	"melato.org/cloudconfig"
@@ -11,12 +12,16 @@ import (
 // Cloudconfig - cloudconfig operations
 type Cloudconfig struct {
 	Client srv.Client `name:"-"`
-	OSType string     `name:"ostype" usage:"OS type"`
+	OSType string     `name:"ostype" usage:"OS type.  Use ? for a list."`
 	ostype cloudconfig.OSType
 	server srv.InstanceServer `name:"-"`
 }
 
 func (t *Cloudconfig) Configured() error {
+	if t.OSType == "?" {
+		ListOSTypes()
+		return fmt.Errorf("")
+	}
 	var err error
 	if t.OSType != "" {
 		t.ostype, err = cfg.OSType(t.OSType)

@@ -19,9 +19,11 @@ var usageTemplate string
 
 func usageForServerType(serverType string) ([]byte, error) {
 	data := usageTemplate
-	//envVar := "USAGE"
-	envVar := ""
+	var envVar string
+	envVar = "LXDOPS_USAGE"
 	if envVar != "" {
+		// if the environment variable is set and its value is an existing file,
+		// use it instead of the embedded usage file.
 		file, ok := os.LookupEnv(envVar)
 		if ok {
 			if _, err := os.Stat(file); err == nil {
@@ -65,8 +67,7 @@ func RootCommand(client srv.Client) *command.SimpleCommand {
 	cmd.Command("create-devices").Flags(launcher).RunFunc(launcher.InstanceFunc(launcher.CreateDevices, true))
 	cmd.Command("create-profile").Flags(launcher).RunFunc(launcher.InstanceFunc(launcher.CreateProfile, false))
 
-	var info cli.InfoOps
-	cmd.Command("ostypes").RunFunc(info.ListOSTypes)
+	cmd.Command("ostypes").RunFunc(cli.ListOSTypes)
 
 	snapshot := &Snapshot{Client: client}
 	cmd.Command("snapshot").Flags(snapshot).RunFunc(snapshot.InstanceFunc(snapshot.Run, false))

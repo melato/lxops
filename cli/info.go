@@ -7,10 +7,7 @@ import (
 	"melato.org/lxops/cfg"
 )
 
-type InfoOps struct {
-}
-
-func (t *InfoOps) ListOSTypes() {
+func ListOSTypes() {
 	types := make([]string, 0, len(cfg.OSTypes))
 	for name, _ := range cfg.OSTypes {
 		types = append(types, name)
