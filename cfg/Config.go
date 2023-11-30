@@ -40,7 +40,7 @@ type ConfigInherit struct {
 	Project string `yaml:"project"`
 
 	// Experimental: The name of the container. Defaults to (instance)
-	Container Pattern `yaml:"container,omitempty"`
+	//Container Pattern `yaml:"container,omitempty"`
 
 	// profile-config (deprecated)
 	// This was meant for creating templates with boot.autostart: "false",

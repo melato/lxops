@@ -83,9 +83,6 @@ func (r *ConfigReader) mergeInherit(t, c *ConfigInherit) error {
 	if c.Project != "" {
 		t.Project = c.Project
 	}
-	if c.Container != "" {
-		t.Container = c.Container
-	}
 	if c.Profile != "" {
 		t.Profile = c.Profile
 	}

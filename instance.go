@@ -18,7 +18,6 @@ type Instance struct {
 	Config           *cfg.Config
 	cliProperties    map[string]string
 	Name             string
-	container        string
 	profile          string
 	containerSource  *ContainerSource
 	deviceSource     *DeviceSource
@@ -90,7 +89,6 @@ func newInstance(cliProperties, globalProperties map[string]string, config *cfg.
 		Name:             name}
 	t.Properties = t.newProperties()
 	var err error
-	t.container = t.substitute(&err, config.Container, "(instance)")
 	t.profile = t.substitute(&err, config.Profile, "(instance).lxops")
 	if err != nil {
 		return nil, err
@@ -131,8 +129,9 @@ func (t *Instance) ProfileName() string {
 	return t.profile
 }
 
+// Container is the same as Name
 func (t *Instance) Container() string {
-	return t.container
+	return t.Name
 }
 
 func (t *Instance) Filesystems() (map[string]*InstanceFS, error) {
