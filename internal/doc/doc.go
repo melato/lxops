@@ -15,6 +15,7 @@ import (
 type Doc struct {
 	FS              fs.FS `name:"-"`
 	All             bool  `usage:"include undocumented fields"`
+	Hidden          bool  `usage:"show only undocumented fields"`
 	typeDescriptors map[string]*TypeDescriptor
 }
 
@@ -84,7 +85,10 @@ func (t *Doc) printFields(typ reflect.Type, name string, indent int, printMaps b
 		}
 
 		desc, ok := descriptor.Fields[name]
-		if !ok && !t.All {
+		if !ok && (!t.All && !t.Hidden) {
+			continue
+		}
+		if t.Hidden && ok {
 			continue
 		}
 		fmt.Printf("%*s%s: (%v)\n", indent*2, "", name, typeName(f.Type))

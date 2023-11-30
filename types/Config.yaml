@@ -7,7 +7,68 @@ fields:
     - debian, for debian-based distributions.  Uses apt-get commands to add packages.
   
   image: The image name used for launching an instance.
+
+  origin:
+    The name of an instance and a snapshot to clone a new instance from.
+    It has the form container/snapshot
+
+  device-template: |
+    The name of an instance, whose filesystem devices are copied to a new instance.
+    The devices are copied using rsync.    
+    The devices are copied from the filesystems specified in SourceConfig, or this config.
+
+  device-origin: |
+    device-origin specifies a snapshot to use to clone filesystems from.
+    It has the form instance@snapshot
+    snapshot is the short snapshot name
+    
+    Example:
+    config.yaml:
+      device-origin: a@copy
+      filesystems:
+        host:
+          pattern: z/host/(instance)
+    
+    The command:
+      lxops launch -name b config.yaml
+    
+    will create the b filesystem like this:
+      zfs clone z/host/a@copy z/host/b
   
+  source-config: |
+    source-config specifies an alternate config file to use
+    to determine the parameters of the "source" instance.
+    The source instance is the instance used to clone or copy devices from.
+    source-config is used with device-template, device-origin.
+    If source-config is not specified, then the source config is the same
+    as the current config.
+    
+    Example:
+    config source.yaml has:
+      filesystems:
+        host:
+          pattern: (fsroot)/(instance)
+      properties:
+        fsroot: z/host
+            
+    config test.yaml has:
+      device-template: a
+      source-config: source.yaml
+      filesystems:
+        host:
+          pattern: (fsroot)/(instance)
+      properties:
+        fsroot: z/test
+          
+    you run:
+      lxops launch -name b test.yaml
+    
+    This will copy a to b like this:
+      rsync -av /z/host/a/ /z/test/a/
+      
+    The source directory is determined from the source config (source.yaml).
+    The destination directory is determined from the current config (test.yaml).
+        
   profiles: |
     The profiles that an instance will be launched with.
     An extra lxops profile will always be added.
