@@ -1,0 +1,10 @@
+commands:
+  version:
+    short: print program version
+  template:
+    short: evaluate a template
+    long: |
+      Evaluates a Go template, using key/values specified on the command line.
+      The templates have these custom functions:
+        Host - An instance of HostFunctions
+        Instance(name string) - *api.Instance
