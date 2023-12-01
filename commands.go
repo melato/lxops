@@ -1,8 +1,8 @@
 package lxops
 
 import (
-	_ "embed"
 	"fmt"
+	"io/fs"
 	"os"
 
 	"melato.org/command"
@@ -14,9 +14,6 @@ import (
 	"melato.org/lxops/srv"
 )
 
-//go:embed commands.yaml.tpl
-var usageTemplate string
-
 func helpDataModel(serverType string) any {
 	return map[string]string{
 		"ServerType":    serverType,
@@ -24,31 +21,19 @@ func helpDataModel(serverType string) any {
 	}
 }
 
-func usageForServerType(serverType string) ([]byte, error) {
-	data := usageTemplate
-	var envVar string
-	envVar = "LXDOPS_USAGE"
-	if envVar != "" {
-		// if the environment variable is set and its value is an existing file,
-		// use it instead of the embedded usage file.
-		file, ok := os.LookupEnv(envVar)
-		if ok {
-			if _, err := os.Stat(file); err == nil {
-				fileContent, err := os.ReadFile(file)
-				if err == nil {
-					data = string(fileContent)
-				} else {
-					return nil, fmt.Errorf("%s: %v\n", file, err)
-				}
-			}
-		}
+func helpFS(serverType string) fs.FS {
+	var fsys fs.FS = help.FS
+	helpDir, ok := os.LookupEnv("LXOPS_HELP_DIR")
+	if ok {
+		fsys = os.DirFS(helpDir)
 	}
-	return templatefs.ExecuteTemplate(data, helpDataModel(serverType))
+	return templatefs.NewTemplateFS(fsys, helpDataModel(serverType))
 }
 
 func RootCommand(client srv.Client) *command.SimpleCommand {
 	serverType := client.ServerType()
-	usageData, err := usageForServerType(serverType)
+	helpFS := helpFS(serverType)
+	usageData, err := fs.ReadFile(helpFS, "commands.yaml")
 	if err != nil {
 		fmt.Printf("%v\n", err)
 	}
@@ -144,7 +129,6 @@ func RootCommand(client srv.Client) *command.SimpleCommand {
 	var migrate Migrate
 	cmd.Command("copy-filesystems").Flags(&migrate).RunFunc(migrate.CopyFilesystems)
 
-	helpFS := templatefs.NewTemplateFS(help.FS, helpDataModel(serverType))
 	cmd.AddCommand("help", helpCommand(helpFS))
 
 	usage.Apply(&cmd, usageData)
