@@ -125,5 +125,5 @@ fields:
     Putting it in a field will preserve it when going through config file migration.
   
   lxc-options: |
-    lxc-options specifies additional flags to pass on to the LXD/Incus command.
+    lxc-options specifies additional flags to pass on to the {{.ServerType}} command.
     Use for flags that are not handled by lxops, for example: -vm.

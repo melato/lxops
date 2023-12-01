@@ -1,15 +1,16 @@
 package lxops
 
 import (
+	"io/fs"
+
 	"melato.org/command"
 	"melato.org/lxops/cfg"
 	"melato.org/lxops/internal/doc"
-	"melato.org/lxops/types"
 )
 
-func helpCommand() *command.SimpleCommand {
+func helpCommand(fsys fs.FS) *command.SimpleCommand {
 	cmd := &command.SimpleCommand{}
-	app := &doc.Doc{FS: types.Types}
+	app := &doc.Doc{FS: fsys}
 	cmd.Flags(app)
 	cmd.Command("config").RunFunc(app.PrintTypeFunc((*cfg.Config)(nil), "Config"))
 	cmd.Command("filesystem").RunFunc(app.PrintTypeFunc((*cfg.Filesystem)(nil), "Filesystem"))

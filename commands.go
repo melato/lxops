@@ -1,21 +1,28 @@
 package lxops
 
 import (
-	"bytes"
 	_ "embed"
 	"fmt"
 	"os"
-	"text/template"
 
 	"melato.org/command"
 	"melato.org/command/usage"
 	"melato.org/lxops/cfg"
 	"melato.org/lxops/cli"
+	"melato.org/lxops/help"
+	"melato.org/lxops/internal/templatefs"
 	"melato.org/lxops/srv"
 )
 
 //go:embed commands.yaml.tpl
 var usageTemplate string
+
+func helpDataModel(serverType string) any {
+	return map[string]string{
+		"ServerType":    serverType,
+		"ConfigVersion": cfg.Comment,
+	}
+}
 
 func usageForServerType(serverType string) ([]byte, error) {
 	data := usageTemplate
@@ -36,23 +43,12 @@ func usageForServerType(serverType string) ([]byte, error) {
 			}
 		}
 	}
-	tpl, err := template.New("").Parse(data)
-	if err != nil {
-		return nil, err
-	}
-	var buf bytes.Buffer
-	err = tpl.Execute(&buf, map[string]string{
-		"ServerType":    serverType,
-		"ConfigVersion": cfg.Comment,
-	})
-	if err != nil {
-		return nil, err
-	}
-	return buf.Bytes(), nil
+	return templatefs.ExecuteTemplate(data, helpDataModel(serverType))
 }
 
 func RootCommand(client srv.Client) *command.SimpleCommand {
-	usageData, err := usageForServerType(client.ServerType())
+	serverType := client.ServerType()
+	usageData, err := usageForServerType(serverType)
 	if err != nil {
 		fmt.Printf("%v\n", err)
 	}
@@ -148,7 +144,8 @@ func RootCommand(client srv.Client) *command.SimpleCommand {
 	var migrate Migrate
 	cmd.Command("copy-filesystems").Flags(&migrate).RunFunc(migrate.CopyFilesystems)
 
-	cmd.AddCommand("help", helpCommand())
+	helpFS := templatefs.NewTemplateFS(help.FS, helpDataModel(serverType))
+	cmd.AddCommand("help", helpCommand(helpFS))
 
 	usage.Apply(&cmd, usageData)
 
