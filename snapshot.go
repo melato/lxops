@@ -66,7 +66,10 @@ func (t *Snapshot) Run(instance *Instance) error {
 			if err != nil {
 				return err
 			}
-			return server.CreateInstanceSnapshot(instance.Container(), t.Snapshot)
+			err = server.CreateInstanceSnapshot(instance.Container(), t.Snapshot)
+			if err != nil {
+				return err
+			}
 		}
 		return instance.Snapshot(t.Snapshot)
 	}
