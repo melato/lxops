@@ -21,16 +21,10 @@ func SetMigrateFunc(comment string, fn MigrateFunc) {
 	ConfigFormats[comment] = fn
 }
 
-/** Read config from yaml, without dependencies */
-func ReadConfigYaml(file string) (*Config, error) {
-	data, err := os.ReadFile(file)
-	if err != nil {
-		return nil, err
-	}
-	if Trace {
-		fmt.Printf("target config type: %s\n", Comment)
-	}
+/** Unmarshal config, from any supported format */
+func Unmarshal(data []byte) (*Config, error) {
 	migrated := make(map[string]bool)
+	var err error
 	for {
 		comment := yaml.FirstLineComment(data)
 		if Trace {
@@ -59,6 +53,19 @@ func ReadConfigYaml(file string) (*Config, error) {
 		return nil, err
 	}
 	return &c, nil
+
+}
+
+/** Read config from yaml, without dependencies */
+func ReadConfigYaml(file string) (*Config, error) {
+	data, err := os.ReadFile(file)
+	if err != nil {
+		return nil, err
+	}
+	if Trace {
+		fmt.Printf("target config type: %s\n", Comment)
+	}
+	return Unmarshal(data)
 }
 
 func Marshal(config *Config) ([]byte, error) {
