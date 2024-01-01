@@ -28,10 +28,10 @@ type ConfigTop struct {
 
 type ConfigInherit struct {
 	// ostype - OS type for cloudconfig.  "alpine", "debian", etc.
-	Ostype string `yaml:"ostype"`
+	Ostype string `yaml:"ostype,omitempty"`
 
 	// image - the image name (with optional remote), used when launching a container.
-	Image Pattern `yaml:"image"`
+	Image Pattern `yaml:"image,omitempty"`
 
 	// Project is the LXD or Incus project where the container is
 	Project string `yaml:"project,omitempty"`
