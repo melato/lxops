@@ -17,13 +17,13 @@ type Config struct {
 
 type ConfigTop struct {
 	// Description is provided for documentation
-	Description string `yaml:"description"`
+	Description string `yaml:"description,omitempty"`
 
 	// Stop specifies that the container should be stopped at the end of the configuration
-	Stop bool `yaml:"stop"`
+	Stop bool `yaml:"stop,omitempty"`
 
 	// Snapshot specifies that that the container should be snapshoted with this name at the end of the configuration process.
-	Snapshot string `yaml:"snapshot"`
+	Snapshot string `yaml:"snapshot,omitempty"`
 }
 
 type ConfigInherit struct {
@@ -33,14 +33,11 @@ type ConfigInherit struct {
 	// image - the image name (with optional remote), used when launching a container.
 	Image Pattern `yaml:"image"`
 
-	// profiles - the instance profiles
-	Profiles []string `yaml:"profiles"`
-
 	// Project is the LXD or Incus project where the container is
-	Project string `yaml:"project"`
+	Project string `yaml:"project,omitempty"`
 
 	// profile-config (deprecated)
-	// ProfileConfig map[string]string `yaml:"profile-config"`
+	// ProfileConfig map[string]string `yaml:"profile-config,omitempty"`
 
 	// Source specifies where to copy or clone the instance from
 	Source `yaml:",inline"`
@@ -48,32 +45,35 @@ type ConfigInherit struct {
 	// Extra options passed to lxc launch.
 	LxcOptions []string `yaml:"lxc-options,omitempty,flow"`
 
+	// profiles - the instance profiles
+	Profiles []string `yaml:"profiles"`
+
 	// ProfilePattern specifies how the instance profile should be named.
 	// It defaults to "(instance).lxdops"
-	Profile Pattern `yaml:"profile-pattern"`
+	Profile Pattern `yaml:"profile-pattern,omitempty"`
 
 	// The owner (uid:gid) for new devices
-	DeviceOwner Pattern `yaml:"device-owner"`
+	DeviceOwner Pattern `yaml:"device-owner,omitempty"`
 
 	// Filesystems are zfs filesystems or plain directories that are created
 	// when an instance is created.  Devices are created inside filesystems.
-	Filesystems map[string]*Filesystem `yaml:"filesystems"`
+	Filesystems map[string]*Filesystem `yaml:"filesystems,omitempty"`
 
 	// Devices are disk devices that are directories within the instance filesystems
 	// They can also be standalone, without a filesystem.
 	// They are created and attached to the container via the instance profile
-	Devices map[string]*Device `yaml:"devices"`
+	Devices map[string]*Device `yaml:"devices,omitempty"`
 	// Profiles are attached to the container.  The instance profile should not be listed here.
 
 	// Properties provide key-value pairs used for pattern substitution.
-	Properties map[string]string `yaml:"properties"`
+	Properties map[string]string `yaml:"properties,omitempty"`
 
 	// Include is a list of other configs that are to be included.
 	// Include paths are either absolute or relative to the path of the including config.
 	Include []HostPath `yaml:"include,omitempty"`
 
 	// cloud-config-files is a list of cloud-config files to run during instance configuration.
-	CloudConfigFiles []HostPath `yaml:"cloud-config-files"`
+	CloudConfigFiles []HostPath `yaml:"cloud-config-files,omitempty"`
 }
 
 // Source specifies how to copy or clone the instance container, filesystem, and device directories.
@@ -105,19 +105,19 @@ type Source struct {
 	// origin is the name of a container and a snapshot to clone from.
 	// It has the form [<project>_]<container>[/<snapshot>]
 	// It overrides SourceConfig
-	Origin Pattern `yaml:"origin"`
+	Origin Pattern `yaml:"origin,omitempty"`
 
 	// device-template is the name of an instance, whose devices are copied (using rsync)
 	// to a new instance with launch.
 	// The devices are copied from the filesystems specified in SourceConfig, or this config.
-	DeviceTemplate Pattern `yaml:"device-template"`
+	DeviceTemplate Pattern `yaml:"device-template,omitempty"`
 
 	// device-origin is the name an instance and a short snapshot name.
 	// It has the form <instance>@<snapshot> where <instance> is an instance name,
 	// and @<snapshot> is a the short snapshot name of the instance filesystems.
 	// Each device zfs filesystem is cloned from @<snapshot>
 	// The filesytems are those specified in SourceConfig, if any, otherwise this config.
-	DeviceOrigin Pattern `yaml:"device-origin"`
+	DeviceOrigin Pattern `yaml:"device-origin,omitempty"`
 
 	// Experimental: source-config specifies a config file that is used to determine:
 	//   - The LXD project, container, and snapshot to clone when launching the instance.

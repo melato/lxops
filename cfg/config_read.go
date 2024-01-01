@@ -182,6 +182,7 @@ func (r *ConfigReader) Read(file string) (*Config, error) {
 	return result, err
 }
 
+// ReadConfig read a config file, and its included files
 func ReadConfig(file string) (*Config, error) {
 	r := &ConfigReader{}
 	c, err := r.Read(file)

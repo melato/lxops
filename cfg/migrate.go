@@ -1,6 +1,7 @@
 package cfg
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 
@@ -20,7 +21,7 @@ func SetMigrateFunc(comment string, fn MigrateFunc) {
 	ConfigFormats[comment] = fn
 }
 
-/** Read raw config from yaml */
+/** Read config from yaml, without dependencies */
 func ReadConfigYaml(file string) (*Config, error) {
 	data, err := os.ReadFile(file)
 	if err != nil {
@@ -58,6 +59,17 @@ func ReadConfigYaml(file string) (*Config, error) {
 		return nil, err
 	}
 	return &c, nil
+}
+
+func Marshal(config *Config) ([]byte, error) {
+	var buf bytes.Buffer
+	fmt.Fprintf(&buf, "%s\n", Comment)
+	data, err := yaml.Marshal(config)
+	if err != nil {
+		return nil, err
+	}
+	buf.Write(data)
+	return buf.Bytes(), nil
 }
 
 func PrintConfigYaml(config *Config) error {

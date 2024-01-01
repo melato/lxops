@@ -23,7 +23,7 @@ func helpDataModel(serverType string) any {
 
 func helpFS(serverType string) fs.FS {
 	var fsys fs.FS = help.FS
-	helpDir, ok := os.LookupEnv("LXOPS_HELP_DIR")
+	helpDir, ok := os.LookupEnv("LXOPS_HELP")
 	if ok {
 		fsys = os.DirFS(helpDir)
 	}
@@ -33,7 +33,7 @@ func helpFS(serverType string) fs.FS {
 func RootCommand(client srv.Client) *command.SimpleCommand {
 	serverType := client.ServerType()
 	helpFS := helpFS(serverType)
-	usageData, err := fs.ReadFile(helpFS, "commands.yaml")
+	usageData, err := fs.ReadFile(helpFS, "commands.yaml.tpl")
 	if err != nil {
 		fmt.Printf("%v\n", err)
 	}
@@ -96,6 +96,8 @@ func RootCommand(client srv.Client) *command.SimpleCommand {
 	configCmd.Command("properties").RunFunc(configOps.PrintProperties)
 	configCmd.Command("includes").RunFunc(configOps.Includes)
 	configCmd.Command("script").RunFunc(configOps.Script)
+	convert := &cli.ConvertOps{}
+	configCmd.Command("convert").Flags(convert).RunFunc(convert.Convert)
 
 	containerOps := &cli.InstanceOps{Client: client}
 	containerCmd := cmd.Command("instance")
