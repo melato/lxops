@@ -127,13 +127,10 @@ func (t *Doc) printType(typ reflect.Type, name string) error {
 	return t.printFields(typ, name, 0, false)
 }
 
-func (t *Doc) PrintType(pointer any, name string) error {
+func (t *Doc) PrintType(pointer any, name string) {
 	typ := reflect.TypeOf(pointer).Elem()
-	return t.printType(typ, name)
-}
-
-func (t *Doc) PrintTypeFunc(pointer any, name string) func() error {
-	return func() error {
-		return t.PrintType(pointer, name)
+	err := t.printType(typ, name)
+	if err != nil {
+		fmt.Printf("%v\n", err)
 	}
 }

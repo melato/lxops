@@ -6,7 +6,6 @@ import (
 	"io/fs"
 	"strings"
 	"text/template"
-	"time"
 )
 
 // TemplateFS - An FS that wraps another FS of templates.
@@ -52,40 +51,5 @@ func (t *TemplateFS) ReadFile(name string) ([]byte, error) {
 }
 
 func (t *TemplateFS) Open(name string) (fs.File, error) {
-	data, err := t.ReadFile(name)
-	if err != nil {
-		return nil, err
-	}
-	return NewFile(name, data), nil
+	return t.FS.Open(name)
 }
-
-type bytesFile struct {
-	Filename string
-	Filesize int64
-	Reader   io.Reader
-}
-
-func NewFile(name string, b []byte) fs.File {
-	return &bytesFile{
-		Filename: name,
-		Filesize: int64(len(b)),
-		Reader:   bytes.NewReader(b),
-	}
-}
-
-func (t *bytesFile) Stat() (fs.FileInfo, error) {
-	return t, nil
-}
-func (t *bytesFile) Read(b []byte) (int, error) {
-	return t.Reader.Read(b)
-}
-func (t *bytesFile) Close() error {
-	return nil
-}
-
-func (t *bytesFile) Name() string       { return t.Filename }
-func (t *bytesFile) Size() int64        { return t.Filesize }
-func (t *bytesFile) Mode() fs.FileMode  { return fs.FileMode(0555) }
-func (t *bytesFile) ModTime() time.Time { return time.Now() }
-func (t *bytesFile) IsDir() bool        { return false }
-func (t *bytesFile) Sys() any           { return nil }

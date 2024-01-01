@@ -8,14 +8,17 @@ import (
 	"melato.org/lxops/internal/doc"
 )
 
-func helpCommand(fsys fs.FS) *command.SimpleCommand {
+func helpCommand(helpFS fs.FS) *command.SimpleCommand {
 	cmd := &command.SimpleCommand{}
-	app := &doc.Doc{FS: fsys}
+	app := &doc.Doc{FS: helpFS}
 	cmd.Flags(app)
-	cmd.Command("config").RunFunc(app.PrintTypeFunc((*cfg.Config)(nil), "Config"))
-	cmd.Command("filesystem").RunFunc(app.PrintTypeFunc((*cfg.Filesystem)(nil), "Filesystem"))
-	cmd.Command("device").RunFunc(app.PrintTypeFunc((*cfg.Device)(nil), "Device"))
-	cmd.Command("pattern").RunFunc(app.PrintTypeFunc((*cfg.Pattern)(nil), "Pattern"))
-	cmd.Command("hostpath").RunFunc(app.PrintTypeFunc((*cfg.HostPath)(nil), "HostPath"))
+	cmd.Command("config").RunFunc(func() { app.PrintType((*cfg.Config)(nil), "Config") })
+	cmd.Command("filesystem").RunFunc(func() { app.PrintType((*cfg.Filesystem)(nil), "Filesystem") })
+	cmd.Command("device").RunFunc(func() { app.PrintType((*cfg.Device)(nil), "Device") })
+	cmd.Command("pattern").RunFunc(func() { app.PrintType((*cfg.Pattern)(nil), "Pattern") })
+	cmd.Command("hostpath").RunFunc(func() { app.PrintType((*cfg.HostPath)(nil), "HostPath") })
+
+	topics := doc.NewTopics(helpFS, "topics", ".tpl")
+	cmd.Command("topics").RunFunc(topics.Print)
 	return cmd
 }
