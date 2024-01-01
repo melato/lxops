@@ -8,7 +8,7 @@ type HostPath string
 // The fields are documented better in the "lxops help" commands.
 type Config struct {
 	// File is the file of the top config file, for reference.  It is not read from yaml.
-	File string `yaml:"yaml:"-"`
+	File string `yaml:"-"`
 	// ConfigInherit fields are merged with all included files, depth first
 	ConfigInherit `yaml:",inline"`
 	// ConfigTop fields are not merged with included files
