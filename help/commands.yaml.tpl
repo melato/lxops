@@ -121,6 +121,8 @@ commands:
       Some earlier versions are also supported.
       Documentation of the latest config version is provided by the help commands.
     commands:
+      convert:
+        short: convert config files to the latest format
       formats:
         short: print supported config formats        
       parse:
