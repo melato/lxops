@@ -3,6 +3,8 @@ package lxops
 import (
 	"errors"
 	"fmt"
+	"strconv"
+	"strings"
 
 	"melato.org/lxops/cfg"
 	"melato.org/lxops/srv"
@@ -139,6 +141,22 @@ func (t *DeviceConfigurer) CreateFilesystems(instance, origin *Instance, snapsho
 	return nil
 }
 
+func (t *DeviceConfigurer) parseOwner() (int, int, bool) {
+	parts := strings.Split(t.Owner, ":")
+	if len(parts) != 2 {
+		return 0, 0, false
+	}
+	ids := make([]int, len(parts))
+	for i, s := range parts {
+		var err error
+		ids[i], err = strconv.Atoi(s)
+		if err != nil {
+			return 0, 0, false
+		}
+	}
+	return ids[0], ids[1], true
+}
+
 func (t *DeviceConfigurer) ConfigureDevices(instance *Instance) error {
 	source := instance.DeviceSource()
 	var err error
@@ -157,7 +175,15 @@ func (t *DeviceConfigurer) ConfigureDevices(instance *Instance) error {
 
 	script := t.NewScript()
 	devices := SortDevices(t.Config.Devices)
+	var uid string
+	var gid string
 	if t.RootFS != nil {
+		u, g, ok := t.parseOwner()
+		if !ok {
+			return fmt.Errorf("owner should have the form uid:gid (%s)", t.Owner)
+		}
+		uid = strconv.Itoa(u)
+		gid = strconv.Itoa(g)
 		defer t.RootFS.Unmount()
 	}
 	for key, d := range devices {
@@ -201,7 +227,7 @@ func (t *DeviceConfigurer) ConfigureDevices(instance *Instance) error {
 					return err
 				}
 				script.Run("sudo", "rsync", "-a", mountedDir+"/", dir+"/")
-				script.Run("sudo", "lxops", "shiftids", "-u", "1000000", "-g", "1000000", "-v", dir)
+				script.Run("sudo", "lxops", "shiftids", "-u", uid, "-g", gid, "-v", dir)
 			}
 		}
 		if script.Error() != nil {
