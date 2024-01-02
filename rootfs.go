@@ -11,10 +11,12 @@ import (
 	"melato.org/script"
 )
 
+// RootFS mounts the image filesystem of an instance to a local directory
 type RootFS struct {
-	OriginFilesystem string
-	Instance         string
-	Mountpoint       string
+	server           srv.InstanceServer
+	instance         string
+	originFilesystem string
+	mountpoint       string
 }
 
 func findRootStoragePool(server srv.InstanceServer, instance string) (*srv.StoragePool, error) {
@@ -36,39 +38,47 @@ func findRootStoragePool(server srv.InstanceServer, instance string) (*srv.Stora
 	return nil, fmt.Errorf("missing root device")
 }
 
-func NewRootFS(server srv.InstanceServer, instance string) (*RootFS, error) {
-	root, err := findRootStoragePool(server, instance)
+func (t *RootFS) findOriginFilesystem() error {
+	root, err := findRootStoragePool(t.server, t.instance)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	if root.Driver != "zfs" {
-		return nil, fmt.Errorf("root storage pool is not zfs")
+		return fmt.Errorf("root storage pool is not zfs")
 	}
-	fs := path.Join(root.Source, "containers", instance)
-	var rootfs RootFS
-	s := rootfs.newScript()
-	rootfs.OriginFilesystem = s.Cmd("zfs", "list", "-H", "-o", "origin", fs).ToString()
+	fs := path.Join(root.Source, "containers", t.instance)
+	s := t.newScript()
+	t.originFilesystem = s.Cmd("zfs", "list", "-H", "-o", "origin", fs).ToString()
 	if s.HasError() {
-		return nil, s.Error()
+		return s.Error()
 	}
-	if strings.IndexByte(rootfs.OriginFilesystem, byte('c')) < 0 {
-		return nil, fmt.Errorf("origin filesystem is not a snapshot: %s", rootfs.OriginFilesystem)
+	if strings.IndexByte(t.originFilesystem, byte('c')) < 0 {
+		return fmt.Errorf("origin filesystem is not a snapshot: %s", t.originFilesystem)
 	}
-	rootfs.Instance = instance
-	return &rootfs, nil
+	return nil
+}
+
+func NewRootFS(server srv.InstanceServer, instance string) *RootFS {
+	return &RootFS{server: server, instance: instance}
 }
 
 func (t *RootFS) Mount() error {
-	if t.Mountpoint != "" {
+	if t.mountpoint != "" {
 		return nil // already mounted
 	}
-	t.Mountpoint = "/tmp/lxops/" + t.Instance
-	err := os.MkdirAll(t.Mountpoint, os.FileMode(0777))
+	if t.originFilesystem == "" {
+		err := t.findOriginFilesystem()
+		if err != nil {
+			return err
+		}
+	}
+	t.mountpoint = "/tmp/lxops/" + t.instance
+	err := os.MkdirAll(t.mountpoint, os.FileMode(0777))
 	if err != nil {
 		return err
 	}
 	s := t.newScript()
-	s.Run("sudo", "mount", "-t", "zfs", t.OriginFilesystem, t.Mountpoint)
+	s.Run("sudo", "mount", "-t", "zfs", t.originFilesystem, t.mountpoint)
 	return s.Error()
 }
 
@@ -77,7 +87,7 @@ func (t *RootFS) newScript() *script.Script {
 }
 
 func (t *RootFS) IsMounted() bool {
-	return t.Mountpoint != ""
+	return t.mountpoint != ""
 }
 
 func (t *RootFS) Unmount() error {
@@ -85,12 +95,12 @@ func (t *RootFS) Unmount() error {
 		return nil
 	}
 	s := t.newScript()
-	s.Run("sudo", "umount", t.Mountpoint)
-	err := os.Remove(t.Mountpoint)
+	s.Run("sudo", "umount", t.mountpoint)
+	err := os.Remove(t.mountpoint)
 	if err != nil {
 		return err
 	}
-	t.Mountpoint = ""
+	t.mountpoint = ""
 	return s.Error()
 }
 
@@ -98,7 +108,7 @@ func (t *RootFS) MountedDir(dir string) (string, error) {
 	if !t.IsMounted() {
 		return "", fmt.Errorf("not mounted")
 	}
-	fdir := filepath.Join(t.Mountpoint, "rootfs", dir)
+	fdir := filepath.Join(t.mountpoint, "rootfs", dir)
 	finfo, err := os.Stat(fdir)
 	if err != nil {
 		return "", err

@@ -37,10 +37,7 @@ func NewDeviceConfigurer2(instance *Instance, server srv.InstanceServer) (*Devic
 	if err != nil {
 		return nil, err
 	}
-	t.RootFS, err = NewRootFS(server, instance.Name)
-	if err != nil {
-		return nil, err
-	}
+	t.RootFS = NewRootFS(server, instance.Name)
 	return t, nil
 }
 
