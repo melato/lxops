@@ -13,6 +13,7 @@ import (
 type DeviceConfigurer struct {
 	Config *cfg.Config
 	Owner  string
+	RootFS *RootFS
 	// NoRsync - do not rsync devices.  Use when importing.
 	NoRsync bool
 	Trace   bool
@@ -23,6 +24,18 @@ func NewDeviceConfigurer(instance *Instance) (*DeviceConfigurer, error) {
 	t := &DeviceConfigurer{Config: instance.Config}
 	var err error
 	t.Owner, err = instance.Config.DeviceOwner.Substitute(instance.Properties)
+	if err != nil {
+		return nil, err
+	}
+	return t, nil
+}
+
+func NewDeviceConfigurer2(instance *Instance, server srv.InstanceServer) (*DeviceConfigurer, error) {
+	t, err := NewDeviceConfigurer(instance)
+	if err != nil {
+		return nil, err
+	}
+	t.RootFS, err = NewRootFS(server, instance.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -144,6 +157,9 @@ func (t *DeviceConfigurer) ConfigureDevices(instance *Instance) error {
 
 	script := t.NewScript()
 	devices := SortDevices(t.Config.Devices)
+	if t.RootFS != nil {
+		defer t.RootFS.Unmount()
+	}
 	for key, d := range devices {
 		if d.Device.Filesystem == "" {
 			continue
@@ -163,15 +179,27 @@ func (t *DeviceConfigurer) ConfigureDevices(instance *Instance) error {
 		if err != nil {
 			return err
 		}
-		if !t.NoRsync && !fs.Filesystem.Transient && source.IsDefined() && !source.Clone {
-			templateDir, err := source.Instance.DeviceDir(d.Name, d.Device)
-			if err != nil {
-				return err
-			}
-			if templateDir != "" && util.DirExists(templateDir) {
-				script.Run("sudo", "rsync", "-a", templateDir+"/", dir+"/")
-			} else {
-				fmt.Printf("skipping missing template Device=%s dir=%s\n", d.Name, templateDir)
+		if !t.NoRsync && !fs.Filesystem.Transient {
+			if source.IsDefined() && !source.Clone {
+				templateDir, err := source.Instance.DeviceDir(d.Name, d.Device)
+				if err != nil {
+					return err
+				}
+				if templateDir != "" && util.DirExists(templateDir) {
+					script.Run("sudo", "rsync", "-a", templateDir+"/", dir+"/")
+				} else {
+					fmt.Printf("skipping missing template Device=%s dir=%s\n", d.Name, templateDir)
+				}
+			} else if t.RootFS != nil {
+				err := t.RootFS.Mount()
+				if err != nil {
+					return err
+				}
+				mountedDir, err := t.RootFS.MountedDir(d.Device.Path)
+				if err != nil {
+					return err
+				}
+				script.Run("sudo", "rsync", "-a", mountedDir+"/", dir+"/")
 			}
 		}
 		if script.Error() != nil {

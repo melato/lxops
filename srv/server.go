@@ -4,13 +4,17 @@ package srv
 type InstanceServer interface {
 	// Profiles
 	GetProfileNames() ([]string, error)
+	GetProfileDevices(profile string) (map[string]*Device, error)
 	CreateProfile(profile *Profile) error
 	DeleteProfile(profile string) error
 	ProfileExists(name string) (bool, error)
 	ExportProfile(name string) ([]byte, error)
 	ImportProfile(name string, data []byte) error
 
+	GetStoragePool(pool string) (*StoragePool, error)
+
 	// instances
+	CreateInstance(launch *Create) error
 	LaunchInstance(launch *Launch) error
 	RebuildInstance(image, instance string) error
 	CopyInstance(cp *Copy) error
@@ -54,17 +58,28 @@ type Device struct {
 	Path     string
 	Source   string
 	Readonly bool
+	Pool     string
+}
+
+type StoragePool struct {
+	Name   string
+	Driver string
+	Source string
 }
 
 type Network interface{}
 
-type Launch struct {
+type Create struct {
 	Name       string
 	Image      string
 	Project    string
 	Profiles   []string
 	LxcOptions []string
-	Network    Network
+}
+
+type Launch struct {
+	Create
+	Network Network
 }
 
 type Copy struct {

@@ -149,7 +149,9 @@ func (r *ConfigReader) mergeFile(t *Config, file string) error {
 	dir := filepath.Dir(file)
 	config.ResolvePaths(dir)
 	if len(r.included) == 0 {
-		t.ConfigTop = config.ConfigTop
+		t.Description = config.Description
+		t.Stop = config.Stop
+		t.Snapshot = config.Snapshot
 	}
 	r.addIncluded(file)
 	if config.Ostype != "" {

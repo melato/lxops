@@ -238,6 +238,79 @@ func (t *Launcher) LaunchContainer(instance *Instance) error {
 	return t.launchContainer(instance, nil)
 }
 
+func (t *Launcher) CreateContainer(instance *Instance) error {
+	fmt.Println("create", instance.Name)
+	t.Trace = true
+
+	source := instance.ContainerSource()
+	fmt.Printf("source:%v\n", source)
+	if source.IsDefined() {
+		return fmt.Errorf("cannot create container without image")
+	}
+
+	var err error
+
+	config := instance.Config
+	var create srv.Create
+	create.Name = instance.Container()
+	create.Image, err = config.Image.Substitute(instance.Properties)
+	if err != nil {
+		return err
+	}
+	if create.Image == "" {
+		return errors.New("Please provide image")
+	}
+	create.LxcOptions = config.LxcOptions
+	create.Profiles = append(create.Profiles, config.Profiles...)
+
+	server, err := t.Client.ProjectInstanceServer(config.Project)
+	if err != nil {
+		return err
+	}
+
+	err = t.verifyProfiles(server, config.Profiles)
+	if err != nil {
+		return err
+	}
+
+	profileName := instance.ProfileName()
+	if profileName == "" {
+		// revisit this, if necessary
+		return fmt.Errorf("configuration without profile is not supported")
+	}
+
+	err = server.CreateInstance(&create)
+
+	if err != nil {
+		return err
+	}
+
+	dev, err := NewDeviceConfigurer2(instance, server)
+	if err != nil {
+		return err
+	}
+	dev.Trace = t.Trace
+	dev.DryRun = t.DryRun
+	err = dev.ConfigureDevices(instance)
+	if err != nil {
+		return err
+	}
+
+	if profileName != "" {
+		err = dev.CreateProfile(t.Client, instance)
+		if err != nil {
+			return err
+		}
+		profiles := append(create.Profiles, profileName)
+		err = server.SetInstanceProfiles(create.Name, profiles)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (t *Launcher) verifyProfiles(server srv.InstanceServer, profiles []string) error {
 	if len(profiles) == 0 {
 		return nil

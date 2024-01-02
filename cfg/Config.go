@@ -9,15 +9,12 @@ type HostPath string
 type Config struct {
 	// File is the file of the top config file, for reference.  It is not read from yaml.
 	File string `yaml:"-"`
-	// ConfigInherit fields are merged with all included files, depth first
-	ConfigInherit `yaml:",inline"`
-	// ConfigTop fields are not merged with included files
-	ConfigTop `yaml:",inline"`
-}
 
-type ConfigTop struct {
 	// Description is provided for documentation
 	Description string `yaml:"description,omitempty"`
+
+	// ConfigInherit fields are merged with all included files, depth first
+	ConfigInherit `yaml:",inline"`
 
 	// Stop specifies that the container should be stopped at the end of the configuration
 	Stop bool `yaml:"stop,omitempty"`
@@ -46,7 +43,7 @@ type ConfigInherit struct {
 	LxcOptions []string `yaml:"lxc-options,omitempty,flow"`
 
 	// profiles - the instance profiles
-	Profiles []string `yaml:"profiles"`
+	Profiles []string `yaml:"profiles,omitempty"`
 
 	// ProfilePattern specifies how the instance profile should be named.
 	// It defaults to "(instance).lxdops"
