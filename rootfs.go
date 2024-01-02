@@ -63,6 +63,10 @@ func (t *RootFS) Mount() error {
 		return nil // already mounted
 	}
 	t.Mountpoint = "/tmp/lxops/" + t.Instance
+	err := os.MkdirAll(t.Mountpoint, os.FileMode(0777))
+	if err != nil {
+		return err
+	}
 	s := t.newScript()
 	s.Run("sudo", "mount", "-t", "zfs", t.OriginFilesystem, t.Mountpoint)
 	return s.Error()
@@ -82,6 +86,10 @@ func (t *RootFS) Unmount() error {
 	}
 	s := t.newScript()
 	s.Run("sudo", "umount", t.Mountpoint)
+	err := os.Remove(t.Mountpoint)
+	if err != nil {
+		return err
+	}
 	t.Mountpoint = ""
 	return s.Error()
 }

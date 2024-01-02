@@ -191,6 +191,7 @@ func (t *DeviceConfigurer) ConfigureDevices(instance *Instance) error {
 					fmt.Printf("skipping missing template Device=%s dir=%s\n", d.Name, templateDir)
 				}
 			} else if t.RootFS != nil {
+				fmt.Printf("using %s from image\n", d.Device.Path)
 				err := t.RootFS.Mount()
 				if err != nil {
 					return err
@@ -200,6 +201,7 @@ func (t *DeviceConfigurer) ConfigureDevices(instance *Instance) error {
 					return err
 				}
 				script.Run("sudo", "rsync", "-a", mountedDir+"/", dir+"/")
+				script.Run("sudo", "lxops", "shiftids", "-u", "1000000", "-g", "1000000", "-v", dir)
 			}
 		}
 		if script.Error() != nil {
