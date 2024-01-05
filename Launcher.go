@@ -17,8 +17,6 @@ import (
 type Launcher struct {
 	Client srv.Client `name:"-"`
 	ConfigOptions
-	SkipProfiles bool `name:"skip.profiles" usage:"Do not preserve profiles.  Use config profiles"`
-	SkipNetwork  bool `name:"skip.ip" usage:"Do not try to preserve network ip addresses."`
 	WaitInterval int  `name:"wait" usage:"# seconds to wait before snapshot"`
 	Trace        bool `name:"t" usage:"trace print what is happening"`
 	DryRunFlag
@@ -39,34 +37,6 @@ func (t *Launcher) Configured() error {
 
 func (t *Launcher) NewScript() *script.Script {
 	return &script.Script{Trace: t.Trace, DryRun: t.DryRun}
-}
-
-type rebuildOptions struct {
-	Profiles []string
-	Network  srv.Network
-}
-
-func (t *Launcher) getRebuildOptions(instance *Instance) (*rebuildOptions, error) {
-	config := instance.Config
-	container := instance.Container()
-	server, err := t.Client.ProjectInstanceServer(config.Project)
-	if err != nil {
-		return nil, err
-	}
-	var options rebuildOptions
-	if !t.SkipProfiles {
-		options.Profiles, err = server.GetInstanceProfiles(container)
-		if err != nil {
-			return nil, err
-		}
-	}
-	if !t.SkipNetwork {
-		options.Network, err = server.GetInstanceNetwork(container)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return &options, nil
 }
 
 func (t *Launcher) Rebuild(instance *Instance) error {
@@ -93,19 +63,6 @@ func (t *Launcher) Rebuild(instance *Instance) error {
 	}
 	configurer := t.NewConfigurer()
 	return configurer.ConfigureContainer(instance)
-
-	/*
-		options, err := t.getRebuildOptions(instance)
-		if err != nil {
-			return err
-		}
-		err = t.deleteContainer(instance, true)
-		if err != nil {
-			return err
-		}
-		return t.launchContainer(instance, options)
-	*/
-
 }
 
 func (t *Launcher) NewConfigurer() *Configurer {
@@ -132,9 +89,6 @@ func (t *Launcher) lxcLaunch(instance *Instance, server srv.InstanceServer, opti
 	launch.Image = image
 	launch.Profiles = options.Profiles
 	launch.LxcOptions = config.LxcOptions
-	if !t.SkipNetwork {
-		launch.Network = options.RebuildOptions.Network
-	}
 	return server.LaunchInstance(&launch)
 }
 
@@ -162,8 +116,7 @@ func (t *Launcher) deleteProfiles(server srv.InstanceServer, profiles []string) 
 }
 
 type launch_options struct {
-	Profiles       []string
-	RebuildOptions rebuildOptions
+	Profiles []string
 }
 
 func (t *Launcher) copyContainer(instance *Instance, source ContainerSource, server srv.InstanceServer, options *launch_options) error {
@@ -235,7 +188,7 @@ func (t *Launcher) CreateProfile(instance *Instance) error {
 }
 
 func (t *Launcher) LaunchContainer(instance *Instance) error {
-	return t.launchContainer(instance, nil)
+	return t.launchContainer(instance)
 }
 
 func (t *Launcher) CreateContainer(instance *Instance) error {
@@ -335,7 +288,7 @@ func (t *Launcher) verifyProfiles(server srv.InstanceServer, profiles []string) 
 	return nil
 }
 
-func (t *Launcher) launchContainer(instance *Instance, rebuildOptions *rebuildOptions) error {
+func (t *Launcher) launchContainer(instance *Instance) error {
 	fmt.Println("launch", instance.Name)
 	t.Trace = true
 	config := instance.Config
@@ -344,11 +297,9 @@ func (t *Launcher) launchContainer(instance *Instance, rebuildOptions *rebuildOp
 		return err
 	}
 
-	if rebuildOptions == nil || len(rebuildOptions.Profiles) == 0 {
-		err = t.verifyProfiles(server, config.Profiles)
-		if err != nil {
-			return err
-		}
+	err = t.verifyProfiles(server, config.Profiles)
+	if err != nil {
+		return err
 	}
 
 	dev, err := NewDeviceConfigurer(instance)
@@ -375,26 +326,16 @@ func (t *Launcher) launchContainer(instance *Instance, rebuildOptions *rebuildOp
 	}
 
 	var profiles []string
-	if rebuildOptions != nil && len(rebuildOptions.Profiles) > 0 {
-		profiles = make([]string, len(rebuildOptions.Profiles))
-		for i, profile := range rebuildOptions.Profiles {
-			profiles[i] = profile
+	profiles = append(profiles, config.Profiles...)
+	if config.Devices != nil {
+		if len(profiles) == 0 {
+			profiles = append(profiles, "default")
 		}
-	} else {
-		profiles = append(profiles, config.Profiles...)
-		if config.Devices != nil {
-			if len(profiles) == 0 {
-				profiles = append(profiles, "default")
-			}
-			if profileName != "" {
-				profiles = append(profiles, profileName)
-			}
+		if profileName != "" {
+			profiles = append(profiles, profileName)
 		}
 	}
 	options := &launch_options{Profiles: profiles}
-	if rebuildOptions != nil {
-		options.RebuildOptions = *rebuildOptions
-	}
 	container := instance.Container()
 	source := instance.ContainerSource()
 	fmt.Printf("source:%v\n", source)
