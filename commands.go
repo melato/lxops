@@ -41,6 +41,7 @@ func RootCommand(client srv.Client) *command.SimpleCommand {
 	cmd.Flags(client)
 	launcher := &Launcher{Client: client}
 	cmd.Command("create").Flags(launcher).RunFunc(launcher.InstanceFunc(launcher.CreateContainer, true))
+	cmd.Command("extract").Flags(launcher).RunFunc(launcher.InstanceFunc(launcher.ExtractDevices, true))
 	cmd.Command("launch").Flags(launcher).RunFunc(launcher.InstanceFunc(launcher.LaunchContainer, true))
 	cmd.Command("delete").Flags(launcher).RunFunc(launcher.InstanceFunc(launcher.DeleteContainer, false))
 	cmd.Command("destroy").Flags(launcher).RunFunc(launcher.InstanceFunc(launcher.DestroyContainer, false))

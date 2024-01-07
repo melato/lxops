@@ -264,6 +264,67 @@ func (t *Launcher) CreateContainer(instance *Instance) error {
 	return nil
 }
 
+func (t *Launcher) ExtractDevices(instance *Instance) error {
+	fmt.Println("extract devices", instance.Name)
+	t.Trace = true
+
+	var err error
+
+	config := instance.Config
+	var create srv.Create
+	create.Name = instance.Name
+	create.Image, err = config.Image.Substitute(instance.Properties)
+	if err != nil {
+		return err
+	}
+	if create.Image == "" {
+		return errors.New("Please provide image")
+	}
+	create.LxcOptions = config.LxcOptions
+	create.Profiles = append(create.Profiles, config.Profiles...)
+
+	server, err := t.Client.ProjectInstanceServer(config.Project)
+	if err != nil {
+		return err
+	}
+
+	err = t.verifyProfiles(server, config.Profiles)
+	if err != nil {
+		return err
+	}
+
+	err = server.CreateInstance(&create)
+
+	if err != nil {
+		return err
+	}
+
+	var deleted bool
+	defer func() {
+		if !deleted {
+			server.DeleteInstance(instance.Name, false)
+		}
+	}()
+	dev, err := NewDeviceConfigurer2(instance, server)
+	if err != nil {
+		return err
+	}
+	dev.Trace = t.Trace
+	dev.DryRun = t.DryRun
+	err = dev.ConfigureDevices(instance)
+	if err != nil {
+		return err
+	}
+
+	err = server.DeleteInstance(instance.Name, false)
+	if err != nil {
+		return err
+	}
+	deleted = true
+
+	return nil
+}
+
 func (t *Launcher) verifyProfiles(server srv.InstanceServer, profiles []string) error {
 	if len(profiles) == 0 {
 		return nil

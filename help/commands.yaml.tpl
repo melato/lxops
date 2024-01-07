@@ -169,6 +169,30 @@ commands:
     use: <config-file> ...
     examples:
     - launch php.yaml
+  extract:
+    short: (extract devices from an image)
+    use: <config-file>
+    examples:
+    - launch -name php php.yaml
+    long: |
+      This command creates filesystems and devices for the instance specified
+      in the command line, it copies the files from the corresponding directories
+      of the implied image, and shifts the uids and gids of by the amount
+      specified by the device-owner property (uid:gid).ConfigVersion
+      
+      It works only for lxops configuration files that have an image property and
+      use ZFS devices.
+      
+      It creates a container from this image,
+      finds the container root filesystem origin,
+      mounts this origin to a temporary directory, and copies the specified
+      device directories from the image to the instance device directories.
+  create:
+    short: (create container from image)
+    use: <config-file>
+    long: |
+      This is an experimental version of launch that does not start the container.
+      Its original purpose was to extract devices from an image.
   profile:
     short: profile utilities
     commands:
