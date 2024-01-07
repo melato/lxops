@@ -49,6 +49,25 @@ func DevicesToMap(devices map[string]*srv.Device) map[string]map[string]string {
 	return m
 
 }
+
+func MapToDevices(devicesMap map[string]map[string]string) map[string]*srv.Device {
+	devices := make(map[string]*srv.Device)
+
+	for deviceName, m := range devicesMap {
+		if m["type"] == "disk" {
+			var device srv.Device
+			device.Path = m["path"]
+			device.Source = m["source"]
+			device.Pool = m["pool"]
+			if m["readonly"] == "true" {
+				device.Readonly = true
+			}
+			devices[deviceName] = &device
+		}
+	}
+	return devices
+}
+
 func (t *InstanceServer) CreateProfile(profile *srv.Profile) error {
 	devices := DevicesToMap(profile.Devices)
 
@@ -65,6 +84,27 @@ func (t *InstanceServer) DeleteProfile(profile string) error {
 		return fmt.Errorf("delete profile %s: %w", profile, err)
 	}
 	return nil
+}
+
+func (t *InstanceServer) CreateInstance(launch *srv.Create) error {
+	var args []string
+	if launch.Project != "" {
+		args = append(args, "--project", launch.Project)
+	}
+	args = append(args, "init")
+
+	args = append(args, launch.Image)
+	for _, profile := range launch.Profiles {
+		args = append(args, "-p", profile)
+	}
+	for _, option := range launch.LxcOptions {
+		args = append(args, option)
+	}
+	args = append(args, launch.Name)
+	s := &script.Script{Trace: Trace}
+
+	s.Run("lxc", args...)
+	return s.Error()
 }
 
 func (t *InstanceServer) LaunchInstance(launch *srv.Launch) error {
@@ -304,6 +344,26 @@ func (t *InstanceServer) RenameInstance(oldname, newname string) error {
 		return err
 	}
 	return nil
+}
+
+func (t *InstanceServer) GetProfileDevices(name string) (map[string]*srv.Device, error) {
+	profile, _, err := t.Server.GetProfile(name)
+	if err != nil {
+		return nil, fmt.Errorf("%w: %s", err, name)
+	}
+	return MapToDevices(profile.Devices), nil
+}
+
+func (t *InstanceServer) GetStoragePool(name string) (*srv.StoragePool, error) {
+	pool, _, err := t.Server.GetStoragePool(name)
+	if err != nil {
+		return nil, fmt.Errorf("%w: %s", err, name)
+	}
+	var storage srv.StoragePool
+	storage.Name = pool.Name
+	storage.Driver = pool.Driver
+	storage.Source = pool.Config["source"]
+	return &storage, nil
 }
 
 func (t *InstanceServer) ExportProfile(name string) ([]byte, error) {
