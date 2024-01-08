@@ -238,7 +238,7 @@ func (t *Launcher) CreateContainer(instance *Instance) error {
 		return err
 	}
 
-	dev, err := NewDeviceConfigurer2(instance, server)
+	dev, err := NewDeviceConfigurer(instance)
 	if err != nil {
 		return err
 	}
@@ -305,13 +305,13 @@ func (t *Launcher) ExtractDevices(instance *Instance) error {
 			server.DeleteInstance(instance.Name, false)
 		}
 	}()
-	dev, err := NewDeviceConfigurer2(instance, server)
+	dev, err := NewDeviceConfigurer(instance)
 	if err != nil {
 		return err
 	}
 	dev.Trace = t.Trace
 	dev.DryRun = t.DryRun
-	err = dev.ConfigureDevices(instance)
+	err = dev.ExtractDevices(instance, server)
 	if err != nil {
 		return err
 	}

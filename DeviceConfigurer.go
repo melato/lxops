@@ -3,6 +3,7 @@ package lxops
 import (
 	"errors"
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 
@@ -15,7 +16,6 @@ import (
 type DeviceConfigurer struct {
 	Config *cfg.Config
 	Owner  string
-	RootFS *RootFS
 	// NoRsync - do not rsync devices.  Use when importing.
 	NoRsync bool
 	Trace   bool
@@ -29,15 +29,6 @@ func NewDeviceConfigurer(instance *Instance) (*DeviceConfigurer, error) {
 	if err != nil {
 		return nil, err
 	}
-	return t, nil
-}
-
-func NewDeviceConfigurer2(instance *Instance, server srv.InstanceServer) (*DeviceConfigurer, error) {
-	t, err := NewDeviceConfigurer(instance)
-	if err != nil {
-		return nil, err
-	}
-	t.RootFS = NewRootFS(server, instance.Name)
 	return t, nil
 }
 
@@ -172,17 +163,6 @@ func (t *DeviceConfigurer) ConfigureDevices(instance *Instance) error {
 
 	script := t.NewScript()
 	devices := SortDevices(t.Config.Devices)
-	var uid string
-	var gid string
-	if t.RootFS != nil {
-		u, g, ok := t.parseOwner()
-		if !ok {
-			return fmt.Errorf("owner should have the form uid:gid (%s)", t.Owner)
-		}
-		uid = strconv.Itoa(u)
-		gid = strconv.Itoa(g)
-		defer t.RootFS.Unmount()
-	}
 	for key, d := range devices {
 		if d.Device.Filesystem == "" {
 			continue
@@ -213,19 +193,69 @@ func (t *DeviceConfigurer) ConfigureDevices(instance *Instance) error {
 				} else {
 					fmt.Printf("skipping missing template Device=%s dir=%s\n", d.Name, templateDir)
 				}
-			} else if t.RootFS != nil {
-				fmt.Printf("using %s from image\n", d.Device.Path)
-				err := t.RootFS.Mount()
-				if err != nil {
-					return err
-				}
-				mountedDir, err := t.RootFS.MountedDir(d.Device.Path)
-				if err != nil {
-					return err
-				}
-				script.Run("sudo", "rsync", "-a", mountedDir+"/", dir+"/")
-				script.Run("sudo", "lxops", "shiftids", "-u", uid, "-g", gid, "-v", dir)
 			}
+		}
+		if script.Error() != nil {
+			return script.Error()
+		}
+	}
+	return nil
+}
+
+func (t *DeviceConfigurer) ExtractDevices(instance *Instance, server srv.InstanceServer) error {
+	var err error
+	err = t.CreateFilesystems(instance, nil, "")
+	if err != nil {
+		return err
+	}
+	filesystems, err := instance.Filesystems()
+	if err != nil {
+		return err
+	}
+
+	script := t.NewScript()
+	devices := SortDevices(t.Config.Devices)
+	var uid string
+	var gid string
+	rootFS := NewRootFS(server, instance.Name)
+	defer rootFS.Unmount()
+	u, g, ok := t.parseOwner()
+	if !ok {
+		return fmt.Errorf("owner should have the form uid:gid (%s)", t.Owner)
+	}
+	uid = strconv.Itoa(u)
+	gid = strconv.Itoa(g)
+	lxops, err := os.Executable()
+	if err != nil {
+		return fmt.Errorf("cannot locate executable")
+	}
+	for key, d := range devices {
+		if d.Device.Filesystem == "" {
+			continue
+		}
+		dir, err := instance.DeviceDir(d.Name, d.Device)
+		if err != nil {
+			return err
+		}
+		fs, found := filesystems[d.Device.Filesystem]
+		if !found {
+			return fmt.Errorf("missing filesystem: %s device: \n", d.Device.Filesystem, key)
+		}
+		if !fs.IsNew && util.DirExists(dir) {
+			continue
+		}
+		if !fs.Filesystem.Transient {
+			fmt.Printf("using %s from image\n", d.Device.Path)
+			err := rootFS.Mount()
+			if err != nil {
+				return err
+			}
+			mountedDir, err := rootFS.MountedDir(d.Device.Path)
+			if err != nil {
+				return err
+			}
+			script.Run("sudo", "rsync", "-a", mountedDir+"/", dir+"/")
+			script.Run("sudo", lxops, "shiftids", "-u", uid, "-g", gid, "-v", dir)
 		}
 		if script.Error() != nil {
 			return script.Error()
