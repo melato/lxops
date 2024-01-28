@@ -148,6 +148,7 @@ func (t *Launcher) copyContainer(instance *Instance, source ContainerSource, ser
 	cp.Project = source.Project
 	cp.SourceInstance = source.Container
 	cp.SourceSnapshot = source.Snapshot
+	cp.Profiles = options.Profiles
 
 	err = server.CopyInstance(&cp)
 

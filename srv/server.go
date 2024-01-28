@@ -87,6 +87,7 @@ type Copy struct {
 	Project        string
 	SourceInstance string
 	SourceSnapshot string
+	Profiles       []string
 	Network        Network
 }
 

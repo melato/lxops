@@ -155,6 +155,9 @@ func (t *InstanceServer) CopyInstance(cp *srv.Copy) error {
 	} else {
 		copyArgs = append(copyArgs, cp.SourceInstance+"/"+cp.SourceSnapshot)
 	}
+	for _, profile := range cp.Profiles {
+		copyArgs = append(copyArgs, "-p", profile)
+	}
 	copyArgs = append(copyArgs, cp.Name)
 	s := &script.Script{Trace: Trace}
 	s.Run("incus", copyArgs...)
