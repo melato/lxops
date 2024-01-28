@@ -56,14 +56,15 @@ func (t *DeviceConfigurer) CreateDir(dir string, chown bool) error {
 	return nil
 }
 
-func (t *DeviceConfigurer) CreateFilesystem(fs *InstanceFS, originDataset string) error {
+func (t *DeviceConfigurer) CreateFilesystem(fs *InstanceFS, originDataset string, originfs *InstanceFS) error {
 	if fs.IsDir() {
 		fs.IsNew = true
-		return t.CreateDir(fs.Dir(), true)
+		return t.CreateDir(fs.Dir(), false)
 	}
 
+	doClone := originDataset != "" && !originfs.Filesystem.Transient
 	var args []string
-	if originDataset != "" {
+	if doClone {
 		args = []string{"zfs", "clone", "-p"}
 	} else {
 		args = []string{"zfs", "create", "-p"}
@@ -75,7 +76,7 @@ func (t *DeviceConfigurer) CreateFilesystem(fs *InstanceFS, originDataset string
 		args = append(args, "-o", key+"="+value)
 	}
 
-	if originDataset != "" {
+	if doClone {
 		args = append(args, originDataset)
 	}
 	args = append(args, fs.Path)
@@ -115,13 +116,15 @@ func (t *DeviceConfigurer) CreateFilesystems(instance, origin *Instance, snapsho
 
 	for _, path := range pathList {
 		var originDataset string
+		var originPath *InstanceFS
 		if path.IsZfs() {
-			originPath, exists := originPaths[path.Id]
+			var exists bool
+			originPath, exists = originPaths[path.Id]
 			if exists {
 				originDataset = originPath.Path + "@" + snapshot
 			}
 		}
-		err := t.CreateFilesystem(path, originDataset)
+		err := t.CreateFilesystem(path, originDataset, originPath)
 		if err != nil {
 			return err
 		}
