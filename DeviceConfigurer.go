@@ -3,9 +3,6 @@ package lxops
 import (
 	"errors"
 	"fmt"
-	"os"
-	"strconv"
-	"strings"
 
 	"melato.org/lxops/cfg"
 	"melato.org/lxops/srv"
@@ -123,22 +120,6 @@ func (t *DeviceConfigurer) CreateFilesystems(instance, origin *Instance, snapsho
 	return nil
 }
 
-func parseOwner(owner string) (int, int, bool) {
-	parts := strings.Split(owner, ":")
-	if len(parts) != 2 {
-		return 0, 0, false
-	}
-	ids := make([]int, len(parts))
-	for i, s := range parts {
-		var err error
-		ids[i], err = strconv.Atoi(s)
-		if err != nil {
-			return 0, 0, false
-		}
-	}
-	return ids[0], ids[1], true
-}
-
 func (t *DeviceConfigurer) ConfigureDevices(instance *Instance) error {
 	owner, err := instance.GetOwner()
 	if err != nil {
@@ -204,6 +185,10 @@ func (t *DeviceConfigurer) ExtractDevices(instance *Instance, server srv.Instanc
 	if err != nil {
 		return err
 	}
+	shift, err := newShiftIds(owner)
+	if err != nil {
+		return err
+	}
 	err = t.CreateFilesystems(instance, nil, "", owner)
 	if err != nil {
 		return err
@@ -215,20 +200,8 @@ func (t *DeviceConfigurer) ExtractDevices(instance *Instance, server srv.Instanc
 
 	script := t.NewScript()
 	devices := SortDevices(t.Config.Devices)
-	var uid string
-	var gid string
 	rootFS := NewRootFS(server, instance.Name)
 	defer rootFS.Unmount()
-	u, g, ok := parseOwner(owner)
-	if !ok {
-		return fmt.Errorf("owner should have the form uid:gid (%s)", owner)
-	}
-	uid = strconv.Itoa(u)
-	gid = strconv.Itoa(g)
-	lxops, err := os.Executable()
-	if err != nil {
-		return fmt.Errorf("cannot locate executable")
-	}
 	for key, d := range devices {
 		if d.Device.Filesystem == "" {
 			continue
@@ -255,7 +228,7 @@ func (t *DeviceConfigurer) ExtractDevices(instance *Instance, server srv.Instanc
 				return err
 			}
 			script.Run("sudo", "rsync", "-a", mountedDir+"/", dir+"/")
-			script.Run("sudo", lxops, "shiftids", "-u", uid, "-g", gid, "-v", dir)
+			shift.ShiftDir(script, dir)
 		}
 		if script.Error() != nil {
 			return script.Error()
