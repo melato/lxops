@@ -21,9 +21,9 @@ type DeviceConfigurer struct {
 	DryRun  bool
 }
 
-func NewDeviceConfigurer(instance *Instance) (*DeviceConfigurer, error) {
-	t := &DeviceConfigurer{Config: instance.Config}
-	return t, nil
+func NewDeviceConfigurer(config *cfg.Config) *DeviceConfigurer {
+	t := &DeviceConfigurer{Config: config}
+	return t
 }
 
 func (t *DeviceConfigurer) NewScript() *script.Script {

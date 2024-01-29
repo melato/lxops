@@ -112,10 +112,7 @@ func (t *ExportOps) Import(configFile string) error {
 			return err
 		}
 	}
-	dev, err := NewDeviceConfigurer(instance)
-	if err != nil {
-		return err
-	}
+	dev := NewDeviceConfigurer(instance.Config)
 	dev.NoRsync = true
 	dev.Trace = TraceExport
 	dev.DryRun = t.DryRun

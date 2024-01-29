@@ -161,20 +161,14 @@ func (t *Launcher) copyContainer(instance *Instance, source ContainerSource, ser
 
 func (t *Launcher) CreateDevices(instance *Instance) error {
 	t.Trace = true
-	dev, err := NewDeviceConfigurer(instance)
-	if err != nil {
-		return err
-	}
+	dev := NewDeviceConfigurer(instance.Config)
 	dev.Trace = t.Trace
 	dev.DryRun = t.DryRun
 	return dev.ConfigureDevices(instance)
 }
 
 func (t *Launcher) CreateProfile(instance *Instance) error {
-	dev, err := NewDeviceConfigurer(instance)
-	if err != nil {
-		return err
-	}
+	dev := NewDeviceConfigurer(instance.Config)
 	dev.Trace = t.Trace
 	dev.DryRun = t.DryRun
 	profileName := instance.ProfileName()
@@ -239,10 +233,7 @@ func (t *Launcher) CreateContainer(instance *Instance) error {
 		return err
 	}
 
-	dev, err := NewDeviceConfigurer(instance)
-	if err != nil {
-		return err
-	}
+	dev := NewDeviceConfigurer(instance.Config)
 	dev.Trace = t.Trace
 	dev.DryRun = t.DryRun
 	err = dev.ConfigureDevices(instance)
@@ -306,10 +297,7 @@ func (t *Launcher) ExtractDevices(instance *Instance) error {
 			server.DeleteInstance(instance.Name, false)
 		}
 	}()
-	dev, err := NewDeviceConfigurer(instance)
-	if err != nil {
-		return err
-	}
+	dev := NewDeviceConfigurer(instance.Config)
 	dev.Trace = t.Trace
 	dev.DryRun = t.DryRun
 	err = dev.ExtractDevices(instance, server)
@@ -364,10 +352,7 @@ func (t *Launcher) launchContainer(instance *Instance) error {
 		return err
 	}
 
-	dev, err := NewDeviceConfigurer(instance)
-	if err != nil {
-		return err
-	}
+	dev := NewDeviceConfigurer(instance.Config)
 	dev.Trace = t.Trace
 	dev.DryRun = t.DryRun
 	err = dev.ConfigureDevices(instance)
@@ -565,10 +550,7 @@ func (t *Launcher) Rename(configFile string, newname string) error {
 	if err != nil {
 		return err
 	}
-	dev, err := NewDeviceConfigurer(instance)
-	if err != nil {
-		return err
-	}
+	dev := NewDeviceConfigurer(instance.Config)
 	dev.Trace = t.Trace
 	dev.DryRun = t.DryRun
 
