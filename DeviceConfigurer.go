@@ -169,7 +169,7 @@ func (t *DeviceConfigurer) ConfigureDevices(instance *Instance) error {
 				if templateDir != "" && util.DirExists(templateDir) {
 					script.Run("sudo", "rsync", "-a", templateDir+"/", dir+"/")
 				} else {
-					fmt.Printf("skipping missing template Device=%s dir=%s\n", d.Name, templateDir)
+					return fmt.Errorf("missing template Device=%s dir=%s\n", d.Name, templateDir)
 				}
 			}
 		}
