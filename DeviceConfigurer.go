@@ -36,14 +36,12 @@ func (t *DeviceConfigurer) chownDir(scr *script.Script, dir string, owner string
 	}
 }
 
-func (t *DeviceConfigurer) CreateDir(dir string, chown bool, owner string) error {
+func (t *DeviceConfigurer) CreateDir(dir string, owner string) error {
 	if !util.DirExists(dir) {
 		script := t.NewScript()
 		script.Run("sudo", "mkdir", "-p", dir)
 		//err = os.Mkdir(dir, 0755)
-		if chown {
-			t.chownDir(script, dir, owner)
-		}
+		t.chownDir(script, dir, owner)
 		return script.Error()
 	}
 	return nil
@@ -52,7 +50,7 @@ func (t *DeviceConfigurer) CreateDir(dir string, chown bool, owner string) error
 func (t *DeviceConfigurer) CreateFilesystem(fs *InstanceFS, originDataset string, originfs *InstanceFS, owner string) error {
 	if fs.IsDir() {
 		fs.IsNew = true
-		return t.CreateDir(fs.Dir(), false, owner)
+		return t.CreateDir(fs.Dir(), "")
 	}
 
 	doClone := originDataset != "" && !originfs.Filesystem.Transient
@@ -177,7 +175,7 @@ func (t *DeviceConfigurer) ConfigureDevices(instance *Instance) error {
 		if !fs.IsNew && util.DirExists(dir) {
 			continue
 		}
-		err = t.CreateDir(dir, true, owner)
+		err = t.CreateDir(dir, owner)
 		if err != nil {
 			return err
 		}
