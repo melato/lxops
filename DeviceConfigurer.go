@@ -15,7 +15,6 @@ import (
 
 type DeviceConfigurer struct {
 	Config *cfg.Config
-	Owner  string
 	// NoRsync - do not rsync devices.  Use when importing.
 	NoRsync bool
 	Trace   bool
@@ -24,11 +23,6 @@ type DeviceConfigurer struct {
 
 func NewDeviceConfigurer(instance *Instance) (*DeviceConfigurer, error) {
 	t := &DeviceConfigurer{Config: instance.Config}
-	var err error
-	t.Owner, err = instance.Config.DeviceOwner.Substitute(instance.Properties)
-	if err != nil {
-		return nil, err
-	}
 	return t, nil
 }
 
@@ -36,30 +30,29 @@ func (t *DeviceConfigurer) NewScript() *script.Script {
 	return &script.Script{Trace: t.Trace, DryRun: t.DryRun}
 }
 
-func (t *DeviceConfigurer) chownDir(scr *script.Script, dir string) {
-	//scr.Run("sudo", "chown", "1000000:1000000", dir)
-	if t.Owner != "" {
-		scr.Run("sudo", "chown", t.Owner, dir)
+func (t *DeviceConfigurer) chownDir(scr *script.Script, dir string, owner string) {
+	if owner != "" {
+		scr.Run("sudo", "chown", owner, dir)
 	}
 }
 
-func (t *DeviceConfigurer) CreateDir(dir string, chown bool) error {
+func (t *DeviceConfigurer) CreateDir(dir string, chown bool, owner string) error {
 	if !util.DirExists(dir) {
 		script := t.NewScript()
 		script.Run("sudo", "mkdir", "-p", dir)
 		//err = os.Mkdir(dir, 0755)
 		if chown {
-			t.chownDir(script, dir)
+			t.chownDir(script, dir, owner)
 		}
 		return script.Error()
 	}
 	return nil
 }
 
-func (t *DeviceConfigurer) CreateFilesystem(fs *InstanceFS, originDataset string, originfs *InstanceFS) error {
+func (t *DeviceConfigurer) CreateFilesystem(fs *InstanceFS, originDataset string, originfs *InstanceFS, owner string) error {
 	if fs.IsDir() {
 		fs.IsNew = true
-		return t.CreateDir(fs.Dir(), false)
+		return t.CreateDir(fs.Dir(), false, owner)
 	}
 
 	doClone := originDataset != "" && !originfs.Filesystem.Transient
@@ -83,13 +76,13 @@ func (t *DeviceConfigurer) CreateFilesystem(fs *InstanceFS, originDataset string
 	s := t.NewScript()
 	s.Run("sudo", args...)
 	if originDataset == "" {
-		t.chownDir(s, fs.Dir())
+		t.chownDir(s, fs.Dir(), owner)
 		fs.IsNew = true
 	}
 	return s.Error()
 }
 
-func (t *DeviceConfigurer) CreateFilesystems(instance, origin *Instance, snapshot string) error {
+func (t *DeviceConfigurer) CreateFilesystems(instance, origin *Instance, snapshot string, owner string) error {
 	paths, err := instance.Filesystems()
 	if err != nil {
 		return err
@@ -124,7 +117,7 @@ func (t *DeviceConfigurer) CreateFilesystems(instance, origin *Instance, snapsho
 				originDataset = originPath.Path + "@" + snapshot
 			}
 		}
-		err := t.CreateFilesystem(path, originDataset, originPath)
+		err := t.CreateFilesystem(path, originDataset, originPath, owner)
 		if err != nil {
 			return err
 		}
@@ -132,8 +125,8 @@ func (t *DeviceConfigurer) CreateFilesystems(instance, origin *Instance, snapsho
 	return nil
 }
 
-func (t *DeviceConfigurer) parseOwner() (int, int, bool) {
-	parts := strings.Split(t.Owner, ":")
+func parseOwner(owner string) (int, int, bool) {
+	parts := strings.Split(owner, ":")
 	if len(parts) != 2 {
 		return 0, 0, false
 	}
@@ -149,12 +142,15 @@ func (t *DeviceConfigurer) parseOwner() (int, int, bool) {
 }
 
 func (t *DeviceConfigurer) ConfigureDevices(instance *Instance) error {
+	owner, err := instance.GetOwner()
+	if err != nil {
+		return err
+	}
 	source := instance.DeviceSource()
-	var err error
 	if source.IsDefined() && source.Clone {
-		err = t.CreateFilesystems(instance, source.Instance, source.Snapshot)
+		err = t.CreateFilesystems(instance, source.Instance, source.Snapshot, owner)
 	} else {
-		err = t.CreateFilesystems(instance, nil, "")
+		err = t.CreateFilesystems(instance, nil, "", owner)
 	}
 	if err != nil {
 		return err
@@ -181,7 +177,7 @@ func (t *DeviceConfigurer) ConfigureDevices(instance *Instance) error {
 		if !fs.IsNew && util.DirExists(dir) {
 			continue
 		}
-		err = t.CreateDir(dir, true)
+		err = t.CreateDir(dir, true, owner)
 		if err != nil {
 			return err
 		}
@@ -206,8 +202,11 @@ func (t *DeviceConfigurer) ConfigureDevices(instance *Instance) error {
 }
 
 func (t *DeviceConfigurer) ExtractDevices(instance *Instance, server srv.InstanceServer) error {
-	var err error
-	err = t.CreateFilesystems(instance, nil, "")
+	owner, err := instance.GetOwner()
+	if err != nil {
+		return err
+	}
+	err = t.CreateFilesystems(instance, nil, "", owner)
 	if err != nil {
 		return err
 	}
@@ -222,9 +221,9 @@ func (t *DeviceConfigurer) ExtractDevices(instance *Instance, server srv.Instanc
 	var gid string
 	rootFS := NewRootFS(server, instance.Name)
 	defer rootFS.Unmount()
-	u, g, ok := t.parseOwner()
+	u, g, ok := parseOwner(owner)
 	if !ok {
-		return fmt.Errorf("owner should have the form uid:gid (%s)", t.Owner)
+		return fmt.Errorf("owner should have the form uid:gid (%s)", owner)
 	}
 	uid = strconv.Itoa(u)
 	gid = strconv.Itoa(g)

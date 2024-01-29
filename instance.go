@@ -262,6 +262,10 @@ func (t *Instance) GetSourceConfig() (*cfg.Config, error) {
 	return t.sourceConfig, nil
 }
 
+func (t *Instance) GetOwner() (string, error) {
+	return t.Config.DeviceOwner.Substitute(t.Properties)
+}
+
 func (t *Instance) NewDeviceMap() (map[string]*srv.Device, error) {
 	devices := make(map[string]*srv.Device)
 
