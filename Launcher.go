@@ -17,13 +17,14 @@ import (
 type Launcher struct {
 	Client srv.Client `name:"-"`
 	ConfigOptions
-	WaitInterval int  `name:"wait" usage:"# seconds to wait before snapshot"`
-	Trace        bool `name:"t" usage:"trace print what is happening"`
+	WaitBeforeConfigure int  `name:"wait-configure" usage:"# seconds to wait before configuration"`
+	WaitBeforeStop      int  `name:"wait-stop" usage:"# seconds to wait before stop or snapshot"`
+	Trace               bool `name:"t" usage:"trace print what is happening"`
 	DryRunFlag
 }
 
 func (t *Launcher) Init() error {
-	t.WaitInterval = 5
+	t.WaitBeforeStop = 5
 	return t.ConfigOptions.Init()
 }
 
@@ -398,14 +399,18 @@ func (t *Launcher) launchContainer(instance *Instance) error {
 		}
 	}
 	configurer := t.NewConfigurer()
+	if t.WaitBeforeConfigure != 0 {
+		fmt.Printf("waiting %d seconds before configuring\n", t.WaitBeforeConfigure)
+		time.Sleep(time.Duration(t.WaitBeforeConfigure) * time.Second)
+	}
 	err = configurer.ConfigureContainer(instance)
 	if err != nil {
 		return err
 	}
 	if config.Stop || config.Snapshot != "" {
-		if t.WaitInterval != 0 {
-			fmt.Printf("waiting %d seconds for container installation scripts to complete\n", t.WaitInterval)
-			time.Sleep(time.Duration(t.WaitInterval) * time.Second)
+		if t.WaitBeforeStop != 0 {
+			fmt.Printf("waiting %d seconds for container installation scripts to complete\n", t.WaitBeforeStop)
+			time.Sleep(time.Duration(t.WaitBeforeStop) * time.Second)
 		}
 	}
 	if config.Stop {
