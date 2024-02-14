@@ -443,16 +443,24 @@ func (t *Launcher) deleteContainer(instance *Instance, stop bool) error {
 	}
 	if !t.DryRun {
 		err = server.DeleteInstance(container, stop)
-		if err != nil {
-			return err
+		if t.Trace {
+			if err != nil {
+				fmt.Printf("DeleteInstance(%s): %v\n", container, err)
+			} else {
+				fmt.Printf("deleted instance %s\n", container)
+			}
+		}
+		if err != nil && t.Trace {
 		}
 	}
 	profileName := instance.ProfileName()
 
 	if !t.DryRun {
 		err := server.DeleteProfile(profileName)
-		if err == nil && t.Trace {
-			fmt.Printf("delete profile %s\n", profileName)
+		if err != nil {
+			fmt.Printf("DeleteProfile(%s): %v\n", profileName, err)
+		} else {
+			fmt.Printf("deleted profile %s\n", profileName)
 		}
 	}
 	return nil
