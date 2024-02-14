@@ -18,6 +18,7 @@ type Launcher struct {
 	Client srv.Client `name:"-"`
 	ConfigOptions
 	WaitBeforeConfigure int  `name:"wait-configure" usage:"# seconds to wait before configuration"`
+	PollConfigure       int  `name:"poll-configure" usage:"max # seconds to poll before configuration"`
 	WaitBeforeStop      int  `name:"wait-stop" usage:"# seconds to wait before stop or snapshot"`
 	Trace               bool `name:"t" usage:"trace print what is happening"`
 	DryRunFlag
@@ -25,6 +26,7 @@ type Launcher struct {
 
 func (t *Launcher) Init() error {
 	t.WaitBeforeStop = 5
+	t.PollConfigure = 20
 	return t.ConfigOptions.Init()
 }
 
@@ -68,6 +70,7 @@ func (t *Launcher) Rebuild(instance *Instance) error {
 
 func (t *Launcher) NewConfigurer() *Configurer {
 	var c = &Configurer{Client: t.Client, Trace: t.Trace, DryRunFlag: t.DryRunFlag}
+	c.PollSeconds = t.PollConfigure
 	return c
 }
 
