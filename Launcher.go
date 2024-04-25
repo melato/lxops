@@ -18,6 +18,7 @@ type Launcher struct {
 	Client srv.Client `name:"-"`
 	ConfigOptions
 	WaitBeforeConfigure int  `name:"wait-configure" usage:"# seconds to wait before configuration"`
+	PollConfigure       int  `name:"poll-configure" usage:"max # seconds to poll before configuration"`
 	WaitBeforeStop      int  `name:"wait-stop" usage:"# seconds to wait before stop or snapshot"`
 	Trace               bool `name:"t" usage:"trace print what is happening"`
 	DryRunFlag
@@ -25,6 +26,7 @@ type Launcher struct {
 
 func (t *Launcher) Init() error {
 	t.WaitBeforeStop = 5
+	t.PollConfigure = 20
 	return t.ConfigOptions.Init()
 }
 
@@ -68,6 +70,7 @@ func (t *Launcher) Rebuild(instance *Instance) error {
 
 func (t *Launcher) NewConfigurer() *Configurer {
 	var c = &Configurer{Client: t.Client, Trace: t.Trace, DryRunFlag: t.DryRunFlag}
+	c.PollSeconds = t.PollConfigure
 	return c
 }
 
@@ -443,16 +446,24 @@ func (t *Launcher) deleteContainer(instance *Instance, stop bool) error {
 	}
 	if !t.DryRun {
 		err = server.DeleteInstance(container, stop)
-		if err != nil {
-			return err
+		if t.Trace {
+			if err != nil {
+				fmt.Printf("DeleteInstance(%s): %v\n", container, err)
+			} else {
+				fmt.Printf("deleted instance %s\n", container)
+			}
+		}
+		if err != nil && t.Trace {
 		}
 	}
 	profileName := instance.ProfileName()
 
 	if !t.DryRun {
 		err := server.DeleteProfile(profileName)
-		if err == nil && t.Trace {
-			fmt.Printf("delete profile %s\n", profileName)
+		if err != nil {
+			fmt.Printf("DeleteProfile(%s): %v\n", profileName, err)
+		} else {
+			fmt.Printf("deleted profile %s\n", profileName)
 		}
 	}
 	return nil
