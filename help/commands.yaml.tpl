@@ -77,6 +77,11 @@ commands:
           See github.com/melato/cloudconfig
       hwaddr:
         short: (export hwaddr for all containers)
+      info: 
+        short: (print instance information)
+        long: |
+          Prints instance information, as reported by the {{.ServerType}} server.
+          This is for informational purposes only.
       number:
         short: (assign numbers to containers)
         use: -first <number> [-a] [-r] [-project <project>] <container>...]
@@ -91,10 +96,18 @@ commands:
         use: <container>
       publish:
         short: publish an instance into an image
+        long: See also the publish command.
         use: <instance> <snapshot> <alias>
       wait: 
         short: (wait until all the requested containers have an ipv4 address)
         use: <container>...
+  publish:
+    short: (create an image from an instance)
+    long: |
+      Create an image from an instance.
+      This fills all configurable image fields,
+      using options, the current date/time,
+      and information from the instance.
   create-devices:
     short: (create devices)
   create-profile:

@@ -35,6 +35,7 @@ type InstanceServer interface {
 
 	// images
 	PublishInstance(instance, snapshot, alias string) error
+	PublishInstanceWithFields(instance, snapshot, alias string, fields ImageFields) error
 	ExportImage(image string, path string) error
 	ImportImage(image string, path string) error
 
@@ -42,9 +43,12 @@ type InstanceServer interface {
 	GetInstanceDevices(name string) (map[string]*Device, error)
 	GetHwaddresses() ([]Hwaddr, error)
 	GetInstanceImages() ([]InstanceImage, error)
+	GetInstanceImageFields(instance string) (*ImageFields, error)
 	GetInstanceNames(onlyRunning bool) ([]string, error)
 	// GetInstanceAddresses - family is "inet" or "inet6"
 	GetInstanceAddresses(family string) ([]*HostAddress, error)
+
+	GetInstance(name string) (any, error)
 }
 
 type Profile struct {
@@ -104,4 +108,14 @@ type InstanceImage struct {
 type HostAddress struct {
 	Name    string
 	Address string
+}
+
+type ImageFields struct {
+	Name         string
+	Architecture string
+	Description  string
+	OS           string
+	Release      string
+	Serial       string
+	Variant      string
 }

@@ -109,6 +109,10 @@ func RootCommand(client srv.Client) *command.SimpleCommand {
 	containerCmd.Command("devices").RunFunc(containerOps.Devices)
 	containerCmd.Command("hwaddr").RunFunc(containerOps.ListHwaddr)
 	containerCmd.Command("publish").RunFunc(containerOps.PublishInstance)
+	containerCmd.Command("info").RunFunc(containerOps.Info)
+
+	publishOps := &cli.PublishOps{InstanceOps: cli.InstanceOps{Client: client}}
+	cmd.Command("publish").Flags(publishOps).RunFunc(publishOps.PublishInstance)
 
 	cloudconfig := &cli.Cloudconfig{Client: client}
 	cloudconfigInstanceOps := &cli.CloudconfigInstanceOps{Cloudconfig: cloudconfig}

@@ -192,6 +192,31 @@ func (t *InstanceServer) GetInstanceProfiles(name string) ([]string, error) {
 	return c.Profiles, nil
 }
 
+func (t *InstanceServer) GetInstance(name string) (any, error) {
+	c, _, err := t.Server.GetInstance(name)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", name, err)
+	}
+	return c, nil
+}
+
+func (t *InstanceServer) GetInstanceImageFields(name string) (*srv.ImageFields, error) {
+	c, _, err := t.Server.GetInstance(name)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", name, err)
+	}
+	config := c.ExpandedConfig
+	var f srv.ImageFields
+	f.Architecture = config["image.architecture"]
+	f.Description = config["image.description"]
+	f.Name = config["image.name"]
+	f.OS = config["image.os"]
+	f.Release = config["image.release"]
+	f.Serial = config["image.serial"]
+	f.Variant = config["image.variant"]
+	return &f, nil
+}
+
 type Network struct {
 	Hwaddresses map[string]string
 }
@@ -468,7 +493,27 @@ func (t *InstanceServer) GetInstanceAddresses(family string) ([]*srv.HostAddress
 
 func (t *InstanceServer) PublishInstance(instance, snapshot, alias string) error {
 	s := &script.Script{Trace: Trace}
-	s.Run("incus", "publish", instance+"/"+snapshot, "--alias="+alias)
+	args := []string{"publish", instance + "/" + snapshot, "--alias=" + alias}
+	s.Run("incus", args...)
+	return s.Error()
+}
+
+func (t *InstanceServer) PublishInstanceWithFields(instance, snapshot, alias string, f srv.ImageFields) error {
+	s := &script.Script{Trace: Trace}
+	args := []string{"publish", instance + "/" + snapshot, "--alias=" + alias}
+	addField := func(name, value string) {
+		if value != "" {
+			args = append(args, name+"="+value)
+		}
+	}
+	addField("architecture", f.Architecture)
+	addField("description", f.Description)
+	addField("name", f.Name)
+	addField("os", f.OS)
+	addField("release", f.Release)
+	addField("serial", f.Serial)
+	addField("variant", f.Variant)
+	s.Run("incus", args...)
 	return s.Error()
 }
 
