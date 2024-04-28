@@ -50,12 +50,13 @@ func (t *PublishOps) PublishInstance(instance, snapshot string) error {
 	if name == "" {
 		name = instance
 	}
+	im.Variant = name
 	alias := t.Alias
 	if alias == "" {
 		alias = instance
 		//alias = name + "-" + strings.ReplaceAll(serial, "_", "-")
 	}
-	im.Name = fmt.Sprintf("%s-%s-%s-%s-%s", name, im.Release, im.Architecture, im.Variant, im.Serial)
+	im.Name = fmt.Sprintf("%s-%s-%s-%s-%s", im.OS, im.Release, im.Architecture, im.Variant, im.Serial)
 	im.Description = fmt.Sprintf("%s %s %s (%s)", capFirst(name), im.Release, im.Architecture, im.Serial)
 	return t.server.PublishInstanceWithFields(instance, snapshot, alias, *im)
 }
