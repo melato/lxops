@@ -111,9 +111,6 @@ func RootCommand(client srv.Client) *command.SimpleCommand {
 	containerCmd.Command("publish").RunFunc(containerOps.PublishInstance)
 	containerCmd.Command("info").RunFunc(containerOps.Info)
 
-	publishOps := &cli.PublishOps{InstanceOps: cli.InstanceOps{Client: client}}
-	cmd.Command("publish").Flags(publishOps).RunFunc(publishOps.PublishInstance)
-
 	cloudconfig := &cli.Cloudconfig{Client: client}
 	cloudconfigInstanceOps := &cli.CloudconfigInstanceOps{Cloudconfig: cloudconfig}
 	containerCmd.Command("cloudconfig").Flags(cloudconfigInstanceOps).RunFunc(cloudconfigInstanceOps.Apply)
@@ -123,6 +120,11 @@ func RootCommand(client srv.Client) *command.SimpleCommand {
 
 	imageCmd := cmd.Command("image")
 	imageCmd.Command("instances").Flags(containerOps).RunFunc(containerOps.ListImages)
+	publishOps := &cli.PublishOps{InstanceOps: cli.InstanceOps{Client: client}}
+	cmd.Command("publish").Flags(publishOps).RunFunc(publishOps.PublishInstance)
+	metadataOps := &cli.ImageMetadataOps{}
+	metadataCmd := imageCmd.Command("metadata")
+	metadataCmd.Command("update").Flags(metadataOps).RunFunc(metadataOps.Update)
 
 	networkOp := &cli.NetworkOp{Client: client}
 	containerCmd.Command("addresses").Flags(networkOp).RunFunc(networkOp.ExportAddresses)

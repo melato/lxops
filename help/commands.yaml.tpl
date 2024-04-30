@@ -30,6 +30,17 @@ commands:
           print a table of all intances with columns:
           - image aliases
           - instance name
+      metadata:
+        short: manipulate image metadata.yaml
+        commands:
+          update:
+            short: (modify image metadata.yaml)
+            long: |
+              updates a metadata.yaml image file
+              Uses the provided name, the current time,
+              and the existing values from metadata.yaml.
+              Updates image name, description, variant, serial.
+              Updates os, release, if they are provided.
   cloudconfig:
     short: apply cloud-config files to instances (new)
     use: "[instance]..."
