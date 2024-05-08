@@ -6,8 +6,8 @@ import (
 	"os"
 	"path/filepath"
 
-	incus "github.com/lxc/incus/client"
-	config "github.com/lxc/incus/shared/cliconfig"
+	incus "github.com/lxc/incus/v6/client"
+	config "github.com/lxc/incus/v6/shared/cliconfig"
 	"melato.org/lxops/srv"
 	"melato.org/lxops/yaml"
 )

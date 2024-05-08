@@ -4,7 +4,7 @@ import (
 	"os"
 	"path/filepath"
 
-	config "github.com/lxc/incus/shared/cliconfig"
+	config "github.com/lxc/incus/v6/shared/cliconfig"
 	"melato.org/lxops/yaml"
 )
 

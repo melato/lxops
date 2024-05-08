@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/lxc/incus/shared/api"
+	"github.com/lxc/incus/v6/shared/api"
 	"melato.org/lxops/srv"
 	"melato.org/lxops/yaml"
 	"melato.org/script"

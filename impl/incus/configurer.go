@@ -9,8 +9,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	incus "github.com/lxc/incus/client"
-	"github.com/lxc/incus/shared/api"
+	incus "github.com/lxc/incus/v6/client"
+	"github.com/lxc/incus/v6/shared/api"
 )
 
 type InstanceConfigurer struct {
