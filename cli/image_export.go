@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"os/user"
 	"path/filepath"
 
 	"melato.org/lxops/srv"
@@ -142,6 +143,15 @@ func (t *ImageExportOps) Export(image string) error {
 		if err != nil {
 			return err
 		}
+		user, err := user.Current()
+		if err != nil {
+			return err
+		}
+		err = t.exec("sudo", "chown", user.Uid+":"+user.Gid, rootfsFile)
+		if err != nil {
+			return err
+		}
+
 		err = t.exec("tar", "Jcf",
 			metadataFile,
 			"-C", unpackDir,
