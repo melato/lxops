@@ -76,6 +76,19 @@ func checkFilesNotExist(paths ...string) error {
 	return nil
 }
 
+func (t *ImageExportOps) mkdir(dir string) (string, error) {
+	path := filepath.Join(t.Dir, dir)
+	err := checkFileNotExist(path)
+	if err != nil {
+		return "", err
+	}
+	err = os.Mkdir(path, os.FileMode(0775))
+	if err != nil {
+		return "", err
+	}
+	return path, nil
+}
+
 func (t *ImageExportOps) Export(image string) error {
 	err := os.MkdirAll(t.Dir, os.FileMode(0775))
 	if err != nil {
@@ -83,17 +96,21 @@ func (t *ImageExportOps) Export(image string) error {
 	}
 	var rootfsFile string
 	var metadataFile string
+	var unpackDir string
 
 	exportDir := t.Dir
 	if t.Squashfs {
-		rootfsFile = filepath.Join(t.Dir, "rootfs.squashfs")
-		metadataFile = filepath.Join(t.Dir, "metadata.tar.xz")
-		err = checkFilesNotExist(rootfsFile, metadataFile)
+		exportDir, err = t.mkdir("export")
 		if err != nil {
 			return err
 		}
-
-		exportDir, err = os.MkdirTemp(t.Dir, "export")
+		unpackDir, err = t.mkdir("unpack")
+		if err != nil {
+			return err
+		}
+		rootfsFile = filepath.Join(t.Dir, "rootfs.squashfs")
+		metadataFile = filepath.Join(t.Dir, "metadata.tar.xz")
+		err = checkFilesNotExist(rootfsFile, metadataFile)
 		if err != nil {
 			return err
 		}
@@ -105,11 +122,6 @@ func (t *ImageExportOps) Export(image string) error {
 	}
 	if t.Squashfs {
 		tarfile, err := t.findTarfile(exportDir)
-		if err != nil {
-			return err
-		}
-		var unpackDir string
-		unpackDir, err = os.MkdirTemp(t.Dir, "unpack")
 		if err != nil {
 			return err
 		}
