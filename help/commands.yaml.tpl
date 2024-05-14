@@ -24,6 +24,11 @@ commands:
   image:
     short: (utilities for {{.ServerType}} instances)
     commands:
+      export:
+        short: export an image
+        long: |
+          exports an image by calling {{.ServerType}} image export
+          Optionally, convert it to rootfs.squashfs, metadata.tar.xz
       instances:
         short: list image aliases for containers
         long: |

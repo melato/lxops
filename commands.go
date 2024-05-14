@@ -120,6 +120,9 @@ func RootCommand(client srv.Client) *command.SimpleCommand {
 
 	imageCmd := cmd.Command("image")
 	imageCmd.Command("instances").Flags(containerOps).RunFunc(containerOps.ListImages)
+	imageExportOps := &cli.ImageExportOps{Client: client}
+	imageCmd.Command("export").Flags(imageExportOps).RunFunc(imageExportOps.Export)
+
 	publishOps := &cli.PublishOps{InstanceOps: cli.InstanceOps{Client: client}}
 	cmd.Command("publish").Flags(publishOps).RunFunc(publishOps.PublishInstance)
 	metadataOps := &cli.ImageMetadataOps{}
