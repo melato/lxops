@@ -28,7 +28,12 @@ commands:
         short: export an image
         long: |
           exports an image by calling {{.ServerType}} image export
-          Optionally, convert it to rootfs.squashfs, metadata.tar.xz
+          Optionally, convert it to rootfs.squashfs, metadata.tar.xz,
+          by running the commands:
+            mkdir export unpack
+            {{.ServerType}} image export {image} export
+            sudo tar xvf export/{hash}.tar.gz -C unpack
+            tar Jcf metadata.tar.xz -C unpack metadata.yaml templates/
       instances:
         short: list image aliases for containers
         long: |
