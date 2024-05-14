@@ -15,6 +15,7 @@ type ImageExportOps struct {
 	Squashfs bool       `name:"squashfs" usage:"export to squashfs"`
 	Dir      string     `name:"d" usage:"export directory"`
 	Keep     bool       `name:"keep" usage:"do not delete intermediate directories"`
+	Verbose  bool       `name:"verbose" usage:"print output of commands"`
 	server   srv.InstanceServer
 }
 
@@ -49,7 +50,9 @@ func (t *ImageExportOps) findTarfile(dir string) (string, error) {
 
 func (t *ImageExportOps) exec(name string, args ...string) error {
 	cmd := exec.Command(name, args...)
-	cmd.Stdout = os.Stdout
+	if t.Verbose {
+		cmd.Stdout = os.Stdout
+	}
 	cmd.Stderr = os.Stderr
 	fmt.Printf("%s\n", cmd.String())
 	return cmd.Run()
@@ -125,7 +128,11 @@ func (t *ImageExportOps) Export(image string) error {
 		if err != nil {
 			return err
 		}
-		err = t.exec("sudo", "tar", "xvf", tarfile, "-C", unpackDir)
+		tarFlags := "xf"
+		if t.Verbose {
+			tarFlags += "v"
+		}
+		err = t.exec("sudo", "tar", tarFlags, tarfile, "-C", unpackDir)
 		if err != nil {
 			return err
 		}
