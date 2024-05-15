@@ -2,59 +2,90 @@ package cli
 
 import (
 	"fmt"
-	"syscall"
 	"time"
 
 	"melato.org/lxops/srv"
+	"melato.org/lxops/yaml"
 )
 
+// ImageMetadata - represents image metadata.yaml, in generic form
 type ImageMetadata struct {
+	v          map[any]any
+	properties map[any]any
 }
 
-func (t *ImageMetadata) FormatSerial(tm time.Time) string {
-	return tm.UTC().Format("20060102_15:04")
-}
-
-// SetImageDescription - generate name, description from other fields
-func (t *ImageMetadata) SetImageDescription(im *srv.ImageFields, name string) {
-	im.Name = fmt.Sprintf("%s-%s-%s-%s-%s", im.OS, im.Release, im.Architecture, im.Variant, im.Serial)
-	im.Description = fmt.Sprintf("%s %s %s (%s)", name, im.Release, im.Architecture, im.Serial)
-
-	/* Typical image properties
-	image.description: Alpinelinux 3.19 x86_64 (20240129_1300)
-	image.name: alpinelinux-3.19-x86_64-default-20240129_1300
-	image.os: alpinelinux
-	image.release: "3.19"
-	image.serial: "20240129_1300"
-	image.variant: default
-	*/
-}
-
-func (t *ImageMetadata) int65toString(a *[65]int8) string {
-	b := make([]byte, 0, 65)
-	for _, c := range a {
-		if c == 0 {
-			break
-		}
-		b = append(b, byte(c))
-	}
-	return string(b)
-}
-
-func (t *ImageMetadata) getSystemArchitecture() (string, error) {
-	var u syscall.Utsname
-	err := syscall.Uname(&u)
+func ReadImageMetadata(file string) (*ImageMetadata, error) {
+	var v map[any]any
+	var properties map[any]any
+	err := yaml.ReadFile(file, &v)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	return t.int65toString(&u.Machine), nil
+	vProperties := v["properties"]
+	if vProperties == nil {
+		return nil, fmt.Errorf("missing properties")
+	}
+	var ok bool
+	properties, ok = vProperties.(map[any]any)
+	if !ok {
+		return nil, fmt.Errorf("properties: %T. expected: map[any]any", vProperties)
+	}
+	var t ImageMetadata
+	t.v = v
+	t.properties = properties
+	return &t, nil
 }
 
-// UpdateImageProperties - copy ImageFields to properties
-func (t *ImageMetadata) UpdateImageProperties(im *srv.ImageFields, properties map[any]any) {
+func (t *ImageMetadata) WriteFile(file string) error {
+	return yaml.WriteFile(t.v, file)
+}
+
+func (t *ImageMetadata) Print() error {
+	return yaml.Print(t.v)
+}
+
+func NewImageMetadata() (*ImageMetadata, error) {
+	var t ImageMetadata
+	t.v = make(map[any]any)
+	t.properties = make(map[any]any)
+	t.v["properties"] = t.properties
+	var err error
+	arch, err := getSystemArchitecture()
+	if err != nil {
+		return nil, err
+	}
+	t.properties["architecture"] = arch
+	return &t, nil
+}
+
+func (t *ImageMetadata) getProperty(name string) string {
+	v, ok := t.properties[name]
+	if ok {
+		s, ok := v.(string)
+		if ok {
+			return s
+		}
+	}
+	return ""
+}
+
+func (t *ImageMetadata) GetFields() *srv.ImageFields {
+	var f srv.ImageFields
+	f.Architecture = t.getProperty("architecture")
+	f.Description = t.getProperty("description")
+	f.Name = t.getProperty("name")
+	f.OS = t.getProperty("os")
+	f.Release = t.getProperty("release")
+	f.Serial = t.getProperty("serial")
+	f.Variant = t.getProperty("variant")
+	return &f
+}
+
+// SetFields - copy ImageFields to properties
+func (t *ImageMetadata) SetFields(im *srv.ImageFields) {
 	update := func(name, value string) {
 		if value != "" {
-			properties[name] = value
+			t.properties[name] = value
 		}
 	}
 	update("architecture", im.Architecture)
@@ -64,4 +95,11 @@ func (t *ImageMetadata) UpdateImageProperties(im *srv.ImageFields, properties ma
 	update("release", im.Release)
 	update("serial", im.Serial)
 	update("variant", im.Variant)
+}
+
+// SetFields - set creation_date, expiry_date
+func (t *ImageMetadata) SetDates(date time.Time, expiryDays int) {
+	timestamp := date.Unix()
+	t.v["creation_date"] = timestamp
+	t.v["expiry_date"] = timestamp + int64(expiryDays)*24*3600
 }
