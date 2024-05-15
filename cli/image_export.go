@@ -28,8 +28,8 @@ func (t *ImageExportOps) Configured() error {
 }
 
 func (t *ImageExportOps) Export(image string) error {
-	if t.Convert.Parse {
-		err := t.Convert.Properties.ParsePrefixNameDateTime(image)
+	if t.Convert.Parse != "" {
+		err := t.Convert.Properties.ParsePrefixNameTime(image, t.Convert.Parse)
 		if err != nil {
 			return err
 		}

@@ -125,6 +125,10 @@ func RootCommand(client srv.Client) *command.SimpleCommand {
 	var imageConvertOps cli.ImageConvertOps
 	imageCmd.Command("convert").Flags(&imageConvertOps).RunFunc(imageConvertOps.Convert)
 
+	simplestreamsCmd := imageCmd.Command("simplestreams")
+	var simplestreamsOps cli.SimplestreamsOps
+	simplestreamsCmd.Command("add").Flags(&simplestreamsOps).RunFunc(simplestreamsOps.Add)
+
 	publishOps := &cli.PublishOps{InstanceOps: cli.InstanceOps{Client: client}}
 	cmd.Command("publish").Flags(publishOps).RunFunc(publishOps.PublishInstance)
 	metadataOps := &cli.ImageMetadataOps{}

@@ -48,6 +48,16 @@ commands:
           If -parse is specified, the image metadata are determined by parsing
           the last component of the path (minus the .tar.gz suffix),
           using the format convention {variant}-{os}-{date}-{time}.
+      simplestreams:
+        short: (simplestreams commands)
+        commands:
+          add:
+            short: incus-simplestreams add
+            long: |
+              This just calls "incus-simplestreams add",
+              but first it changes the current directory to that specified
+              by a flag, and converts the tarball and metadata arguments
+              to absolute paths.
       instances:
         short: list image aliases for containers
         long: |

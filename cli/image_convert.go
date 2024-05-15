@@ -13,7 +13,7 @@ type ImageConvertOps struct {
 	Keep       bool   `name:"keep" usage:"do not delete intermediate directories"`
 	Properties ImageMetadataOptions
 	Exec       Exec
-	Parse      bool `name:"parse" usage:"derive metadata properties from image name"`
+	Parse      string `name:"parse" usage:"ovd|vod parse image name as os-variant-date or variant-os-date"`
 }
 
 func (t *ImageConvertOps) Init() error {
@@ -106,9 +106,9 @@ func (t *ImageConvertOps) Convert(path string) error {
 		if err != nil {
 			return err
 		}
-		if t.Parse {
+		if t.Parse != "" {
 			name := filepath.Base(path)
-			err := t.Properties.ParsePrefixNameDateTime(name)
+			err := t.Properties.ParsePrefixNameTime(name, t.Parse)
 			if err != nil {
 				return err
 			}
@@ -119,9 +119,9 @@ func (t *ImageConvertOps) Convert(path string) error {
 		if err != nil {
 			return err
 		}
-		if t.Parse {
+		if t.Parse != "" {
 			name := strings.TrimSuffix(filepath.Base(path), TarSuffix)
-			err := t.Properties.ParsePrefixNameDateTime(name)
+			err := t.Properties.ParsePrefixNameTime(name, t.Parse)
 			if err != nil {
 				return err
 			}
