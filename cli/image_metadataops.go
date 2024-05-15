@@ -6,13 +6,12 @@ import (
 
 // ImageMetadataOps - edit image metadata
 type ImageMetadataOps struct {
-	Properties ImageBaseProperties
+	Properties ImageMetadataOptions
 	File       string `name:"f" usage:"metadata.yaml file`
-	ExpiryDays int    `name:"expiry-days" usage:"expiry_date as number of days from creation_date"`
 }
 
 func (t *ImageMetadataOps) Init() error {
-	t.ExpiryDays = 30
+	t.Properties.Init()
 	return nil
 }
 
@@ -35,7 +34,7 @@ func (t *ImageMetadataOps) Update() error {
 		f.Serial = t.Properties.FormatSerial(date)
 	}
 	m.SetFields(f)
-	m.SetDates(date, t.ExpiryDays)
+	m.SetDates(date, t.Properties.ExpiryDays)
 	if t.File != "" {
 		return m.WriteFile(t.File)
 	} else {

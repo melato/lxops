@@ -6,22 +6,25 @@ import (
 	"os/exec"
 	"os/user"
 	"path/filepath"
+	"time"
 
 	"melato.org/lxops/srv"
 )
 
 // ImageExportOps - export images
 type ImageExportOps struct {
-	Client   srv.Client `name:"-"`
-	Squashfs bool       `name:"squashfs" usage:"export to squashfs"`
-	Dir      string     `name:"d" usage:"export directory"`
-	Keep     bool       `name:"keep" usage:"do not delete intermediate directories"`
-	Verbose  bool       `name:"verbose" usage:"print output of commands"`
-	server   srv.InstanceServer
+	Client     srv.Client `name:"-"`
+	Squashfs   bool       `name:"squashfs" usage:"export to squashfs"`
+	Dir        string     `name:"d" usage:"export directory"`
+	Keep       bool       `name:"keep" usage:"do not delete intermediate directories"`
+	Verbose    bool       `name:"verbose" usage:"print output of commands"`
+	Properties ImageMetadataOptions
+	server     srv.InstanceServer
 }
 
 func (t *ImageExportOps) Init() error {
 	t.Dir = "."
+	t.Properties.Init()
 	return nil
 }
 
@@ -93,13 +96,30 @@ func (t *ImageExportOps) mkdir(dir string) (string, error) {
 	return path, nil
 }
 
+func (t *ImageExportOps) updateMetadata(file string) error {
+	m, err := ReadImageMetadata(file)
+	if err != nil {
+		return err
+	}
+	f := m.GetFields()
+	t.Properties.Override(f)
+	t.Properties.SetImageDescription(f, t.Properties.Variant)
+	date := time.Now()
+	if f.Serial == "" || f.Serial == "." {
+		f.Serial = t.Properties.FormatSerial(date)
+	}
+	m.SetFields(f)
+	m.SetDates(date, t.Properties.ExpiryDays)
+	return m.WriteFile(file)
+}
+
 func (t *ImageExportOps) Export(image string) error {
 	err := os.MkdirAll(t.Dir, os.FileMode(0775))
 	if err != nil {
 		return err
 	}
 	var rootfsFile string
-	var metadataFile string
+	var metadataTarFile string
 	var unpackDir string
 
 	exportDir := t.Dir
@@ -113,8 +133,8 @@ func (t *ImageExportOps) Export(image string) error {
 			return err
 		}
 		rootfsFile = filepath.Join(t.Dir, "rootfs.squashfs")
-		metadataFile = filepath.Join(t.Dir, "metadata.tar.xz")
-		err = checkFilesNotExist(rootfsFile, metadataFile)
+		metadataTarFile = filepath.Join(t.Dir, "metadata.tar.xz")
+		err = checkFilesNotExist(rootfsFile, metadataTarFile)
 		if err != nil {
 			return err
 		}
@@ -147,13 +167,23 @@ func (t *ImageExportOps) Export(image string) error {
 		if err != nil {
 			return err
 		}
-		err = t.exec("sudo", "chown", user.Uid+":"+user.Gid, rootfsFile)
+		owner := user.Uid + ":" + user.Gid
+		err = t.exec("sudo", "chown", owner, rootfsFile)
 		if err != nil {
 			return err
 		}
 
+		metadataFile := filepath.Join(unpackDir, "metadata.yaml")
+		err = t.exec("sudo", "chown", owner, metadataFile)
+		if err != nil {
+			return err
+		}
+		err = t.updateMetadata(metadataFile)
+		if err != nil {
+			return err
+		}
 		err = t.exec("tar", "Jcf",
-			metadataFile,
+			metadataTarFile,
 			"-C", unpackDir,
 			"metadata.yaml",
 			"templates/")

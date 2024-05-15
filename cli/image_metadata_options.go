@@ -8,20 +8,26 @@ import (
 	"melato.org/lxops/srv"
 )
 
-// ImageBaseProperties - independent image properties
-type ImageBaseProperties struct {
-	Variant string `name:"variant" usage:"override variant property"`
-	Release string `name:"release" usage:"override release property"`
-	OS      string `name:"os" usage:"override os property"`
-	Serial  string `name:"serial" usage:"optional serial property"`
+// ImageMetadataOptions - independent image properties
+type ImageMetadataOptions struct {
+	Variant    string `name:"variant" usage:"override variant property"`
+	Release    string `name:"release" usage:"override release property"`
+	OS         string `name:"os" usage:"override os property"`
+	Serial     string `name:"serial" usage:"override serial property, use '.' for current time"`
+	Dates      bool   `name:"dates" usage:"override creation_date, expiry_date"`
+	ExpiryDays int    `name:"expiry-days" usage:"expiry_date as number of days from creation_date"`
 }
 
-func (t *ImageBaseProperties) FormatSerial(tm time.Time) string {
+func (t *ImageMetadataOptions) Init() {
+	t.ExpiryDays = 30
+}
+
+func (t *ImageMetadataOptions) FormatSerial(tm time.Time) string {
 	return tm.UTC().Format("20060102_15:04")
 }
 
 // SetImageDescription - generate name, description from other fields
-func (t *ImageBaseProperties) SetImageDescription(im *srv.ImageFields, name string) {
+func (t *ImageMetadataOptions) SetImageDescription(im *srv.ImageFields, name string) {
 	im.Name = fmt.Sprintf("%s-%s-%s-%s-%s", im.OS, im.Release, im.Architecture, im.Variant, im.Serial)
 	im.Description = fmt.Sprintf("%s %s %s (%s)", name, im.Release, im.Architecture, im.Serial)
 
@@ -56,7 +62,7 @@ func getSystemArchitecture() (string, error) {
 }
 
 // UpdateImageProperties - copy ImageFields to properties
-func (t *ImageBaseProperties) UpdateImageProperties(im *srv.ImageFields, properties map[any]any) {
+func (t *ImageMetadataOptions) UpdateImageProperties(im *srv.ImageFields, properties map[any]any) {
 	update := func(name, value string) {
 		if value != "" {
 			properties[name] = value
@@ -71,7 +77,7 @@ func (t *ImageBaseProperties) UpdateImageProperties(im *srv.ImageFields, propert
 	update("variant", im.Variant)
 }
 
-func (t *ImageBaseProperties) Override(im *srv.ImageFields) {
+func (t *ImageMetadataOptions) Override(im *srv.ImageFields) {
 	if t.Release != "" {
 		im.Release = t.Release
 	}
