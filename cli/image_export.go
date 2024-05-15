@@ -106,6 +106,12 @@ func (t *ImageExportOps) updateMetadata(file string) error {
 }
 
 func (t *ImageExportOps) Export(image string) error {
+	if t.Parse {
+		err := t.Properties.ParsePrefixNameDateTime(image)
+		if err != nil {
+			return err
+		}
+	}
 	err := os.MkdirAll(t.Dir, os.FileMode(0775))
 	if err != nil {
 		return err
