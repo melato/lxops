@@ -6,7 +6,6 @@ import (
 	"os/exec"
 	"os/user"
 	"path/filepath"
-	"time"
 
 	"melato.org/lxops/srv"
 )
@@ -19,6 +18,7 @@ type ImageExportOps struct {
 	Keep       bool       `name:"keep" usage:"do not delete intermediate directories"`
 	Verbose    bool       `name:"verbose" usage:"print output of commands"`
 	Properties ImageMetadataOptions
+	Parse      bool `name:"parse" usage:"derive metadata properties from image name"`
 	server     srv.InstanceServer
 }
 
@@ -101,15 +101,7 @@ func (t *ImageExportOps) updateMetadata(file string) error {
 	if err != nil {
 		return err
 	}
-	f := m.GetFields()
-	t.Properties.Override(f)
-	t.Properties.SetImageDescription(f, t.Properties.Variant)
-	date := time.Now()
-	if f.Serial == "" || f.Serial == "." {
-		f.Serial = t.Properties.FormatSerial(date)
-	}
-	m.SetFields(f)
-	m.SetDates(date, t.Properties.ExpiryDays)
+	t.Properties.Apply(m)
 	return m.WriteFile(file)
 }
 

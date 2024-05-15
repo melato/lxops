@@ -1,9 +1,5 @@
 package cli
 
-import (
-	"time"
-)
-
 // ImageMetadataOps - edit image metadata
 type ImageMetadataOps struct {
 	Properties ImageMetadataOptions
@@ -11,8 +7,11 @@ type ImageMetadataOps struct {
 }
 
 func (t *ImageMetadataOps) Init() error {
-	t.Properties.Init()
-	return nil
+	return t.Properties.Init()
+}
+
+func (t *ImageMetadataOps) Configured() error {
+	return t.Properties.Configured()
 }
 
 func (t *ImageMetadataOps) Update() error {
@@ -29,12 +28,8 @@ func (t *ImageMetadataOps) Update() error {
 	f := m.GetFields()
 	t.Properties.Override(f)
 	t.Properties.SetImageDescription(f, t.Properties.Variant)
-	date := time.Now()
-	if f.Serial == "" || f.Serial == "." {
-		f.Serial = t.Properties.FormatSerial(date)
-	}
 	m.SetFields(f)
-	m.SetDates(date, t.Properties.ExpiryDays)
+	m.UpdateDates(t.Properties.Date, t.Properties.ExpiryDays)
 	if t.File != "" {
 		return m.WriteFile(t.File)
 	} else {

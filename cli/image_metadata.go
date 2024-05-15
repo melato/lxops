@@ -97,9 +97,12 @@ func (t *ImageMetadata) SetFields(im *srv.ImageFields) {
 	update("variant", im.Variant)
 }
 
-// SetFields - set creation_date, expiry_date
-func (t *ImageMetadata) SetDates(date time.Time, expiryDays int) {
-	timestamp := date.Unix()
-	t.v["creation_date"] = timestamp
-	t.v["expiry_date"] = timestamp + int64(expiryDays)*24*3600
+// UpdateDates - set creation_date, expiry_date
+// If date.IsZero() then do nothing
+func (t *ImageMetadata) UpdateDates(date time.Time, expiryDays int) {
+	if !date.IsZero() {
+		timestamp := date.Unix()
+		t.v["creation_date"] = timestamp
+		t.v["expiry_date"] = timestamp + int64(expiryDays)*24*3600
+	}
 }

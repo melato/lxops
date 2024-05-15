@@ -10,16 +10,40 @@ import (
 
 // ImageMetadataOptions - independent image properties
 type ImageMetadataOptions struct {
-	Variant    string `name:"variant" usage:"override variant property"`
-	Release    string `name:"release" usage:"override release property"`
-	OS         string `name:"os" usage:"override os property"`
-	Serial     string `name:"serial" usage:"override serial property, use '.' for current time"`
-	Dates      bool   `name:"dates" usage:"override creation_date, expiry_date"`
-	ExpiryDays int    `name:"expiry-days" usage:"expiry_date as number of days from creation_date"`
+	Variant    string    `name:"variant" usage:"override variant property"`
+	Release    string    `name:"release" usage:"override release property"`
+	OS         string    `name:"os" usage:"override os property"`
+	Serial     string    `name:"serial" usage:"override serial property, use '.' for current time"`
+	Date       time.Time `name:"-"`
+	DateString string    `name:"date" usage:"override creation_date as YYYYMMDD-HHMM. use '.' for current time"`
+	ExpiryDays int       `name:"expiry-days" usage:"expiry_date as number of days from creation_date"`
 }
 
-func (t *ImageMetadataOptions) Init() {
+func (t *ImageMetadataOptions) Init() error {
 	t.ExpiryDays = 30
+	return nil
+}
+
+func (t *ImageMetadataOptions) Configured() error {
+	if t.DateString != "" {
+		if t.DateString == "." {
+			t.Date = time.Now()
+		} else {
+			tm, err := time.Parse("20060102-1504", t.DateString)
+			if err != nil {
+				return err
+			}
+			t.Date = tm
+		}
+	}
+	if t.Serial == "." {
+		date := t.Date
+		if date.IsZero() {
+			date = time.Now()
+		}
+		t.Serial = t.FormatSerial(date)
+	}
+	return nil
 }
 
 func (t *ImageMetadataOptions) FormatSerial(tm time.Time) string {
@@ -90,4 +114,12 @@ func (t *ImageMetadataOptions) Override(im *srv.ImageFields) {
 	if t.Serial != "" {
 		im.Serial = t.Serial
 	}
+}
+
+func (t *ImageMetadataOptions) Apply(m *ImageMetadata) {
+	f := m.GetFields()
+	t.Override(f)
+	t.SetImageDescription(f, t.Variant)
+	m.SetFields(f)
+	m.UpdateDates(t.Date, t.ExpiryDays)
 }
