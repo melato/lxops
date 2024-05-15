@@ -9,7 +9,7 @@ import (
 
 // ImageConvert - convert image file format
 type ImageConvertOps struct {
-	Dir        string `name:"d" usage:"export directory"`
+	Dir        string `name:"d" usage:"output and staging directory"`
 	Keep       bool   `name:"keep" usage:"do not delete intermediate directories"`
 	Properties ImageMetadataOptions
 	Exec       Exec
@@ -39,10 +39,6 @@ func (t *ImageConvertOps) ConvertTarfile(tarfile string) error {
 	if err != nil {
 		return err
 	}
-	exportDir, err := mkdir(t.Dir, "export")
-	if err != nil {
-		return err
-	}
 	unpackDir, err := mkdir(t.Dir, "unpack")
 	if err != nil {
 		return err
@@ -58,7 +54,7 @@ func (t *ImageConvertOps) ConvertTarfile(tarfile string) error {
 	if err != nil {
 		return err
 	}
-	err = t.Exec.Run("sudo", "mksquashfs", unpackDir,
+	err = t.Exec.Run("sudo", "mksquashfs", filepath.Join(unpackDir, "rootfs"),
 		rootfsFile,
 		"-noappend", "-comp", "xz", "-b", "1M")
 	if err != nil {
@@ -92,10 +88,6 @@ func (t *ImageConvertOps) ConvertTarfile(tarfile string) error {
 		return err
 	}
 	if !t.Keep {
-		err = os.RemoveAll(exportDir)
-		if err != nil {
-			return err
-		}
 		err = t.Exec.Run("sudo", "rm", "-rf", unpackDir)
 		if err != nil {
 			return err

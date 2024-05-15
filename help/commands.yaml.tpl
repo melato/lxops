@@ -25,10 +25,10 @@ commands:
     short: (utilities for {{.ServerType}} instances)
     commands:
       export:
-        short: export an image
+        short: export an image to split tarballs format
         long: |
           exports an image by calling {{.ServerType}} image export
-          Optionally, convert it to rootfs.squashfs, metadata.tar.xz,
+          Then, convert it to rootfs.squashfs, metadata.tar.xz,
           so it can be used with simplestreams.
           See image convert.
       convert:
