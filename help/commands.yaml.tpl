@@ -29,11 +29,25 @@ commands:
         long: |
           exports an image by calling {{.ServerType}} image export
           Optionally, convert it to rootfs.squashfs, metadata.tar.xz,
-          by running the commands:
-            mkdir export unpack
-            {{.ServerType}} image export {image} export
-            sudo tar xvf export/{hash}.tar.gz -C unpack
-            tar Jcf metadata.tar.xz -C unpack metadata.yaml templates/
+          so it can be used with simplestreams.
+          See image convert.
+      convert:
+        short: convert unified image tarball to split tarballs
+        use: "<file-or-directory>"
+        long: |
+          converts a unified .tar.gz image file into
+          rootfs.squashfs, and metadata.tar.xz
+          See https://linuxcontainers.org/incus/docs/main/reference/image_format/#image-tarballs
+          It does so by running the commands:
+            sudo tar xvf {unified}.tar.gz
+            sudo mksquashfs rootfs/ rootfs.squashfs -noappend -comp xz -b 1M
+            tar Jcf metadata.tar.xz metadata.yaml templates/
+          The argument can be either the path of the .tar.gz file or its parent directory.
+          If it is a directory, it must contain a single .tar.gz file
+          The image metadata can be modified by various flags
+          If -parse is specified, the image metadata are determined by parsing
+          the last component of the path (minus the .tar.gz suffix),
+          using the format convention {variant}-{os}-{date}-{time}.
       instances:
         short: list image aliases for containers
         long: |

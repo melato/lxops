@@ -1,9 +1,7 @@
 package cli
 
 import (
-	"fmt"
 	"os"
-	"os/exec"
 	"os/user"
 	"path/filepath"
 
@@ -16,16 +14,15 @@ type ImageExportOps struct {
 	Squashfs   bool       `name:"squashfs" usage:"export to squashfs"`
 	Dir        string     `name:"d" usage:"export directory"`
 	Keep       bool       `name:"keep" usage:"do not delete intermediate directories"`
-	Verbose    bool       `name:"verbose" usage:"print output of commands"`
 	Properties ImageMetadataOptions
+	Exec       Exec
 	Parse      bool `name:"parse" usage:"derive metadata properties from image name"`
 	server     srv.InstanceServer
 }
 
 func (t *ImageExportOps) Init() error {
 	t.Dir = "."
-	t.Properties.Init()
-	return nil
+	return t.Properties.Init()
 }
 
 func (t *ImageExportOps) Configured() error {
@@ -34,66 +31,7 @@ func (t *ImageExportOps) Configured() error {
 		return err
 	}
 	t.server = server
-	return nil
-}
-
-func (t *ImageExportOps) findTarfile(dir string) (string, error) {
-	entries, err := os.ReadDir(dir)
-	if err != nil {
-		return "", err
-	}
-	if len(entries) != 1 {
-		for _, e := range entries {
-			name := e.Name()
-			fmt.Printf("%s\n", name)
-		}
-		return "", fmt.Errorf("there are multiple files")
-	}
-	return filepath.Join(dir, entries[0].Name()), nil
-}
-
-func (t *ImageExportOps) exec(name string, args ...string) error {
-	cmd := exec.Command(name, args...)
-	if t.Verbose {
-		cmd.Stdout = os.Stdout
-	}
-	cmd.Stderr = os.Stderr
-	fmt.Printf("%s\n", cmd.String())
-	return cmd.Run()
-}
-
-func checkFileNotExist(path string) error {
-	_, err := os.Stat(path)
-	if err == nil {
-		return fmt.Errorf("file exists: %s\n", path)
-	}
-	if os.IsNotExist(err) {
-		return nil
-	}
-	return err
-}
-
-func checkFilesNotExist(paths ...string) error {
-	for _, path := range paths {
-		err := checkFileNotExist(path)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func (t *ImageExportOps) mkdir(dir string) (string, error) {
-	path := filepath.Join(t.Dir, dir)
-	err := checkFileNotExist(path)
-	if err != nil {
-		return "", err
-	}
-	err = os.Mkdir(path, os.FileMode(0775))
-	if err != nil {
-		return "", err
-	}
-	return path, nil
+	return t.Properties.Configured()
 }
 
 func (t *ImageExportOps) updateMetadata(file string) error {
@@ -122,11 +60,11 @@ func (t *ImageExportOps) Export(image string) error {
 
 	exportDir := t.Dir
 	if t.Squashfs {
-		exportDir, err = t.mkdir("export")
+		exportDir, err = mkdir(t.Dir, "export")
 		if err != nil {
 			return err
 		}
-		unpackDir, err = t.mkdir("unpack")
+		unpackDir, err = mkdir(t.Dir, "unpack")
 		if err != nil {
 			return err
 		}
@@ -143,19 +81,15 @@ func (t *ImageExportOps) Export(image string) error {
 		return err
 	}
 	if t.Squashfs {
-		tarfile, err := t.findTarfile(exportDir)
+		tarfile, err := findTarfile(exportDir)
 		if err != nil {
 			return err
 		}
-		tarFlags := "xf"
-		if t.Verbose {
-			tarFlags += "v"
-		}
-		err = t.exec("sudo", "tar", tarFlags, tarfile, "-C", unpackDir)
+		err = t.Exec.ExtractTar(tarfile, unpackDir)
 		if err != nil {
 			return err
 		}
-		err = t.exec("sudo", "mksquashfs", unpackDir,
+		err = t.Exec.Run("sudo", "mksquashfs", unpackDir,
 			rootfsFile,
 			"-noappend", "-comp", "xz", "-b", "1M")
 		if err != nil {
@@ -166,13 +100,13 @@ func (t *ImageExportOps) Export(image string) error {
 			return err
 		}
 		owner := user.Uid + ":" + user.Gid
-		err = t.exec("sudo", "chown", owner, rootfsFile)
+		err = t.Exec.Run("sudo", "chown", owner, rootfsFile)
 		if err != nil {
 			return err
 		}
 
 		metadataFile := filepath.Join(unpackDir, "metadata.yaml")
-		err = t.exec("sudo", "chown", owner, metadataFile)
+		err = t.Exec.Run("sudo", "chown", owner, metadataFile)
 		if err != nil {
 			return err
 		}
@@ -180,7 +114,7 @@ func (t *ImageExportOps) Export(image string) error {
 		if err != nil {
 			return err
 		}
-		err = t.exec("tar", "Jcf",
+		err = t.Exec.Run("tar", "Jcf",
 			metadataTarFile,
 			"-C", unpackDir,
 			"metadata.yaml",
@@ -193,7 +127,7 @@ func (t *ImageExportOps) Export(image string) error {
 			if err != nil {
 				return err
 			}
-			err = t.exec("sudo", "rm", "-rf", unpackDir)
+			err = t.Exec.Run("sudo", "rm", "-rf", unpackDir)
 			if err != nil {
 				return err
 			}
