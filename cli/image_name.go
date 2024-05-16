@@ -54,6 +54,11 @@ func (t *ImageMetadataOptions) ParsePrefixNameTime(name string, format string) e
 		return err
 	}
 	switch format {
+	case "ovr":
+		t.OS = p.Prefix
+		t.Variant = p.Name
+		t.Release = p.Time.UTC().Format("20060102-1504")
+		return nil
 	case "vod":
 		t.Variant = p.Prefix
 		t.OS = p.Name
@@ -64,15 +69,7 @@ func (t *ImageMetadataOptions) ParsePrefixNameTime(name string, format string) e
 		t.Variant = p.Name
 		t.Date = p.Time
 		return nil
-	case "ovr":
-		t.OS = p.Prefix
-		t.Variant = p.Name
-		t.Release = p.Time.UTC().Format("20060102-1504")
-		return nil
 	default:
-		fmt.Printf("valid parse values are:\n")
-		fmt.Printf("vod: {variant}-{os}-{datetime}\n")
-		fmt.Printf("ovd: {os}-{variant}-{datetime}\n")
 		return fmt.Errorf("unsupported name format: %s", format)
 	}
 }

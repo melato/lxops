@@ -10,13 +10,15 @@ import (
 
 // ImageMetadataOptions - independent image properties
 type ImageMetadataOptions struct {
-	Variant    string    `name:"variant" usage:"override variant property"`
-	Release    string    `name:"release" usage:"override release property"`
-	OS         string    `name:"os" usage:"override os property"`
-	Serial     string    `name:"serial" usage:"override serial property, use '.' for current time"`
-	Date       time.Time `name:"-"`
-	DateString string    `name:"date" usage:"override creation_date as YYYYMMDD-HHMM. use '.' for current time"`
-	ExpiryDays int       `name:"expiry-days" usage:"expiry_date as number of days from creation_date"`
+	OS          string    `name:"os" usage:"override os property"`
+	Variant     string    `name:"variant" usage:"override variant property"`
+	Release     string    `name:"release" usage:"override release property, use '.' for timestamp"`
+	Serial      string    `name:"serial" usage:"override serial property, use '.' for timestamp"`
+	Name        string    `name:"name" usage:"override name property"`
+	Description string    `name:"description" usage:"override description property"`
+	Date        time.Time `name:"-"`
+	DateString  string    `name:"date" usage:"override creation_date as YYYYMMDD-HHMM. use '.' for current time"`
+	ExpiryDays  int       `name:"expiry-days" usage:"expiry_date as number of days from creation_date"`
 }
 
 func (t *ImageMetadataOptions) Init() error {
@@ -25,9 +27,10 @@ func (t *ImageMetadataOptions) Init() error {
 }
 
 func (t *ImageMetadataOptions) Configured() error {
+	now := time.Now()
 	if t.DateString != "" {
 		if t.DateString == "." {
-			t.Date = time.Now()
+			t.Date = now
 		} else {
 			tm, err := time.Parse("20060102-1504", t.DateString)
 			if err != nil {
@@ -36,18 +39,14 @@ func (t *ImageMetadataOptions) Configured() error {
 			t.Date = tm
 		}
 	}
+	timestamp := now.UTC().Format("200601021504")
+	if t.Release == "." {
+		t.Release = timestamp
+	}
 	if t.Serial == "." {
-		date := t.Date
-		if date.IsZero() {
-			date = time.Now()
-		}
-		t.Serial = t.FormatSerial(date)
+		t.Serial = timestamp
 	}
 	return nil
-}
-
-func (t *ImageMetadataOptions) FormatSerial(tm time.Time) string {
-	return tm.UTC().Format("20060102_15:04")
 }
 
 // SetImageDescription - generate name, description from other fields
@@ -114,6 +113,26 @@ func (t *ImageMetadataOptions) Override(im *srv.ImageFields) {
 	if t.Serial != "" {
 		im.Serial = t.Serial
 	}
+	if t.Serial != "" {
+		im.Serial = t.Serial
+	}
+	if t.Name != "" {
+		im.Name = t.Name
+	}
+	if t.Description != "" {
+		im.Description = t.Description
+	}
+}
+
+func (t *ImageMetadataOptions) HasChanges() bool {
+	return t.Release != "" ||
+		t.OS != "" ||
+		t.Variant != "" ||
+		t.Serial != "" ||
+		t.Release != "" ||
+		t.Name != "" ||
+		t.Description != "" ||
+		!t.Date.IsZero()
 }
 
 func (t *ImageMetadataOptions) Apply(m *ImageMetadata) {

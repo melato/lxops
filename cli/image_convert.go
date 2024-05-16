@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"fmt"
 	"os"
 	"os/user"
 	"path/filepath"
@@ -13,7 +14,7 @@ type ImageConvertOps struct {
 	Keep       bool   `name:"keep" usage:"do not delete intermediate directories"`
 	Properties ImageMetadataOptions
 	Exec       Exec
-	Parse      string `name:"parse" usage:"ovd|vod parse image name as os-variant-date or variant-os-date"`
+	Parse      string `name:"parse" usage:"extract image metadata from its name"`
 }
 
 func (t *ImageConvertOps) Init() error {
@@ -22,10 +23,11 @@ func (t *ImageConvertOps) Init() error {
 }
 
 func (t *ImageConvertOps) Configured() error {
-	return t.Properties.Init()
+	return t.Properties.Configured()
 }
 
 func (t *ImageConvertOps) updateMetadata(file string) error {
+	fmt.Printf("update %s\n", file)
 	m, err := ReadImageMetadata(file)
 	if err != nil {
 		return err
@@ -70,15 +72,18 @@ func (t *ImageConvertOps) ConvertTarfile(tarfile string) error {
 		return err
 	}
 
-	metadataFile := filepath.Join(unpackDir, "metadata.yaml")
-	err = t.Exec.Run("sudo", "chown", owner, metadataFile)
-	if err != nil {
-		return err
+	if t.Properties.HasChanges() {
+		metadataFile := filepath.Join(unpackDir, "metadata.yaml")
+		err = t.Exec.Run("sudo", "chown", owner, metadataFile)
+		if err != nil {
+			return err
+		}
+		err = t.updateMetadata(metadataFile)
+		if err != nil {
+			return err
+		}
 	}
-	err = t.updateMetadata(metadataFile)
-	if err != nil {
-		return err
-	}
+
 	err = t.Exec.Run("tar", "Jcf",
 		metadataTarFile,
 		"-C", unpackDir,
