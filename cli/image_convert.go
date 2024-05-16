@@ -15,6 +15,8 @@ type ImageConvertOps struct {
 	Properties ImageMetadataOptions
 	Exec       Exec
 	Parse      string `name:"parse" usage:"extract image metadata from its name"`
+
+	SimplestreamsDir string `name:"simplestreams" usage:"simplestreams directory to add the image to"`
 }
 
 func (t *ImageConvertOps) Init() error {
@@ -92,10 +94,26 @@ func (t *ImageConvertOps) ConvertTarfile(tarfile string) error {
 	if err != nil {
 		return err
 	}
+	if t.SimplestreamsDir != "" {
+		op := SimplestreamsOps{Dir: t.SimplestreamsDir}
+		err := op.Add(metadataTarFile, rootfsFile)
+		if err != nil {
+			return err
+		}
+	}
 	if !t.Keep {
 		err = t.Exec.Run("sudo", "rm", "-rf", unpackDir)
 		if err != nil {
 			return err
+		}
+		if t.SimplestreamsDir != "" {
+			err = os.Remove(metadataTarFile)
+			if err == nil {
+				err = os.Remove(rootfsFile)
+			}
+			if err != nil {
+				return err
+			}
 		}
 	}
 	return nil
