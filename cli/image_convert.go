@@ -119,7 +119,7 @@ func (t *ImageConvertOps) ConvertTarfile(tarfile string) error {
 	return nil
 }
 
-func (t *ImageConvertOps) Convert(path string) error {
+func (t *ImageConvertOps) ConvertPath(path string) error {
 	f, err := os.Stat(path)
 	if err != nil {
 		return err
@@ -151,4 +151,15 @@ func (t *ImageConvertOps) Convert(path string) error {
 		}
 		return t.ConvertTarfile(path)
 	}
+}
+
+func (t *ImageConvertOps) Convert(paths ...string) error {
+	for _, path := range paths {
+		fmt.Printf("converting %s\n", path)
+		err := t.ConvertPath(path)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }

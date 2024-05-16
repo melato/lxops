@@ -38,12 +38,12 @@ func (t *ImageMetadataOptions) ParsePrefixNameTime(name string, format string) e
 	}
 	switch format {
 	case "unique":
-		t.Variant = t.Name
+		t.Variant = p.Name
 		t.Serial = p.Timestamp
 		t.Release = p.Timestamp
 		return nil
 	case "reuse":
-		t.Variant = t.Name
+		t.Variant = p.Name
 		t.Serial = p.Timestamp
 		return nil
 	case "ovr":
