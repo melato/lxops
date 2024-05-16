@@ -51,8 +51,12 @@ func (t *ImageMetadataOptions) Configured() error {
 
 // SetImageDescription - generate name, description from other fields
 func (t *ImageMetadataOptions) SetImageDescription(im *srv.ImageFields, name string) {
-	im.Name = fmt.Sprintf("%s-%s-%s-%s-%s", im.OS, im.Release, im.Architecture, im.Variant, im.Serial)
-	im.Description = fmt.Sprintf("%s %s %s (%s)", name, im.Release, im.Architecture, im.Serial)
+	if im.Name == "" {
+		im.Name = fmt.Sprintf("%s-%s-%s-%s-%s", im.OS, im.Release, im.Architecture, im.Variant, im.Serial)
+	}
+	if im.Description == "" {
+		im.Description = fmt.Sprintf("%s %s %s", im.Variant, im.OS, im.Release)
+	}
 
 	/* Typical image properties
 	image.description: Alpinelinux 3.19 x86_64 (20240129_1300)
@@ -125,8 +129,7 @@ func (t *ImageMetadataOptions) Override(im *srv.ImageFields) {
 }
 
 func (t *ImageMetadataOptions) HasChanges() bool {
-	return t.Release != "" ||
-		t.OS != "" ||
+	return t.OS != "" ||
 		t.Variant != "" ||
 		t.Serial != "" ||
 		t.Release != "" ||

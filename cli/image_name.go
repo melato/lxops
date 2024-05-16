@@ -7,9 +7,9 @@ import (
 )
 
 type PrefixNameTime struct {
-	Prefix string
-	Name   string
-	Time   time.Time
+	Prefix    string
+	Name      string
+	Timestamp string
 }
 
 func (t *PrefixNameTime) Parse(name string) error {
@@ -20,33 +20,16 @@ func (t *PrefixNameTime) Parse(name string) error {
 	}
 	t.Prefix = parts[1]
 	t.Name = parts[2]
-	tm, err := time.Parse("20060102-1504", parts[3])
-	if err != nil {
-		return err
-	}
-	t.Time = tm
+	t.Timestamp = parts[3]
 	return nil
 }
 
-// ParsePrefixNameDateTime - parse a name of the form {variant}-{os}-{date}-{time}
-// example: a-nginx-20240203-0834 -> os=nginx variant=a date/time=20240203-0834
-func (t *ImageMetadataOptions) ParsePrefixNameDatetimeVariantOS(name string) error {
-	var p PrefixNameTime
-	err := p.Parse(name)
-	if err != nil {
-		return err
-	}
-
-	t.OS = p.Name
-	t.Variant = p.Prefix
-	t.Date = p.Time
-	return nil
+func (t *PrefixNameTime) ParseTime() (time.Time, error) {
+	return time.Parse("20060102-1504", t.Timestamp)
 }
 
 // ParsePrefixNameDateTime - parse a name of the form {prefix}-{name}-{date}-{time}
 // example: a-nginx-20240203-0834.
-// If format=vod, set variant=prefix, os=name
-// If format=ovd, set os=prefix, variant=name
 func (t *ImageMetadataOptions) ParsePrefixNameTime(name string, format string) error {
 	var p PrefixNameTime
 	err := p.Parse(name)
@@ -54,21 +37,33 @@ func (t *ImageMetadataOptions) ParsePrefixNameTime(name string, format string) e
 		return err
 	}
 	switch format {
+	case "unique":
+		t.Variant = t.Name
+		t.Serial = p.Timestamp
+		t.Release = p.Timestamp
+		return nil
+	case "reuse":
+		t.Variant = t.Name
+		t.Serial = p.Timestamp
+		return nil
 	case "ovr":
 		t.OS = p.Prefix
 		t.Variant = p.Name
-		t.Release = p.Time.UTC().Format("20060102-1504")
+		t.Release = p.Timestamp
+		t.Serial = p.Timestamp
 		return nil
 	case "vod":
 		t.Variant = p.Prefix
 		t.OS = p.Name
-		t.Date = p.Time
-		return nil
+		t.Serial = p.Timestamp
+		t.Date, err = p.ParseTime()
+		return err
 	case "ovd":
 		t.OS = p.Prefix
 		t.Variant = p.Name
-		t.Date = p.Time
-		return nil
+		t.Serial = p.Timestamp
+		t.Date, err = p.ParseTime()
+		return err
 	default:
 		return fmt.Errorf("unsupported name format: %s", format)
 	}

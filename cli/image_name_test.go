@@ -18,5 +18,5 @@ func TestPrefixNameParse(t *testing.T) {
 	}
 	expect("prefix", "a", p.Prefix)
 	expect("base", "nginx", p.Name)
-	expect("date", "20240203-0834", p.Time.UTC().Format("20060102-1504"))
+	expect("date", "20240203-0834", p.Timestamp)
 }
