@@ -25,7 +25,7 @@ func (_ *PublishOps) mergeStructs(target, source any) {
 		f := t.Field(i)
 		in := vIn.Field(i)
 		if !in.IsZero() {
-			fmt.Printf("set %s=%v\n", f.Name, in)
+			//fmt.Printf("set %s=%v\n", f.Name, in)
 			out := vOut.FieldByName(f.Name)
 			out.Set(in)
 		}
