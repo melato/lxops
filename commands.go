@@ -120,20 +120,9 @@ func RootCommand(client srv.Client) *command.SimpleCommand {
 
 	imageCmd := cmd.Command("image")
 	imageCmd.Command("instances").Flags(containerOps).RunFunc(containerOps.ListImages)
-	imageExportOps := &cli.ImageExportOps{Client: client}
-	imageCmd.Command("export").Flags(imageExportOps).RunFunc(imageExportOps.Export)
-	var imageConvertOps cli.ImageConvertOps
-	imageCmd.Command("convert").Flags(&imageConvertOps).RunFunc(imageConvertOps.Convert)
-
-	simplestreamsCmd := imageCmd.Command("simplestreams")
-	var simplestreamsOps cli.SimplestreamsOps
-	simplestreamsCmd.Command("add").Flags(&simplestreamsOps).RunFunc(simplestreamsOps.Add)
 
 	publishOps := &cli.PublishOps{InstanceOps: cli.InstanceOps{Client: client}}
 	cmd.Command("publish").Flags(publishOps).RunFunc(publishOps.PublishInstance)
-	metadataOps := &cli.ImageMetadataOps{}
-	metadataCmd := imageCmd.Command("metadata")
-	metadataCmd.Command("update").Flags(metadataOps).RunFunc(metadataOps.Update)
 
 	networkOp := &cli.NetworkOp{Client: client}
 	containerCmd.Command("addresses").Flags(networkOp).RunFunc(networkOp.ExportAddresses)
