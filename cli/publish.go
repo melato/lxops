@@ -3,6 +3,7 @@ package cli
 import (
 	"fmt"
 	"reflect"
+	"strings"
 
 	"melato.org/lxops/srv"
 	"melato.org/lxops/yaml"
@@ -30,6 +31,22 @@ func (_ *PublishOps) mergeStructs(target, source any) {
 			out.Set(in)
 		}
 	}
+}
+
+func (t *PublishOps) parseInstanceSnapshot(instanceSnapshot string) (instance string, snapshot string, err error) {
+	parts := strings.SplitN(instanceSnapshot, "/", 3)
+	if len(parts) != 2 {
+		return "", "", fmt.Errorf("%s: expected <instance>/<snapshot name>", instanceSnapshot)
+	}
+	return parts[0], parts[1], nil
+}
+
+func (t *PublishOps) PublishInstance1(instanceSnapshot string) error {
+	instance, snapshot, err := t.parseInstanceSnapshot(instanceSnapshot)
+	if err != nil {
+		return err
+	}
+	return t.PublishInstance(instance, snapshot)
 }
 
 func (t *PublishOps) PublishInstance(instance, snapshot string) error {
