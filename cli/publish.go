@@ -13,6 +13,7 @@ type PublishOps struct {
 	InstanceOps
 	Fields srv.ImageFields
 	Alias  string `name:"alias" usage:"image alias`
+	DryRun bool   `name:"dry-run" usage:"show image properties without publishing`
 }
 
 func (_ *PublishOps) mergeStructs(target, source any) {
@@ -20,7 +21,6 @@ func (_ *PublishOps) mergeStructs(target, source any) {
 	vIn := reflect.ValueOf(source).Elem()
 	vOut := reflect.ValueOf(target).Elem()
 	n := t.NumField()
-	fmt.Printf("%d fields\n", n)
 	for i := 0; i < n; i++ {
 		f := t.Field(i)
 		in := vIn.Field(i)
@@ -38,17 +38,21 @@ func (t *PublishOps) PublishInstance(instance, snapshot string) error {
 		return err
 	}
 	t.mergeStructs(im, &t.Fields)
-	if im.Name == "" {
+	if t.Fields.Name == "" {
 		im.Name = fmt.Sprintf("%s-%s-%s-%s-%s", im.OS, im.Release, im.Architecture, im.Variant, im.Serial)
 	}
-	if im.Description == "" {
+	if t.Fields.Description == "" {
 		im.Description = fmt.Sprintf("%s %s %s (%s)", im.OS, im.Release, im.Architecture, im.Serial)
 	}
 	alias := t.Alias
 	if alias == "" {
 		alias = instance
 	}
-	return t.server.PublishInstanceWithFields(instance, snapshot, alias, *im)
+	yaml.Print(im)
+	if !t.DryRun {
+		return t.server.PublishInstanceWithFields(instance, snapshot, alias, *im)
+	}
+	return nil
 }
 
 func (t *InstanceOps) Info(instance string) error {

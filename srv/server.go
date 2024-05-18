@@ -111,11 +111,11 @@ type HostAddress struct {
 }
 
 type ImageFields struct {
-	Name         string
 	Architecture string
-	Description  string
 	OS           string
+	Variant      string
 	Release      string
 	Serial       string
-	Variant      string
+	Description  string
+	Name         string
 }
