@@ -14,7 +14,6 @@ type PublishOps struct {
 	InstanceOps
 	Fields srv.ImageFields
 	Alias  string `name:"alias" usage:"image alias`
-	DryRun bool   `name:"dry-run" usage:"show image properties without publishing`
 }
 
 func (_ *PublishOps) mergeStructs(target, source any) {
@@ -50,26 +49,11 @@ func (t *PublishOps) PublishInstance(instanceSnapshot string) error {
 }
 
 func (t *PublishOps) PublishInstance2(instance, snapshot string) error {
-	im, err := t.server.GetInstanceImageFields(instance)
-	if err != nil {
-		return err
-	}
-	t.mergeStructs(im, &t.Fields)
-	if t.Fields.Name == "" {
-		im.Name = fmt.Sprintf("%s-%s-%s-%s-%s", im.OS, im.Release, im.Architecture, im.Variant, im.Serial)
-	}
-	if t.Fields.Description == "" {
-		im.Description = fmt.Sprintf("%s %s %s (%s)", im.OS, im.Release, im.Architecture, im.Serial)
-	}
 	alias := t.Alias
 	if alias == "" {
 		alias = instance
 	}
-	yaml.Print(im)
-	if !t.DryRun {
-		return t.server.PublishInstanceWithFields(instance, snapshot, alias, *im)
-	}
-	return nil
+	return t.server.PublishInstanceWithFields(instance, snapshot, alias, t.Fields)
 }
 
 func (t *InstanceOps) Info(instance string) error {
