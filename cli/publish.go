@@ -33,7 +33,7 @@ func (_ *PublishOps) mergeStructs(target, source any) {
 	}
 }
 
-func (t *PublishOps) parseInstanceSnapshot(instanceSnapshot string) (instance string, snapshot string, err error) {
+func parseInstanceSnapshot(instanceSnapshot string) (instance string, snapshot string, err error) {
 	parts := strings.SplitN(instanceSnapshot, "/", 3)
 	if len(parts) != 2 {
 		return "", "", fmt.Errorf("%s: expected <instance>/<snapshot name>", instanceSnapshot)
@@ -41,15 +41,15 @@ func (t *PublishOps) parseInstanceSnapshot(instanceSnapshot string) (instance st
 	return parts[0], parts[1], nil
 }
 
-func (t *PublishOps) PublishInstance1(instanceSnapshot string) error {
-	instance, snapshot, err := t.parseInstanceSnapshot(instanceSnapshot)
+func (t *PublishOps) PublishInstance(instanceSnapshot string) error {
+	instance, snapshot, err := parseInstanceSnapshot(instanceSnapshot)
 	if err != nil {
 		return err
 	}
-	return t.PublishInstance(instance, snapshot)
+	return t.PublishInstance2(instance, snapshot)
 }
 
-func (t *PublishOps) PublishInstance(instance, snapshot string) error {
+func (t *PublishOps) PublishInstance2(instance, snapshot string) error {
 	im, err := t.server.GetInstanceImageFields(instance)
 	if err != nil {
 		return err
