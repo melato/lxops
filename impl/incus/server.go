@@ -2,7 +2,6 @@ package lxops_incus
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/lxc/incus/v6/shared/api"
 	"melato.org/lxops/srv"
@@ -420,6 +419,20 @@ func (t *InstanceServer) GetHwaddresses() ([]srv.Hwaddr, error) {
 
 }
 
+func imageLabel(image *api.Image) string {
+	var name string
+	if len(image.Aliases) > 0 {
+		name = image.Aliases[0].Name
+	}
+	if name == "" {
+		name = image.Properties["name"]
+	}
+	if name == "" {
+		name = image.Fingerprint
+	}
+	return name
+}
+
 func (t *InstanceServer) GetInstanceImages() ([]srv.InstanceImage, error) {
 	images, err := t.Server.GetImages()
 	if err != nil {
@@ -427,11 +440,7 @@ func (t *InstanceServer) GetInstanceImages() ([]srv.InstanceImage, error) {
 	}
 	fingerprints := make(map[string]string)
 	for _, image := range images {
-		names := make([]string, len(image.Aliases))
-		for i, a := range image.Aliases {
-			names[i] = a.Name
-		}
-		fingerprints[image.Fingerprint] = strings.Join(names, ",")
+		fingerprints[image.Fingerprint] = imageLabel(&image)
 	}
 	instances, err := t.Server.GetInstances(api.InstanceTypeAny)
 	if err != nil {
@@ -443,9 +452,6 @@ func (t *InstanceServer) GetInstanceImages() ([]srv.InstanceImage, error) {
 		im.Instance = i.Name
 		fg := i.Config["volatile.base_image"]
 		im.Image = fingerprints[fg]
-		if im.Image == "" {
-			im.Image = fg
-		}
 		result = append(result, im)
 	}
 	return result, nil
