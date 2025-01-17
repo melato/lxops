@@ -141,6 +141,7 @@ commands:
     commands:
       convert:
         short: convert config files to the latest format
+        use: <config-file>...
       formats:
         short: print supported config formats        
       parse:
