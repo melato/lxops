@@ -3,6 +3,7 @@ package cli
 import (
 	"fmt"
 	"reflect"
+	"runtime"
 	"strings"
 
 	"melato.org/lxops/srv"
@@ -13,7 +14,12 @@ import (
 type PublishOps struct {
 	InstanceOps
 	Fields srv.ImageFields
-	Alias  string `name:"alias" usage:"image alias`
+	Alias  string `name:"alias" usage:"image alias"`
+}
+
+func (t *PublishOps) Init() error {
+	t.Fields.Architecture = runtime.GOARCH
+	return nil
 }
 
 func (_ *PublishOps) mergeStructs(target, source any) {
