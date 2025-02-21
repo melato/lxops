@@ -7,5 +7,5 @@ require (
 	melato.org/cloudconfig v0.3.0
 	melato.org/command v1.0.1
 	melato.org/script v1.0.0
-	melato.org/table3 v0.1.0
+	melato.org/table3 v0.1.1
 )

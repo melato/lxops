@@ -8,5 +8,5 @@ melato.org/command v1.0.1 h1:wum5goU7oW3B/0xF4Z4sQ7tugy/qQklek2MSpQmFo5I=
 melato.org/command v1.0.1/go.mod h1:1f8kdvW0OvX8TOUr4M7Wyad2geJMfBGbs+bN3sBx3eg=
 melato.org/script v1.0.0 h1:ytNRMPI5u6JyCVX7AZSTuqOOb5QPcA6Cyioos3XBVKg=
 melato.org/script v1.0.0/go.mod h1:vO7ex/iDKE5xa5LtElJ5H7EDpSHxef/IgwnAWreec2Q=
-melato.org/table3 v0.1.0 h1:6UXxcM2DAY5k8XVJzGl+C3wRVq/b42mM77T5x5bCAVE=
-melato.org/table3 v0.1.0/go.mod h1:FQV5u9FcNRAzqNJywy9XY5NPVO16hx5+/TDr1NqaHbU=
+melato.org/table3 v0.1.1 h1:7Z788HqtOjGQ7t1Z9GHyL464rzYipdQBzAE+zNPK7vQ=
+melato.org/table3 v0.1.1/go.mod h1:FQV5u9FcNRAzqNJywy9XY5NPVO16hx5+/TDr1NqaHbU=
