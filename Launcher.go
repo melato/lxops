@@ -500,6 +500,9 @@ func (t *Launcher) DeleteContainer(instance *Instance) error {
 	}
 	if len(dirFilesystems) > 0 {
 		cmd := exec.Command("ls", append([]string{"-l"}, dirFilesystems...)...)
+		if t.Trace {
+			fmt.Printf("%v\n", cmd)
+		}
 		cmd.Stderr = io.Discard
 		cmd.Stdout = os.Stdout
 		cmd.Run()
