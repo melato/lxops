@@ -3,6 +3,7 @@ package lxops
 import (
 	"errors"
 	"fmt"
+	"os"
 
 	"melato.org/lxops/cfg"
 	"melato.org/lxops/srv"
@@ -225,6 +226,9 @@ func (t *DeviceConfigurer) ExtractDevices(instance *Instance, server srv.Instanc
 			}
 			mountedDir, err := rootFS.MountedDir(d.Device.Path)
 			if err != nil {
+				if errors.Is(err, os.ErrNotExist) {
+					continue
+				}
 				return err
 			}
 			script.Run("sudo", "rsync", "-a", mountedDir+"/", dir+"/")
