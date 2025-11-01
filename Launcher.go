@@ -276,8 +276,8 @@ func (t *Launcher) ExtractDevices(instance *Instance) error {
 	if create.Image == "" {
 		return errors.New("Please provide image")
 	}
-	create.LxcOptions = config.LxcOptions
-	create.Profiles = append(create.Profiles, config.Profiles...)
+	//create.LxcOptions = config.LxcOptions
+	//create.Profiles = append(create.Profiles, config.Profiles...)
 
 	server, err := t.Client.ProjectInstanceServer(config.Project)
 	if err != nil {
