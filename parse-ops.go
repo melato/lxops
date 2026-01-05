@@ -16,11 +16,15 @@ type ParseOp struct {
 	//Script string `usage:"print the body of the script with the specified name"`
 }
 
+func passConditions(name string) bool {
+	return true
+}
+
 func (t *ParseOp) parseConfig(file string) (*cfg.Config, error) {
 	if t.Raw {
 		return cfg.ReadRawConfig(file)
 	} else {
-		r := &cfg.ConfigReader{Warn: true, Verbose: t.Verbose}
+		r := &cfg.ConfigReader{Warn: true, Verbose: t.Verbose, HasProperty: passConditions}
 		return r.Read(file)
 	}
 }
@@ -48,7 +52,7 @@ type ConfigOps struct {
 }
 
 func (t *ConfigOps) PrintProperties(file string) error {
-	config, err := cfg.ReadConfig(file)
+	config, err := cfg.ReadConfig(file, passConditions)
 	if err != nil {
 		return err
 	}

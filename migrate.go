@@ -57,9 +57,13 @@ func (t *Migrate) hostCommand(host, command string, args ...string) *exec.Cmd {
 	}
 }
 
+func (t *Migrate) HasProperty(name string) bool {
+	return hasKey(t.GlobalProperties, name)
+}
+
 func (t *Migrate) CopyFilesystems() error {
 	var config *cfg.Config
-	config, err := cfg.ReadConfig(t.ConfigFile)
+	config, err := cfg.ReadConfig(t.ConfigFile, t.HasProperty)
 	if err != nil {
 		return err
 	}
