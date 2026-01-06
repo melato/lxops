@@ -24,7 +24,7 @@ func (t *ParseOp) parseConfig(file string) (*cfg.Config, error) {
 	if t.Raw {
 		return cfg.ReadRawConfig(file)
 	} else {
-		r := &cfg.ConfigReader{Warn: true, Verbose: t.Verbose, HasProperty: passConditions}
+		r := &cfg.ConfigReader{Warn: true, Verbose: t.Verbose, ConditionEvaluator: passConditions}
 		return r.Read(file)
 	}
 }
