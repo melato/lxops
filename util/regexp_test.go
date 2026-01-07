@@ -11,7 +11,6 @@ func TestRegexp(t *testing.T) {
 	var err error
 	fn := func(key string) string {
 		key = key[1 : len(key)-1]
-		fmt.Printf("key: %s", key)
 		switch key {
 		case "a":
 			return "A"

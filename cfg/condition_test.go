@@ -19,4 +19,7 @@ func TestCondition(t *testing.T) {
 	verify("x", "x", true)
 	verify("one|x", "x", true)
 	verify("a|x", "", false)
+	verify("(one)", "1", true)
+	verify("one|(one)", "1", true)
+	verify("(none)", "", false)
 }

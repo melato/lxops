@@ -2,6 +2,8 @@ package cfg
 
 import (
 	"strings"
+
+	"melato.org/lxops/util"
 )
 
 type GetVariable func(name string) (string, bool)
@@ -15,13 +17,17 @@ func filterPath(path HostPath, getVariable GetVariable) (HostPath, bool) {
 	name, file, hasCondition := strings.Cut(string(path), "|")
 	if hasCondition {
 		_, hasVariable := getVariable(name)
-		if hasVariable {
-			return HostPath(file), true
-		} else {
+		if !hasVariable {
 			return "", false
 		}
 	} else {
-		return path, true
+		file = string(path)
+	}
+	file, err := util.Substitute(file, getVariable)
+	if err == nil {
+		return HostPath(file), true
+	} else {
+		return "", false
 	}
 }
 
