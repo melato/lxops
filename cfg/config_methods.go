@@ -102,14 +102,15 @@ func (path HostPath) Resolve(dir string) HostPath {
 	return HostPath(filepath.Join(dir, string(path)))
 }
 
-func (t *Config) ResolvePaths(dir string) {
+func (t *Config) ResolvePaths(dir string, getVariable GetVariable) {
+	t.Include = filterPaths(t.Include, getVariable)
+	t.CloudConfigFiles = filterPaths(t.CloudConfigFiles, getVariable)
 	for i, f := range t.Include {
 		t.Include[i] = f.Resolve(dir)
 	}
 	t.SourceConfig = t.SourceConfig.Resolve(dir)
 	for i, path := range t.CloudConfigFiles {
 		t.CloudConfigFiles[i] = path.Resolve(dir)
-
 	}
 }
 

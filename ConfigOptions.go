@@ -25,14 +25,12 @@ func (t *ConfigOptions) Init() error {
 	return t.PropertyOptions.Init()
 }
 
-func hasKey(m map[string]string, key string) bool {
-	_, exists := m[key]
-	return exists
-
-}
-
-func (t *ConfigOptions) HasProperty(name string) bool {
-	return hasKey(t.cliProperties, name) || hasKey(t.GlobalProperties, name)
+func (t *ConfigOptions) GetProperty(name string) (string, bool) {
+	value, found := t.cliProperties[name]
+	if !found {
+		value, found = t.GlobalProperties[name]
+	}
+	return value, found
 }
 
 func (t *ConfigOptions) ConfigureProject(client ConfigContext) {
@@ -54,7 +52,7 @@ func (t *ConfigOptions) Configured() error {
 }
 
 func (t *ConfigOptions) ReadConfig(file string) (*cfg.Config, error) {
-	config, err := cfg.ReadConfig(file, t.HasProperty)
+	config, err := cfg.ReadConfig(file, t.GetProperty)
 	if err != nil {
 		return nil, err
 	}

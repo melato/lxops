@@ -7,13 +7,17 @@ import (
 )
 
 type ConfigReader struct {
-	ConditionEvaluator EvalCondition
+	getVariable GetVariable
 
 	Warn     bool
 	Verbose  bool
 	included map[string]bool
 	file     string
 	warned   bool
+}
+
+func NewConfigReader(getVariable GetVariable) *ConfigReader {
+	return &ConfigReader{getVariable: getVariable}
 }
 
 func (r *ConfigReader) isIncluded(file string) bool {
@@ -148,11 +152,8 @@ func (r *ConfigReader) mergeFile(t *Config, file string) error {
 	if err != nil {
 		return err
 	}
-	if !config.Condition.Eval(r.ConditionEvaluator) {
-		return nil
-	}
 	dir := filepath.Dir(file)
-	config.ResolvePaths(dir)
+	config.ResolvePaths(dir, r.getVariable)
 	if len(r.included) == 0 {
 		t.Description = config.Description
 		t.Stop = config.Stop
@@ -194,8 +195,8 @@ func (r *ConfigReader) Read(file string) (*Config, error) {
 }
 
 // ReadConfig read a config file, and its included files
-func ReadConfig(file string, conditionEvaluator EvalCondition) (*Config, error) {
-	r := &ConfigReader{ConditionEvaluator: conditionEvaluator}
+func ReadConfig(file string, getVariable GetVariable) (*Config, error) {
+	r := NewConfigReader(getVariable)
 	c, err := r.Read(file)
 	if err != nil {
 		return nil, err

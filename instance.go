@@ -241,13 +241,12 @@ func (instance *Instance) Rollback(name string) error {
 	return s.Error()
 }
 
-func (t *Instance) hasProperty(name string) bool {
-	_, exists := t.cliProperties[name]
-	if exists {
-		return true
+func (t *Instance) getProperty(name string) (string, bool) {
+	value, exists := t.cliProperties[name]
+	if !exists {
+		value, exists = t.globalProperties[name]
 	}
-	_, exists = t.globalProperties[name]
-	return exists
+	return value, exists
 }
 
 // GetSourceConfig returns the parsed configuration specified by Config.SourceConfig
@@ -258,7 +257,7 @@ func (t *Instance) GetSourceConfig() (*cfg.Config, error) {
 		return t.Config, nil
 	}
 	if t.sourceConfig == nil {
-		config, err := cfg.ReadConfig(string(t.Config.SourceConfig), t.hasProperty)
+		config, err := cfg.ReadConfig(string(t.Config.SourceConfig), t.getProperty)
 		if err != nil {
 			return nil, err
 		}

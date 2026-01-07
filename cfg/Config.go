@@ -10,8 +10,6 @@ type Config struct {
 	// File is the file of the top config file, for reference.  It is not read from yaml.
 	File string `yaml:"-"`
 
-	Condition Condition `yaml:",inline,omitempty"`
-
 	// Description is provided for documentation
 	Description string `yaml:"description,omitempty"`
 

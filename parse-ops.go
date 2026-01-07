@@ -16,15 +16,18 @@ type ParseOp struct {
 	//Script string `usage:"print the body of the script with the specified name"`
 }
 
-func passConditions(name string) bool {
-	return true
+func (t *ParseOp) getVariable(name string) (string, bool) {
+	// not sure what to return here
+	return "", true
 }
 
 func (t *ParseOp) parseConfig(file string) (*cfg.Config, error) {
 	if t.Raw {
 		return cfg.ReadRawConfig(file)
 	} else {
-		r := &cfg.ConfigReader{Warn: true, Verbose: t.Verbose, ConditionEvaluator: passConditions}
+		r := cfg.NewConfigReader(t.getVariable)
+		r.Warn = true
+		r.Verbose = t.Verbose
 		return r.Read(file)
 	}
 }
@@ -51,8 +54,12 @@ func (t *ParseOp) Print(file string) error {
 type ConfigOps struct {
 }
 
+func (t *ConfigOps) getVariable(name string) (string, bool) {
+	// not sure what to return here
+	return "", true
+}
 func (t *ConfigOps) PrintProperties(file string) error {
-	config, err := cfg.ReadConfig(file, passConditions)
+	config, err := cfg.ReadConfig(file, t.getVariable)
 	if err != nil {
 		return err
 	}
