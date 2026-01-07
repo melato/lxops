@@ -2,9 +2,11 @@ package cfg
 
 import (
 	"fmt"
+	"iter"
 	"os"
 	"path/filepath"
 
+	"melato.org/cloudconfig"
 	"melato.org/lxops/util"
 )
 
@@ -142,4 +144,16 @@ func (t *Config) AbsFilename() string {
 		}
 	}
 	return filename
+}
+
+func (t *Config) CloudConfigSeq() iter.Seq2[*cloudconfig.Config, error] {
+	return func(yield func(*cloudconfig.Config, error) bool) {
+		for _, file := range t.CloudConfigFiles {
+			//fmt.Printf("%s\n", file)
+			config, err := cloudconfig.ReadFile(string(file))
+			if !yield(config, err) {
+				return
+			}
+		}
+	}
 }

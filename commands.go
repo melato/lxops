@@ -89,15 +89,15 @@ func RootCommand(client srv.Client) *command.SimpleCommand {
 	propertyCmd.Command("get").RunFunc(propertyOps.Get)
 	propertyCmd.Command("file").RunFunc(propertyOps.File)
 
-	configCmd := cmd.Command("config")
-	parse := &ParseOp{}
-	configCmd.Command("parse").Flags(parse).RunFunc(parse.Parse)
-	configCmd.Command("print").Flags(parse).RunFunc(parse.Print)
+	parse := &ParseOps{}
+	configCmd := cmd.Command("config").Flags(parse)
+	configCmd.Command("parse").RunFunc(parse.Parse)
+	configCmd.Command("print").RunFunc(parse.Print)
 	configOps := &ConfigOps{}
 	configCmd.Command("formats").RunFunc(configOps.Formats)
-	configCmd.Command("properties").RunFunc(configOps.PrintProperties)
+	configCmd.Command("properties").RunFunc(parse.PrintProperties)
+	configCmd.Command("packages").RunFunc(parse.PrintPackages)
 	configCmd.Command("includes").RunFunc(configOps.Includes)
-	configCmd.Command("script").RunFunc(configOps.Script)
 	convert := &cli.ConvertOps{}
 	configCmd.Command("convert").Flags(convert).RunFunc(convert.Convert)
 

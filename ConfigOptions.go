@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
-	"strings"
 
 	"melato.org/lxops/cfg"
 )
@@ -14,41 +13,19 @@ type ConfigContext interface {
 }
 
 type ConfigOptions struct {
-	Project       string   `name:"project" usage:"the instance server project to use.  Overrides config project"`
-	Name          string   `name:"name" usage:"The name of the instance.  If missing, use the base name of the config file"`
-	Properties    []string `name:"P" usage:"a command-line property in the form <key>=<value>.  Command-line properties override instance and global properties"`
-	cliProperties map[string]string
 	PropertyOptions
+	Project string `name:"project" usage:"the instance server project to use.  Overrides config project"`
+	Name    string `name:"name" usage:"The name of the instance.  If missing, use the base name of the config file"`
 }
 
 func (t *ConfigOptions) Init() error {
 	return t.PropertyOptions.Init()
 }
 
-func (t *ConfigOptions) GetProperty(name string) (string, bool) {
-	value, found := t.cliProperties[name]
-	if !found {
-		value, found = t.GlobalProperties[name]
-	}
-	return value, found
-}
-
 func (t *ConfigOptions) ConfigureProject(client ConfigContext) {
 	if t.Project == "" {
 		t.Project = client.CurrentProject()
 	}
-}
-
-func (t *ConfigOptions) Configured() error {
-	t.cliProperties = make(map[string]string)
-	for _, property := range t.Properties {
-		i := strings.Index(property, "=")
-		if i < 0 {
-			return fmt.Errorf("missing value from property: %s", property)
-		}
-		t.cliProperties[property[0:i]] = property[i+1:]
-	}
-	return t.PropertyOptions.Configured()
 }
 
 func (t *ConfigOptions) ReadConfig(file string) (*cfg.Config, error) {

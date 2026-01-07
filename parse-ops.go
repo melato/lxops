@@ -10,29 +10,25 @@ import (
 	"melato.org/table3"
 )
 
-type ParseOp struct {
+type ParseOps struct {
+	PropertyOptions
 	Raw     bool `usage:"do not process includes"`
 	Verbose bool `name:"v" usage:"verbose"`
 	//Script string `usage:"print the body of the script with the specified name"`
 }
 
-func (t *ParseOp) getVariable(name string) (string, bool) {
-	// not sure what to return here
-	return "", true
-}
-
-func (t *ParseOp) parseConfig(file string) (*cfg.Config, error) {
+func (t *ParseOps) parseConfig(file string) (*cfg.Config, error) {
 	if t.Raw {
 		return cfg.ReadRawConfig(file)
 	} else {
-		r := cfg.NewConfigReader(t.getVariable)
+		r := cfg.NewConfigReader(t.PropertyOptions.GetProperty)
 		r.Warn = true
 		r.Verbose = t.Verbose
 		return r.Read(file)
 	}
 }
 
-func (t *ParseOp) Parse(file ...string) error {
+func (t *ParseOps) Parse(file ...string) error {
 	for _, file := range file {
 		_, err := t.parseConfig(file)
 		if err != nil {
@@ -42,7 +38,7 @@ func (t *ParseOp) Parse(file ...string) error {
 	return nil
 }
 
-func (t *ParseOp) Print(file string) error {
+func (t *ParseOps) Print(file string) error {
 	config, err := t.parseConfig(file)
 	if err != nil {
 		return err
@@ -54,12 +50,8 @@ func (t *ParseOp) Print(file string) error {
 type ConfigOps struct {
 }
 
-func (t *ConfigOps) getVariable(name string) (string, bool) {
-	// not sure what to return here
-	return "", true
-}
-func (t *ConfigOps) PrintProperties(file string) error {
-	config, err := cfg.ReadConfig(file, t.getVariable)
+func (t *ParseOps) PrintProperties(file string) error {
+	config, err := t.parseConfig(file)
 	if err != nil {
 		return err
 	}
@@ -82,15 +74,23 @@ func (t *ConfigOps) PrintProperties(file string) error {
 	return nil
 }
 
-func (t *ConfigOps) Script(file string, script string) error {
-	/*
-		config, err := ReadConfig(file)
+func (t *ParseOps) PrintPackages(file string) error {
+	config, err := t.parseConfig(file)
+	if err != nil {
+		return err
+	}
+	var packages []string
+	for c, err := range config.CloudConfigSeq() {
 		if err != nil {
 			return err
 		}
-		t.printScript(config.PreScripts, script)
-		t.printScript(config.Scripts, script)
-	*/
+		for _, name := range c.Packages {
+			packages = append(packages, name)
+		}
+	}
+	for _, name := range packages {
+		fmt.Printf("%s\n", name)
+	}
 	return nil
 }
 
