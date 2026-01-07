@@ -18,8 +18,11 @@ as long as the condition format is backward compatible.
 type EvalCondition func(condition string) bool
 
 type Condition struct {
-	// The condition passes if the property exists or is empty)
-	Condition string `yaml:"if,omitempty"`
+	// A string condition determines if the enclosing Config should be used or not.
+	// The interpretation of the condition is up to EvalCondition
+	// lxops currently evaluates conditions by checking if the condition string exists
+	// as a global or command-line property.
+	Condition string `yaml:"condition,omitempty"`
 }
 
 func (t *Condition) Eval(eval EvalCondition) bool {
