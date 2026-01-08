@@ -97,6 +97,7 @@ func RootCommand(client srv.Client) *command.SimpleCommand {
 	configCmd.Command("formats").RunFunc(configOps.Formats)
 	configCmd.Command("properties").RunFunc(parse.PrintProperties)
 	configCmd.Command("packages").RunFunc(parse.PrintPackages)
+	configCmd.Command("cloud-config").RunFunc(parse.CloudConfigFiles)
 	configCmd.Command("includes").RunFunc(configOps.Includes)
 	convert := &cli.ConvertOps{}
 	configCmd.Command("convert").Flags(convert).RunFunc(convert.Convert)

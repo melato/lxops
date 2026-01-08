@@ -153,6 +153,12 @@ commands:
       properties:
         short: print config file properties
         use: <config-file>
+      packages:
+        short: print packages to install
+        use: <config-file>
+      packages:
+        short: print cloud-config files
+        use: <config-file>
       script:
         short: print the body of a script
         use: <config-file> <script-name>

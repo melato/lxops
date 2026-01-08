@@ -94,6 +94,17 @@ func (t *ParseOps) PrintPackages(file string) error {
 	return nil
 }
 
+func (t *ParseOps) CloudConfigFiles(file string) error {
+	config, err := t.parseConfig(file)
+	if err != nil {
+		return err
+	}
+	for _, file := range config.CloudConfigFiles {
+		fmt.Printf("%s\n", file)
+	}
+	return nil
+}
+
 func (t *ConfigOps) readIncludes(file string, included map[string]bool) error {
 	config, err := cfg.ReadRawConfig(file)
 	if err != nil {
