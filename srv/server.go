@@ -1,4 +1,4 @@
-// Package api specifies the interface between lxdops and the instance server (LXD, Incus).
+// Package api specifies the interface between lxops and the instance server (Incus, LXD).
 package srv
 
 type InstanceServer interface {

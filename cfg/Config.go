@@ -46,7 +46,7 @@ type ConfigInherit struct {
 	Profiles []string `yaml:"profiles,omitempty"`
 
 	// ProfilePattern specifies how the instance profile should be named.
-	// It defaults to "(instance).lxdops"
+	// It defaults to "(instance).lxops"
 	Profile Pattern `yaml:"profile-pattern,omitempty"`
 
 	// The owner (uid:gid) for new devices
@@ -81,23 +81,6 @@ type ConfigInherit struct {
 //
 // When basing an instance on a template with few skeleton files, it is preferable to copy with a DeviceTemplate,
 // so the container's disk devices are not tied to the template.
-//
-// Example:
-// suppose test-a.yaml has:
-//
-//	origin: a/copy
-//	filesystems: "default": "z/test/(instance)"
-//	device-origin: a@copy
-//	source-filesystems "default": "z/prod/(instance)"
-//	devices: home, path=/home, filesystem=default
-//
-// This would do something like:
-//
-//	zfs clone z/prod/a@copy z/test/test-a
-//	lxc copy --container-only a/copy test-a
-//	lxc profile create test-a.lxdops
-//	lxc profile device add test-a.lxdops home disk path=/home source=/z/test/test-a/home
-//	lxc profile add test-a test-a.lxdops
 type Source struct {
 	// origin is the name of a container and a snapshot to clone from.
 	// It has the form [<project>_]<container>[/<snapshot>]
@@ -147,7 +130,7 @@ type Filesystem struct {
 	Pattern Pattern `yaml:"pattern"`
 	// Zfsproperties is a list of properties that are set when a zfs filesystem is created or cloned
 	Zfsproperties map[string]string `yaml:"zfsproperties,omitempty"`
-	// Destroy allows lxdops destroy the filesystem when requested.
+	// Destroy allows lxops to destroy the filesystem when requested.
 	Destroy bool `yaml:"destroy,omitempty"`
 	// Transient filesystems are not backed-up, exported, or imported.
 	Transient bool `yaml:"transient,omitempty"`
