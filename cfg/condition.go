@@ -1,28 +1,23 @@
 package cfg
 
 import (
-	"strings"
-
 	"melato.org/lxops/util"
 )
 
 type GetVariable func(name string) (string, bool)
 
 /*
-	 paths have the form
-		path
-		variable|path
+Modify and filter a path.
+
+Return the effective path and a boolean indicating whether it should be used or not.
+
+path goes through variable substitution.
+If the substitution fails, the path is ignored (returns false).
+This provides a simple way of conditional configuration.
+Just use a variable in the path that can be defined or not.
 */
 func filterPath(path HostPath, getVariable GetVariable) (HostPath, bool) {
-	name, file, hasCondition := strings.Cut(string(path), "|")
-	if hasCondition {
-		_, hasVariable := getVariable(name)
-		if !hasVariable {
-			return "", false
-		}
-	} else {
-		file = string(path)
-	}
+	file := string(path)
 	file, err := util.Substitute(file, getVariable)
 	if err == nil {
 		return HostPath(file), true

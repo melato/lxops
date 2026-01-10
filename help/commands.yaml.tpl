@@ -181,6 +181,15 @@ commands:
       filesystems:
         short: print instance filesystems
         use: <config-file>
+        long: |
+          displays a table of filesystems specified in the config file.
+          The columns are:
+          FILESYSTEM: the filesystem identifier, as used in the config
+          PATH: the filesystem path, with properties substituted
+          PATTERN: The filesystem path, without properties substituted
+          FLAGS: Filesystem flags: destroy, transient.
+          
+          see "help filesystem"
       properties:
         short: print instance properties
         use: <config-file>
@@ -200,18 +209,41 @@ commands:
     examples:
     - launch -name php php.yaml
     long: |
-      This command creates filesystems and devices for the instance specified
-      in the command line, it copies the files from the corresponding directories
-      of the implied image, and shifts the uids and gids of by the amount
-      specified by the device-owner property (uid:gid).ConfigVersion
+      The extract command copies files from an image to disk devices.
+      It works for containers and images that use ZFS storage.
+
+      Specifically, the command:
+      - creates instance filesystems and device directories for an instance
+      - launches a container from the image
+      - finds the container root zfs filesystem origin
+      - mounts this origin to a temporary directory
+      - uses rsync to copy the lxops device directories from the
+        temporary directory to the instance device directories.
+      - shifts the uids and gids of the copied files, by the amount
+        specified by the device-owner property (uid:gid)
       
-      It works only for lxops configuration files that have an image property and
-      use ZFS devices.
+      Example Use Case:
+      Suppose config file example.yaml specifies:
+        image: example-template
+        device-template: example-template
+        
+      It also specifies a disk device, to be mounted on /var/log
+
+      When you run "lxops launch example.yaml", it reports that the template
+      device for /var/log is missing.
       
-      It creates a container from this image,
-      finds the container root filesystem origin,
-      mounts this origin to a temporary directory, and copies the specified
-      device directories from the image to the instance device directories.
+      You can create the template device using "extract":
+        lxops extract -name extract-emplate example.yaml
+      
+      Then delete the example devices created by the previous incomplete launch:
+        lxops destroy example.yaml
+      
+      and relaunch it properly:
+        lxops launch example.yaml
+                
+      LIMITATIONS:      
+      The "launch" should incorporate what the "extract" command does.
+      
   create:
     short: (create container from image)
     use: <config-file>
@@ -304,13 +336,11 @@ commands:
     long: |
       Uses ssh and zfs send/receive to copy a snapshot of the instance filesystems
       between hosts.
+      
       If a short snapshot name is provided, it is used in the zfs send commands.
-      Otherwise, a new snapshot is generated using "lxops snapshot".
+      Otherwise, a new snapshot name is generated and created using "lxops snapshot":
+        [ssh <from-host>] lxops snapshot -s <generated-snapshot> ...
       
-      		[ssh <from-host>] lxops snapshot -s <generated-snapshot> ...
-
-        , using the current date,
-      and a snapshot is created in the source filesystems.
-      
-      Assumes that the config file is at the same path on the other host,
+      This command assumes that the config file is at the same path on the other host,
       and has the same filesystems.
+      
