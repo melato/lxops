@@ -131,7 +131,7 @@ type Filesystem struct {
 	// Zfsproperties is a list of properties that are set when a zfs filesystem is created or cloned
 	Zfsproperties map[string]string `yaml:"zfsproperties,omitempty"`
 	// Destroy allows lxops to destroy the filesystem when requested.
-	Destroy bool `yaml:"destroy,omitempty"`
+	Destroy bool `yaml:"destroy"`
 	// Transient filesystems are not backed-up, exported, or imported.
 	Transient bool `yaml:"transient,omitempty"`
 }
