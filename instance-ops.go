@@ -3,6 +3,7 @@ package lxops
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"melato.org/lxops/util"
 	"melato.org/table3"
@@ -56,6 +57,16 @@ func (t *InstanceOps) Filesystems(instance *Instance) error {
 		table.NewColumn("FILESYSTEM", func() interface{} { return fs.Id }),
 		table.NewColumn("PATH", func() interface{} { return fs.Path }),
 		table.NewColumn("PATTERN", func() interface{} { return fs.Filesystem.Pattern }),
+		table.NewColumn("FLAGS", func() interface{} {
+			var flags []string
+			if fs.Filesystem.Destroy {
+				flags = append(flags, "destroy")
+			}
+			if fs.Filesystem.Transient {
+				flags = append(flags, "transient")
+			}
+			return strings.Join(flags, " ")
+		}),
 	)
 	for _, fs = range filesystems {
 		writer.WriteRow()
