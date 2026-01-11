@@ -13,8 +13,11 @@ fields:
     It is a safety feature to remind you that this filesystem may be destroyed by lxops.
   transient: |
     Marks a filesystem as transient.  
-    Transient filesystems are not exported or imported and do not need to be backed up.  
+    Transient filesystems do not need to be preserved across reboots,
+    or backed-up.
     A device where a transient filesystem is appropriate is /tmp.
+    Transient filesystems are ignored by the snapshot, export, import, and
+    copy-filesystem commands.
   zfsproperties: |
     A list of zfs properties to set when creating or cloning a zfs filesystem.
     They are passed to zfs using the -o flag.
