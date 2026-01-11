@@ -78,21 +78,16 @@ func join(args ...string) string {
 	return strings.Join(args[0:k], "-")
 }
 
-func (t *PublishOps) PublishInstance(args ...string) error {
-	var instance string
+func (t *PublishOps) PublishInstance(instance string, args ...string) error {
 	var snapshot string
 	switch len(args) {
-	case 0:
-	case 2:
-		instance = args[0]
-		snapshot = args[1]
 	case 1:
-		name, snap, hasSnapshot := strings.Cut(args[0], "/")
+		snapshot = args[0]
+	case 0:
+		name, snap, hasSnapshot := strings.Cut(instance, "/")
 		if hasSnapshot {
 			instance = name
 			snapshot = snap
-		} else {
-			instance = name
 		}
 	default:
 		return fmt.Errorf("too many arguments")
