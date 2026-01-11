@@ -104,9 +104,15 @@ func (path HostPath) Resolve(dir string) HostPath {
 	return HostPath(filepath.Join(dir, string(path)))
 }
 
-func (t *Config) ResolvePaths(dir string, getVariable GetVariable) {
-	t.Include = filterPaths(t.Include, getVariable)
-	t.CloudConfigFiles = filterPaths(t.CloudConfigFiles, getVariable)
+func (t *Config) ResolvePaths(dir string, getVariable GetVariable) error {
+	var err error
+	t.Include, err = filterPaths(t.Include, getVariable)
+	if err == nil {
+		t.CloudConfigFiles, err = filterPaths(t.CloudConfigFiles, getVariable)
+	}
+	if err != nil {
+		return err
+	}
 	for i, f := range t.Include {
 		t.Include[i] = f.Resolve(dir)
 	}
@@ -114,6 +120,7 @@ func (t *Config) ResolvePaths(dir string, getVariable GetVariable) {
 	for i, path := range t.CloudConfigFiles {
 		t.CloudConfigFiles[i] = path.Resolve(dir)
 	}
+	return nil
 }
 
 // Return the filesystem for the given id, or nil if it doesn't exist.

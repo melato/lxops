@@ -153,7 +153,10 @@ func (r *ConfigReader) mergeFile(t *Config, file string) error {
 		return err
 	}
 	dir := filepath.Dir(file)
-	config.ResolvePaths(dir, r.getVariable)
+	err = config.ResolvePaths(dir, r.getVariable)
+	if err != nil {
+		return err
+	}
 	if len(r.included) == 0 {
 		t.Description = config.Description
 		t.Stop = config.Stop
