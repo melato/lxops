@@ -94,25 +94,24 @@ commands:
       devices:
         short: (print container disk devices)
         use: <container>
-      publish:
-        short: publish an instance into an image
-        long: See also the publish command.
-        use: <instance> <snapshot> <alias>
       wait: 
         short: (wait until all the requested containers have an ipv4 address)
         use: <container>...
   publish:
     short: (create an image from an instance)
-    use: <instance> <snapshot>
+    use: <instance>[/<snapshot>]
+    examples:
+    - publish -c mariadb.yaml debian-mariadb-20260105-0931
+    - publish -c mariadb.yaml debian-mariadb-20260105-0931/copy
+    - publish -c mariadb.yaml --dry-run debian-mariadb-20260105-0931
     long: |
-      Create an image from an instance.
-      This fills all configurable image fields,
-      using options, the current date/time,
-      and information from the instance.
+      publish is a wrapper for {{.ServerType}} publish.
       
-      If any image properties are not specified in the options,
-      default properties are taken from the container instance.
-      If an alias is not specified, the instance name is used.
+      It extracts default image properties from the instance name and
+      from the config file (that was used to build the instance).
+      
+      If there is no -release or -serial specified,
+      it looks for a series of numbers and dashes in the instance name.
   create-devices:
     short: (create devices)
   create-profile:

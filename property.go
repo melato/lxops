@@ -9,6 +9,7 @@ import (
 	"sort"
 	"strings"
 
+	"melato.org/lxops/cfg"
 	"melato.org/lxops/util"
 	"melato.org/lxops/yaml"
 )
@@ -152,4 +153,8 @@ func (t *PropertyOptions) Get(key string) error {
 	value := t.GlobalProperties[key]
 	fmt.Printf("%s\n", value)
 	return nil
+}
+
+func (t *PropertyOptions) NewConfigReader() *cfg.ConfigReader {
+	return cfg.NewConfigReader(t.GetProperty)
 }

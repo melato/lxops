@@ -1,6 +1,6 @@
 module melato.org/lxops_lxd
 
-go 1.20
+go 1.23
 
 replace melato.org/lxops => ../../
 
@@ -51,5 +51,5 @@ require (
 	gopkg.in/square/go-jose.v2 v2.6.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	melato.org/cloudconfig v0.3.0 // indirect
-	melato.org/table3 v0.1.0 // indirect
+	melato.org/table3 v0.1.1 // indirect
 )

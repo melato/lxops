@@ -109,7 +109,6 @@ func RootCommand(client srv.Client) *command.SimpleCommand {
 	containerCmd.Command("wait").RunFunc(containerOps.Wait)
 	containerCmd.Command("devices").RunFunc(containerOps.Devices)
 	containerCmd.Command("hwaddr").RunFunc(containerOps.ListHwaddr)
-	containerCmd.Command("publish").RunFunc(containerOps.PublishInstance)
 	containerCmd.Command("info").RunFunc(containerOps.Info)
 
 	cloudconfig := &cli.Cloudconfig{Client: client}
@@ -122,7 +121,7 @@ func RootCommand(client srv.Client) *command.SimpleCommand {
 	imageCmd := cmd.Command("image")
 	imageCmd.Command("instances").Flags(containerOps).RunFunc(containerOps.ListImages)
 
-	publishOps := &cli.PublishOps{InstanceOps: cli.InstanceOps{Client: client}}
+	publishOps := &PublishOps{InstanceOps: cli.InstanceOps{Client: client}}
 	cmd.Command("publish").Flags(publishOps).RunFunc(publishOps.PublishInstance)
 
 	networkOp := &cli.NetworkOp{Client: client}

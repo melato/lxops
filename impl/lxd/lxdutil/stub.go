@@ -16,6 +16,9 @@ func (t *InstanceServer) GetInstance(name string) (any, error) {
 	return nil, fmt.Errorf("GetInstance: Unimplemented method.")
 }
 
-func (t *InstanceServer) PublishInstanceWithFields(instance, snapshot, alias string, f srv.ImageFields) error {
+func (t *InstanceServer) PublishInstance2(instance, snapshot,
+	alias string,
+	fields srv.ImageFields,
+	options srv.PublishOptions) error {
 	return fmt.Errorf("GetInstance: Unimplemented method.")
 }

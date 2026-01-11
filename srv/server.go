@@ -35,7 +35,7 @@ type InstanceServer interface {
 
 	// images
 	PublishInstance(instance, snapshot, alias string) error
-	PublishInstanceWithFields(instance, snapshot, alias string, fields ImageFields) error
+	PublishInstance2(instance, snapshot, alias string, fields ImageFields, options PublishOptions) error
 	ExportImage(image string, path string) error
 	ImportImage(image string, path string) error
 
@@ -118,4 +118,9 @@ type ImageFields struct {
 	Serial       string
 	Description  string
 	Name         string
+}
+
+type PublishOptions struct {
+	Compression string
+	Format      string
 }

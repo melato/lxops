@@ -6,13 +6,14 @@ import (
 	"sort"
 
 	"melato.org/lxops/srv"
+	"melato.org/lxops/yaml"
 	table "melato.org/table3"
 )
 
 // InstanceOps - operations on instances
 type InstanceOps struct {
-	Client srv.Client `name:"-"`
-	server srv.InstanceServer
+	Client srv.Client         `name:"-"`
+	Server srv.InstanceServer `name:"-"`
 }
 
 func (t *InstanceOps) Configured() error {
@@ -20,12 +21,12 @@ func (t *InstanceOps) Configured() error {
 	if err != nil {
 		return err
 	}
-	t.server = server
+	t.Server = server
 	return nil
 }
 
 func (t *InstanceOps) Profiles(instance string) error {
-	profiles, err := t.server.GetInstanceProfiles(instance)
+	profiles, err := t.Server.GetInstanceProfiles(instance)
 	if err != nil {
 		return err
 	}
@@ -37,7 +38,7 @@ func (t *InstanceOps) Profiles(instance string) error {
 
 func (t *InstanceOps) Wait(args []string) error {
 	for _, instance := range args {
-		err := t.server.WaitForNetwork(instance)
+		err := t.Server.WaitForNetwork(instance)
 		if err != nil {
 			return err
 		}
@@ -56,7 +57,7 @@ func (t disk_device_sorter) Swap(i, j int)      { t[i], t[j] = t[j], t[i] }
 func (t disk_device_sorter) Less(i, j int) bool { return t[i].Source < t[j].Source }
 
 func (t *InstanceOps) Devices(instance string) error {
-	devs, err := t.server.GetInstanceDevices(instance)
+	devs, err := t.Server.GetInstanceDevices(instance)
 	if err != nil {
 		return err
 	}
@@ -83,7 +84,7 @@ func (t *InstanceOps) Devices(instance string) error {
 }
 
 func (t *InstanceOps) ListHwaddr() error {
-	addresses, err := t.server.GetHwaddresses()
+	addresses, err := t.Server.GetHwaddresses()
 	if err != nil {
 		return err
 	}
@@ -101,7 +102,7 @@ func (t *InstanceOps) ListHwaddr() error {
 }
 
 func (t *InstanceOps) ListImages() error {
-	list, err := t.server.GetInstanceImages()
+	list, err := t.Server.GetInstanceImages()
 	if err != nil {
 		return err
 	}
@@ -121,6 +122,16 @@ func (t *InstanceOps) ListImages() error {
 	return nil
 }
 
+/*
 func (t *InstanceOps) PublishInstance(instance, snapshot, alias string) error {
-	return t.server.PublishInstance(instance, snapshot, alias)
+	return t.Server.PublishInstance(instance, snapshot, alias)
+}
+*/
+
+func (t *InstanceOps) Info(instance string) error {
+	i, err := t.Server.GetInstance(instance)
+	if err != nil {
+		return err
+	}
+	return yaml.Print(i)
 }

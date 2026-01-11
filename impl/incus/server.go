@@ -504,14 +504,23 @@ func (t *InstanceServer) PublishInstance(instance, snapshot, alias string) error
 	return s.Error()
 }
 
-func (t *InstanceServer) PublishInstanceWithFields(instance, snapshot, alias string, f srv.ImageFields) error {
+func (t *InstanceServer) PublishInstance2(instance, snapshot, alias string, f srv.ImageFields, opt srv.PublishOptions) error {
 	s := &script.Script{Trace: Trace}
-	args := []string{"publish", instance + "/" + snapshot, "--alias=" + alias}
+	args := []string{"publish", instance + "/" + snapshot}
+	addFlag := func(name, value string) {
+		if value != "" {
+			args = append(args, name, value)
+		}
+	}
 	addField := func(name, value string) {
 		if value != "" {
 			args = append(args, name+"="+value)
 		}
 	}
+	addFlag("--alias", alias)
+	addFlag("--compression", opt.Compression)
+	addFlag("--format", opt.Format)
+
 	addField("architecture", f.Architecture)
 	addField("description", f.Description)
 	addField("name", f.Name)
