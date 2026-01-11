@@ -142,7 +142,7 @@ func (t *DeviceConfigurer) ConfigureDevices(instance *Instance) error {
 
 	script := t.NewScript()
 	devices := SortDevices(t.Config.Devices)
-	for key, d := range devices {
+	for _, d := range devices {
 		if d.Device.Filesystem == "" {
 			continue
 		}
@@ -152,7 +152,7 @@ func (t *DeviceConfigurer) ConfigureDevices(instance *Instance) error {
 		}
 		fs, found := filesystems[d.Device.Filesystem]
 		if !found {
-			return fmt.Errorf("missing filesystem: %s device: \n", d.Device.Filesystem, key)
+			return fmt.Errorf("missing filesystem: %s device: %s\n", d.Device.Filesystem, d.Name)
 		}
 		if !fs.IsNew && util.DirExists(dir) {
 			continue
@@ -203,7 +203,7 @@ func (t *DeviceConfigurer) ExtractDevices(instance *Instance, server srv.Instanc
 	devices := SortDevices(t.Config.Devices)
 	rootFS := NewRootFS(server, instance.Name)
 	defer rootFS.Unmount()
-	for key, d := range devices {
+	for _, d := range devices {
 		if d.Device.Filesystem == "" {
 			continue
 		}
@@ -213,7 +213,7 @@ func (t *DeviceConfigurer) ExtractDevices(instance *Instance, server srv.Instanc
 		}
 		fs, found := filesystems[d.Device.Filesystem]
 		if !found {
-			return fmt.Errorf("missing filesystem: %s device: \n", d.Device.Filesystem, key)
+			return fmt.Errorf("missing filesystem: %s device: %s\n", d.Device.Filesystem, d.Name)
 		}
 		if !fs.IsNew && util.DirExists(dir) {
 			continue
