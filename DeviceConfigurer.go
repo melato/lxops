@@ -181,7 +181,7 @@ func (t *DeviceConfigurer) ConfigureDevices(instance *Instance) error {
 	return nil
 }
 
-func (t *DeviceConfigurer) ExtractDevices(instance *Instance, server srv.InstanceServer) error {
+func (t *DeviceConfigurer) ExtractDevices(instance *Instance, server srv.InstanceServer, fromContainer string) error {
 	owner, err := instance.GetOwner()
 	if err != nil {
 		return err
@@ -201,7 +201,7 @@ func (t *DeviceConfigurer) ExtractDevices(instance *Instance, server srv.Instanc
 
 	script := t.NewScript()
 	devices := SortDevices(t.Config.Devices)
-	rootFS := NewRootFS(server, instance.Name)
+	rootFS := NewRootFS(server, fromContainer)
 	defer rootFS.Unmount()
 	for _, d := range devices {
 		if d.Device.Filesystem == "" {

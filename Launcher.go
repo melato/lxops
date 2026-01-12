@@ -268,7 +268,7 @@ func (t *Launcher) ExtractDevices(instance *Instance) error {
 
 	config := instance.Config
 	var create srv.Create
-	create.Name = instance.Name
+	create.Name = "extract-" + util.GenerateName(8)
 	create.Image, err = config.Image.Substitute(instance.Properties)
 	if err != nil {
 		return err
@@ -298,18 +298,18 @@ func (t *Launcher) ExtractDevices(instance *Instance) error {
 	var deleted bool
 	defer func() {
 		if !deleted {
-			server.DeleteInstance(instance.Name, false)
+			server.DeleteInstance(create.Name, false)
 		}
 	}()
 	dev := NewDeviceConfigurer(instance.Config)
 	dev.Trace = t.Trace
 	dev.DryRun = t.DryRun
-	err = dev.ExtractDevices(instance, server)
+	err = dev.ExtractDevices(instance, server, create.Name)
 	if err != nil {
 		return err
 	}
 
-	err = server.DeleteInstance(instance.Name, false)
+	err = server.DeleteInstance(create.Name, false)
 	if err != nil {
 		return err
 	}
