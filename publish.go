@@ -34,6 +34,14 @@ func (t *PublishOps) parseVersion(name string) string {
 	return re.FindString(name)
 }
 
+func firstLine(text string) string {
+	i := strings.IndexAny(text, "\r\n")
+	if i >= 0 {
+		return text[0:i]
+	}
+	return text
+}
+
 func (t *PublishOps) Configured() error {
 	if t.ConfigFile != "" {
 		var properties PropertyOptions
@@ -47,7 +55,7 @@ func (t *PublishOps) Configured() error {
 			return err
 		}
 		if t.Fields.Description == "" {
-			t.Fields.Description = t.config.Description
+			t.Fields.Description = firstLine(t.config.Description)
 		}
 		if t.Fields.OS == "" {
 			t.Fields.OS = t.config.Ostype
