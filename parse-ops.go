@@ -14,7 +14,6 @@ type ParseOps struct {
 	PropertyOptions
 	Raw     bool `usage:"do not process includes"`
 	Verbose bool `name:"v" usage:"verbose"`
-	//Script string `usage:"print the body of the script with the specified name"`
 }
 
 func (t *ParseOps) parseConfig(file string) (*cfg.Config, error) {

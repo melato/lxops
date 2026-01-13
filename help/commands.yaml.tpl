@@ -155,14 +155,12 @@ commands:
       packages:
         short: print packages to install
         use: <config-file>
-      packages:
-        short: print cloud-config files
+      cloud-config:
+        short: print cloud-config files to execute
         use: <config-file>
-      script:
-        short: print the body of a script
-        use: <config-file> <script-name>
       includes:
-        short: list included files
+        short: list included lxops files
+        use: <config-file>
   i:
     short: (show information about an instance/config)
     commands:
