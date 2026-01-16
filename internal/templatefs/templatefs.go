@@ -9,7 +9,8 @@ import (
 )
 
 // TemplateFS - An FS that wraps another FS of templates.
-// When it reads a file, it executes the template
+// When it reads a file, it executes it as a template
+// and returns the result.
 type TemplateFS struct {
 	FS           fs.FS
 	TemplateData any
