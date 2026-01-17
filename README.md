@@ -1,61 +1,27 @@
-lxops launches LXD or Incus containers from config (lxops) files that 
-specify how the instance should be launched and configured.
+lxops launches Incus containers from config (lxops) files that 
+specify how the container should be launched and configured.
 
 # Goals
-- launch instances from a config file
-- apply cloud-config files to an instance.
-- create instance-specific filesystems when creating an instance,
-and attach disk devices from these filesystems.
-- rebuild an instance from a new image, while preserving its filesystems and configuration
+## scriptable launch and configure
+Launch and configure instances from yaml configuration files and cloud-config files.
 
-Configuration inside a container is specified using standard [cloud-config](https://cloud-init.io/) files,
-which are applied using the InstanceServer API, without using any cloud-init packages.
+Configuration inside a container is specified using
+standard [cloud-config](https://cloud-init.io/) files,
+which are applied using the Incus API, without using any cloud-init packages.
 See [github.com/melato/cloudconfig](https://github.com/melato/cloudconfig) for what is supported.
 
+## instance-specific disk devices
+create instance-specific filesystems when creating an instance,
+and attach disk devices from these filesystems to the instance.
+
+This allows upgrading a container by rebuilding it with a new image,
+if you have arranged for all application configuration and data to
+be in non-root disk devices.
+The [lxops.examples](https://github.com/melato/lxops.examples) repository
+shows how to do this for a few applications.
+
 # Examples
-You can find examples in the separate [lxops.examples](https://github.com/melato/lxops.examples) repository.
-
-Here is a simple configuration file (example.yaml):
-
-```
-#lxops-v1
-ostype: alpine
-image: images:alpine/3.18
-profiles:
-- default
-cloud-config-files:  
-- ../packages/base.cfg
-- ../packages/bash.cfg
-- ../cfg/doas.cfg
-- ../cfg/user.cfg
-```
-
-You can create containers a1, a2, using these commands:
-```
-	lxops launch -name a1 example.yaml
-	lxops launch -name a2 example.yaml
-```
-It's even better if you create an image from this configuration, and create the containers from your image.
-The examples repository demonstrates that.
-
-# Compile
-This project is provided as Go source code only at this point.
-It provides code for two separate executables, one for LXD and one for Incus.
-Compile either one and create an "lxops" link to the one that you want to use.
-
-To compile lxops-lxd:
-```
-cd ./impl/lxd/main
-go install lxops-lxd.go
-```
-
-To compile lxops-incus:
-```
-cd ./impl/incus/main
-go install lxops-incus.go
-```
-
-The code is split into three different Go modules, so each module has its own dependencies.
+You can find working examples in the separate [lxops.examples](https://github.com/melato/lxops.examples) repository.
 
 # Disk Devices
 A central feature of lxops is the ability to create and attach external disk devices to a container it launches.
@@ -81,13 +47,9 @@ I typically attach disk devices to all these directories:
 - /var/log
 - /tmp
 
-And make sure I put all application data in one of these directories (except /tmp, of course).
+I put all application data and configuration in one of these directories (except /tmp).
 
 When I replace the root filesystem with a new image, my data persists.
-
-An image may already have /log populated with files and directories, without which the image might not function properly.
-For this reason, the configuration file has a *device-template* field that specifies another container whose devices will
-be copied to the current container during lxops launch, using rsync.
 
 ## lxops files
 An lxops file is a yaml configuration file that specifies how to launch an instance.
@@ -98,51 +60,77 @@ Here are the basic commands for managing a container with lxops.
 
 -name <container-name> can be omitted if it is the same as the config-file base name,
 so these commands are equivalent:
-	lxops launch myconfig.yaml
-	lxops launch -name myconfig myconfig.yaml
+```
+lxops launch myconfig.yaml
+lxops launch -name myconfig myconfig.yaml
+```
+
+## extract
+See the examples repository for more detailed examples of using *extract* and *launch*.
+
+```
+lxops extract -name <name> <config-file.yaml>
+```
+
+*extract* creates filesystems and disk device directories for a container.
+It copies files from an image to these device directories.
+
 
 ## launch
-	lxops launch -name <container> <config-file.yaml>
+```
+lxops launch -name <container> <config-file.yaml>
+```
 	
 - creates any zfs filesystems that are specified in the config file.
   The filesystem names typically include the container name, so they are unique for each container.
 - creates subdirectories in these filesystems
-- copies files from template filesystems, if specified
+- copies files from template filesystems, if specified.
+  The template filesystems can be copied from the container's image by using the *extract* command.
 - adds the subdirectories as disk devices to a new profile named <container>.lxops
-- creates a container named with the profiles specified in the config file and the <container>.lxops profile
+- creates a container with the profiles specified in the config file and the <container>.lxops profile
 - configures the container by running the specified cloud-config files
 
-If the device directories already exist, they are used without overwriting them.
+If the filesystems or device directories already exist, they are used without overwriting them.
 
 ## delete
-	lxops delete -name <container> <config-file.yaml>
+```
+incus stop <container>
+lxops delete -name <container> <config-file.yaml>
+```
 
 - deletes the container (it must already be stopped)
 - deletes the container profile (<container>.lxops)
+- does not touch the container filesystems
+- *delete* will do nothing if the container is running
 
 ## rebuild
-	lxops rebuild -name <container> <config-file.yaml>
-	
-- stops the container
-- runs "lxc rebuild" or "incus rebuild" with the image specified in the config file
-- starts the container
-- applies the cloud-config files
+```
+incus stop <container>
+lxops delete -name <container> <config-file.yaml>
+lxops launch -name <container> <config-file.yaml>
+```
+
+There is an *lxops rebuild* command that is supposed to do the equivalent,
+but it is not adequately tested.  I recommend running the three commands above.
 
 Since the device directories exist, they are are preserved across the rebuild.
 The result is that the container has a new guest OS, but runs with the old data.
 For this to work, the container must be configured properly, via the cloud-config files.
 	
 ## destroy
-	lxops destroy -name <container> <config-file.yaml>
+```
+lxops destroy -name <container> <config-file.yaml>
+```
 
-- deletes the container
-- deletes the container profile (<container>.lxops)
-- destroys the container filesystems
+Does everything that "delete" does and also destroys the container filesystems.
+- *destroy* will do nothing if the container is running
+
+run *lxops help filesystem* for more information about filesystems.
 
 # External Programs
 
 lxops calls these external programs, on the host, with *sudo* when necessary:
-- lxc or incus (It mostly the InstanceServer API, but uses the "lxc" or "incus" commands for certain complex operations, like launch or rebuild).
+- incus or lxc (It mostly uses the InstanceServer API, but uses the "incus" or "lxc" commands for certain complex operations, like launch).
 - zfs
 - rsync
 - chown
@@ -156,33 +144,42 @@ lxops calls these container executables, via cloud-config files:
 - OS-specific commands for adding packages and creating users
 
 # Stability/History
-lxops is a continuation of lxdops,
-which I have been using for years to manage containers with numerous configuration files.
+lxops is a continuation of lxdops.
+I have been using it for years, since 2020 to manage containers, using dozens of configuration files.
 
-Therefore, I have a personal interest to keep it working and maintain backward compatibility with the lxops configuration file format.  Nevertheless, I want to simplify it, so changes may happen.  Some half-baked features may be removed.
+Therefore, I have a personal interest to keep it working and maintain backward compatibility with the lxops configuration file format.
+Nevertheless, changes may happen.  Some half-baked features may be removed.
 
 ## configuration file format
-lxops supports multiple configuration file formats.  There are currently two supported formats:
-  - lxops-v1 - The latest format.
-  - lxdops - An older format that lxdops used
+lxops supports multiple configuration file formats, via configuration file migrators.
+This mechanism was used to maintain backward-compatibility when the format changed.
 
-backward compatibility is maintained by using migrators that convert a format to a newer format.
-- "lxdops" files are converted to "lxops-v1" files.
-- If and when there is a lxops-v2 format, there could be an lxops-v1 migrator that converts lxops-v1 files to lxops-v2 files.
+see *lxops help topics config-format*
 
-Format migrators are chained, so lxdops files will be converted to lxops-v1 files and then to lxops-v2 files.
-Therefore, all previous formats should be supported.
+# Compile
+This project is provided only as Go source code at this point.
 
-Format migrators convert bytes to bytes, so they do not need to depend on lxops data types.
+After compiling, link the resulting executable (lxops-incus or lxops-lxd) to "lxops" and put "lxops" in your path.
+Various examples and scripts execute "lxops".
 
-You can use your own format, if you want.  You just have to write a format migrator and install it in your own main().
+## get the code
+```
+git clone github.com/melato/lxops
+cd lxops
+```
 
-## command-line interface
-lxops CLI changed somewhat from lxdops.
-The main container management operations (launch, delete, destroy, rebuild) remain the same.
+## Compile for Incus
 
-Recent changes:
-- The former "instance" subcommands have been renamed to "i", to avoid confusion with LXD/Incus instances.
-  These are informational/debugging commands for lxops configuration files ("instance" files) and should not be scripted.
-- The "container" subcommands are renamed to "instance", to reflect LXD/Incus terminology.
-  These are mostly informational commands for LXD/Incus instances that are not central to lxops and were not meant to be scripted.
+```
+cd ./impl/incus/main
+go install lxops-incus.go
+```
+
+## Compile for LXD
+
+```
+cd ./impl/lxd/main
+go install lxops-lxd.go
+```
+
+I have stopped using lxops-lxd, so I don't know if it still works.

@@ -17,7 +17,7 @@ fields:
     or backed-up.
     A device where a transient filesystem is appropriate is /tmp.
     Transient filesystems are ignored by the snapshot, export, import, and
-    copy-filesystem commands.
+    copy-filesystems commands.
   zfsproperties: |
     A list of zfs properties to set when creating or cloning a zfs filesystem.
     They are passed to zfs using the -o flag.
