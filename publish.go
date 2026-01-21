@@ -109,9 +109,6 @@ func (t *PublishOps) PublishInstance(instance string, args ...string) error {
 		if t.Fields.Variant == "" {
 			t.Fields.Variant = name
 		}
-		if snapshot == "" {
-			snapshot = t.config.Snapshot
-		}
 	}
 	if instance == "" {
 		return fmt.Errorf("need instance name or config file")
