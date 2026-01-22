@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 
 	"melato.org/cloudconfig"
-	"melato.org/lxops/util"
+	"melato.org/lxops/internal/util"
 )
 
 /** Check that the requirements are met */

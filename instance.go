@@ -7,8 +7,8 @@ import (
 	"strings"
 
 	"melato.org/lxops/cfg"
+	"melato.org/lxops/internal/util"
 	"melato.org/lxops/srv"
-	"melato.org/lxops/util"
 	"melato.org/script"
 	"melato.org/table3"
 )

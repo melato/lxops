@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"melato.org/lxops/internal/util"
 	"melato.org/lxops/srv"
-	"melato.org/lxops/util"
 )
 
 type ProfileConfigurer struct {

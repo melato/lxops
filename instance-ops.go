@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	"melato.org/lxops/util"
+	"melato.org/lxops/internal/print"
 	"melato.org/table3"
 )
 
@@ -42,7 +42,7 @@ func (t *InstanceOps) Description(instance *Instance) error {
 // Properties prints the instance properties
 func (t *InstanceOps) Properties(instance *Instance) error {
 	fmt.Printf("Effective Properties:\n")
-	util.PrintProperties(instance.EffectiveProperties())
+	print.PrintProperties(instance.EffectiveProperties())
 	return nil
 }
 
