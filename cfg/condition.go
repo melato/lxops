@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"melato.org/lxops/util"
+	"melato.org/lxops/internal/util"
 )
 
 type GetVariable func(name string) (string, bool)

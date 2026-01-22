@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
+	"melato.org/lxops/internal/util"
 	"melato.org/lxops/srv"
-	"melato.org/lxops/util"
 )
 
 const Running = "Running"

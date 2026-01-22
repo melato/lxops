@@ -15,12 +15,6 @@ type Config struct {
 
 	// ConfigInherit fields are merged with all included files, depth first
 	ConfigInherit `yaml:",inline"`
-
-	// Stop specifies that the container should be stopped at the end of the configuration
-	Stop bool `yaml:"stop,omitempty"`
-
-	// Snapshot specifies that that the container should be snapshoted with this name at the end of the configuration process.
-	Snapshot string `yaml:"snapshot,omitempty"`
 }
 
 type ConfigInherit struct {

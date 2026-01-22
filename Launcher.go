@@ -9,8 +9,8 @@ import (
 	"time"
 
 	"melato.org/lxops/cfg"
+	"melato.org/lxops/internal/util"
 	"melato.org/lxops/srv"
-	"melato.org/lxops/util"
 	"melato.org/script"
 )
 
@@ -387,7 +387,6 @@ func (t *Launcher) launchContainer(instance *Instance) error {
 		}
 	}
 	options := &launch_options{Profiles: profiles}
-	container := instance.Container()
 	source := instance.ContainerSource()
 	fmt.Printf("source:%v\n", source)
 	if !source.IsDefined() {
@@ -406,35 +405,7 @@ func (t *Launcher) launchContainer(instance *Instance) error {
 		fmt.Printf("waiting %d seconds before configuring\n", t.WaitBeforeConfigure)
 		time.Sleep(time.Duration(t.WaitBeforeConfigure) * time.Second)
 	}
-	err = configurer.ConfigureContainer(instance)
-	if err != nil {
-		return err
-	}
-	if config.Stop || config.Snapshot != "" {
-		if t.WaitBeforeStop != 0 {
-			fmt.Printf("waiting %d seconds for container installation scripts to complete\n", t.WaitBeforeStop)
-			time.Sleep(time.Duration(t.WaitBeforeStop) * time.Second)
-		}
-	}
-	if config.Stop {
-		fmt.Printf("stop %s\n", container)
-		if !t.DryRun {
-			err = server.StopInstance(container)
-			if err != nil {
-				return err
-			}
-		}
-	}
-	if config.Snapshot != "" {
-		fmt.Printf("snapshot %s %s\n", container, config.Snapshot)
-		if !t.DryRun {
-			err := server.CreateInstanceSnapshot(container, config.Snapshot)
-			if err != nil {
-				return err
-			}
-		}
-	}
-	return nil
+	return configurer.ConfigureContainer(instance)
 }
 
 func (t *Launcher) deleteContainer(instance *Instance, stop bool) error {

@@ -159,8 +159,6 @@ func (r *ConfigReader) mergeFile(t *Config, file string) error {
 	}
 	if len(r.included) == 0 {
 		t.Description = config.Description
-		t.Stop = config.Stop
-		t.Snapshot = config.Snapshot
 	}
 	r.addIncluded(file)
 	if config.Ostype != "" {

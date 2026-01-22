@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"melato.org/lxops/cfg"
-	"melato.org/lxops/util"
+	"melato.org/lxops/internal/print"
 	"melato.org/lxops/yaml"
 )
 
@@ -125,7 +125,7 @@ func (t *PropertyOptions) Configured() error {
 }
 
 func (t *PropertyOptions) List() {
-	util.PrintMap(t.GlobalProperties)
+	print.PrintMap(t.GlobalProperties)
 }
 
 func (t *PropertyOptions) File() {
