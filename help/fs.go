@@ -6,5 +6,5 @@ import (
 	"embed"
 )
 
-//go:embed *.tpl *.yaml topics/*
+//go:embed *.*
 var FS embed.FS

@@ -319,15 +319,6 @@ commands:
     use: <config.yaml>
     long: |
       import the filesystems of an instance from tar.gz files
-  help:
-    short: (documentation on lxops configuration)
-    commands:
-      topics:
-        short: print documentation for various topics
-        use: "[<topic>]"
-        long: |
-          If a topic is provided, print its content.
-          Otherwise, print a list of topics.          
   copy-filesystems:
     short: (copy zfs filesystems from one instance to another)
     long: |
