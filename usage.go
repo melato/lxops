@@ -1,14 +1,16 @@
 package lxops
 
 import (
+	"bytes"
+	_ "embed"
 	"fmt"
-	"io/fs"
-	"os"
+	"text/template"
 
 	"melato.org/lxops/cfg"
-	"melato.org/lxops/help"
-	"melato.org/lxops/internal/templatefs"
 )
+
+//go:embed commands.yaml.tpl
+var usageTemplate string
 
 func helpDataModel(serverType string) any {
 	return map[string]string{
@@ -18,20 +20,16 @@ func helpDataModel(serverType string) any {
 	}
 }
 
-func helpFS(serverType string) fs.FS {
-	var fsys fs.FS = help.FS
-	helpDir, ok := os.LookupEnv("LXOPS_HELP")
-	if ok {
-		fsys = os.DirFS(helpDir)
-	}
-	return templatefs.NewTemplateFS(fsys, helpDataModel(serverType))
-}
-
 func getUsage(serverType string) []byte {
-	helpFS := helpFS(serverType)
-	usageData, err := fs.ReadFile(helpFS, "commands.yaml.tpl")
+	tpl, err := template.New("").Parse(usageTemplate)
+	var buf bytes.Buffer
+	if err == nil {
+		model := helpDataModel(serverType)
+		err = tpl.Execute(&buf, model)
+	}
 	if err != nil {
 		fmt.Printf("%v\n", err)
+		return nil
 	}
-	return usageData
+	return buf.Bytes()
 }
