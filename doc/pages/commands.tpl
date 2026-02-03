@@ -68,5 +68,5 @@ lxops destroy -name <container> <config-file.yaml>
 Does everything that "delete" does and also destroys the container filesystems.
 - *destroy* will do nothing if the container is running
 
-run *lxops help filesystem* for more information about filesystems.
+See [Filesystems]({{.lxops_doc_url}}/Filesystem.md)
 
