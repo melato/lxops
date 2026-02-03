@@ -1,0 +1,11 @@
+input_dir: pages
+input_ext: .tpl
+output_dir: target
+output_ext: .md 
+templates:
+- dir: pages/sections
+  patterns:
+  - "*.tpl"
+properties:
+  tutorial: ./tutorial
+  ServerType: Incus

@@ -1,0 +1,5 @@
+#lxops-v1
+ostype: alpine
+image: images:alpine/3.23
+cloud-config-files:
+- ../packages/ssh.cfg

@@ -1,0 +1,11 @@
+#lxops-v1
+profile-pattern: (instance).lxops
+device-owner: 1000000:1000000
+filesystems:
+  host:
+    pattern: (fshost)/(instance)
+    destroy: true
+devices:
+  home:
+    path: /home
+    filesystem: host

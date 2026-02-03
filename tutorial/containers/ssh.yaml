@@ -1,0 +1,8 @@
+#lxops-v1
+ostype: alpine
+image: alpine-ssh
+device-template: alpine-ssh
+include:
+- include/device.yaml
+cloud-config-files:
+- include/user.cfg
