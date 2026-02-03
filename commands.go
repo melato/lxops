@@ -18,6 +18,7 @@ func helpDataModel(serverType string) any {
 	return map[string]string{
 		"ServerType":    serverType,
 		"ConfigVersion": cfg.Comment,
+		"lxops_doc_url": "https://github.com/melato/lxops/blob/main/md",
 	}
 }
 

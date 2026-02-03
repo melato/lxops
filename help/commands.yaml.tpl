@@ -10,8 +10,8 @@ long: |
   - rebuild an instance from a new image, while preserving its filesystems and configuration
 
   Devices are attached to an instance via an instance profile.
-  For documentation about the config file, run "lxops help config".
-  
+  See {{.lxops_doc_url}}/types.md
+
   Commands with summaries in parenthesis are auxiliary utilities.
   They may change without maintaining backward compatibility.
 
@@ -136,7 +136,7 @@ commands:
       An lxops file is a yaml file starting with a version comment.
       The latest version is {{.ConfigVersion}}.
       Some earlier versions are also supported.
-      Documentation of the latest config version is provided by the help commands.
+      See {{.lxops_doc_url}}/types.md
     commands:
       convert:
         short: convert config files to the latest format
@@ -186,7 +186,7 @@ commands:
           PATTERN: The filesystem path, without properties substituted
           FLAGS: Filesystem flags: destroy, transient.
           
-          see "help filesystem"
+          See {{.lxops_doc_url}}/Filesystem.md
       properties:
         short: print instance properties
         use: <config-file>
