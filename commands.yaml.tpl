@@ -108,7 +108,11 @@ commands:
       publish is a wrapper for {{.ServerType}} publish.
       
       It extracts default image properties from the instance name and
-      from the config file (that was used to build the instance).
+      from the config file (that was used to build the instance):
+      os: config ostype
+      description: first line of config description
+      instance to publish: base name of config file, without suffix
+      variant: same as instance
       
       If there is no -release or -serial specified,
       it looks for a series of numbers and dashes in the instance name.
