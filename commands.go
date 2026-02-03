@@ -1,43 +1,15 @@
 package lxops
 
 import (
-	"fmt"
-	"io/fs"
-	"os"
-
 	"melato.org/command"
 	"melato.org/command/usage"
-	"melato.org/lxops/cfg"
 	"melato.org/lxops/cli"
-	"melato.org/lxops/help"
-	"melato.org/lxops/internal/templatefs"
 	"melato.org/lxops/srv"
 )
 
-func helpDataModel(serverType string) any {
-	return map[string]string{
-		"ServerType":    serverType,
-		"ConfigVersion": cfg.Comment,
-		"lxops_doc_url": "https://github.com/melato/lxops/blob/main/md",
-	}
-}
-
-func helpFS(serverType string) fs.FS {
-	var fsys fs.FS = help.FS
-	helpDir, ok := os.LookupEnv("LXOPS_HELP")
-	if ok {
-		fsys = os.DirFS(helpDir)
-	}
-	return templatefs.NewTemplateFS(fsys, helpDataModel(serverType))
-}
-
 func RootCommand(client srv.Client) *command.SimpleCommand {
 	serverType := client.ServerType()
-	helpFS := helpFS(serverType)
-	usageData, err := fs.ReadFile(helpFS, "commands.yaml.tpl")
-	if err != nil {
-		fmt.Printf("%v\n", err)
-	}
+	usageData := getUsage(serverType)
 	var cmd command.SimpleCommand
 	cmd.Flags(client)
 	launcher := &Launcher{Client: client}
