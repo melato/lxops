@@ -1,160 +1,279 @@
-lxops launches Incus containers from config (lxops) files that 
-specify how the container should be launched and configured.
+lxops is a tool that assists launching Incus containers.
 
 # Goals
-## scriptable launch and configure
-Launch and configure instances from yaml configuration files and cloud-config files.
+It provides the following facilities on top of incus:
 
-Configuration inside a container is specified using
-standard [cloud-config](https://cloud-init.io/) files,
-which are applied using the Incus API, without using any cloud-init packages.
-See [github.com/melato/cloudconfig](https://github.com/melato/cloudconfig) for what is supported.
+## scriptable launch and configure
+Launch and configure instances from *lxops* yaml configuration files
+and [cloud-config](https://cloud-init.io/) files.
 
 ## instance-specific disk devices
-create instance-specific filesystems when creating an instance,
+Create instance-specific filesystems when launching an instance,
 and attach disk devices from these filesystems to the instance.
+This has been designed and tested for zfs filesystems.
 
-This allows upgrading a container by rebuilding it with a new image,
-if you have arranged for all application configuration and data to
-be in non-root disk devices.
+This allows separating the OS from your data and applications,
+and upgrading a container by replacing the OS with a new image.
+
+To do this, you must have arranged for all application configuration and data to
+either be stored in non-root disk devices, or re-generated when re-launching the container.
+
 The [lxops.examples](https://github.com/melato/lxops.examples) repository
 shows how to do this for a few applications.
 
-# Examples
-You can find working examples in the separate [lxops.examples](https://github.com/melato/lxops.examples) repository.
+# Tutorial
+## setup
 
-# Disk Devices
-A central feature of lxops is the ability to create and attach external disk devices to a container it launches.
-
-The intent is that the combination of external devices and configuration
-makes it possible to rebuild a container with a new image without losing data.
-
-ZFS and plain directory devices are supported.  ZFS is the implementation tested most.
-
-For ZFS devices, lxops will:
-- create ZFS filesystems with names that include the container name.
-- create directories in these filesystems, one for each device.
-- change the permission of these directories so that they appear as owned by root:root in the container.
-- copy files in these directories from template directories, if a device template is specified.
-- add these directories as disk devices to the lxops profile associated with the container.
-
-I typically attach disk devices to all these directories:
-- /home
-- /etc/opt
-- /var/opt
-- /opt
-- /usr/local/bin
-- /var/log
-- /tmp
-
-I put all application data and configuration in one of these directories (except /tmp).
-
-When I replace the root filesystem with a new image, my data persists.
-
-## lxops files
-An lxops file is a yaml configuration file that specifies how to launch an instance.
-Documentation for lxops files is provided by the "lxops help config".
-
-# commands
-Here are the basic commands for managing a container with lxops. 
-
--name <container-name> can be omitted if it is the same as the config-file base name,
-so these commands are equivalent:
+First, create an lxops properties file:
 ```
-lxops launch myconfig.yaml
-lxops launch -name myconfig myconfig.yaml
+mkdir -p ~/.config/lxops
+touch ~/.config/lxops/properties.yaml
 ```
 
-## extract
-See the examples repository for more detailed examples of using *extract* and *launch*.
+Initially we will need an *fshost* property with the name of a zfs filesystem to use
+for creating instance-specific disk devices.
 
+You can edit ~/.config/lxops/properties.yaml by hand:
 ```
-lxops extract -name <name> <config-file.yaml>
-```
-
-*extract* creates filesystems and disk device directories for a container.
-It copies files from an image to these device directories.
-
-
-## launch
-```
-lxops launch -name <container> <config-file.yaml>
-```
-	
-- creates any zfs filesystems that are specified in the config file.
-  The filesystem names typically include the container name, so they are unique for each container.
-- creates subdirectories in these filesystems
-- copies files from template filesystems, if specified.
-  The template filesystems can be copied from the container's image by using the *extract* command.
-- adds the subdirectories as disk devices to a new profile named <container>.lxops
-- creates a container with the profiles specified in the config file and the <container>.lxops profile
-- configures the container by running the specified cloud-config files
-
-If the filesystems or device directories already exist, they are used without overwriting them.
-
-## delete
-```
-incus stop <container>
-lxops delete -name <container> <config-file.yaml>
+fshost: tank/demo/host
 ```
 
-- deletes the container (it must already be stopped)
-- deletes the container profile (<container>.lxops)
-- does not touch the container filesystems
-- *delete* will do nothing if the container is running
-
-## rebuild
+or use:
 ```
-incus stop <container>
-lxops delete -name <container> <config-file.yaml>
-lxops launch -name <container> <config-file.yaml>
+lxops property set fshost tank/demo/host
 ```
 
-There is an *lxops rebuild* command that is supposed to do the equivalent,
-but it is not adequately tested.  I recommend running the three commands above.
+Replace *tank/demo/host* with a valid empty zfs filesystem.
 
-Since the device directories exist, they are are preserved across the rebuild.
-The result is that the container has a new guest OS, but runs with the old data.
-For this to work, the container must be configured properly, via the cloud-config files.
-	
-## destroy
+## create an alpine ssh image
+We will start with a base alpine image and install packages to it,
+using this lxops file:
+
+
+**./tutorial/templates/ssh.yaml**
 ```
-lxops destroy -name <container> <config-file.yaml>
+#lxops-v1
+ostype: alpine
+image: images:alpine/3.23
+cloud-config-files:
+- ../packages/ssh.cfg
+
 ```
 
-Does everything that "delete" does and also destroys the container filesystems.
-- *destroy* will do nothing if the container is running
+It launches a container with the image *images:alpine/3.23*.
 
-run *lxops help filesystem* for more information about filesystems.
 
-# External Programs
+After the container is launched and started,
+the *cloud-config-files* are applied to it:
 
-lxops calls these external programs, on the host, with *sudo* when necessary:
-- incus or lxc (It mostly uses the InstanceServer API, but uses the "incus" or "lxc" commands for certain complex operations, like launch).
-- zfs
-- rsync
-- chown
-- mkdir
-- mv
+**tutorial/packages/ssh.cfg**
+```
+#cloud-config
+packages:
+# dhcpcd is needed for getting an ipv6 address via DHCP
+- dhcpcd
+- openssh
 
-lxops calls these container executables, via cloud-config files:
-- /bin/sh
-- chpasswd
-- chown
-- OS-specific commands for adding packages and creating users
+```
 
-# Stability/History
-lxops is a continuation of lxdops.
-I have been using it for years, since 2020 to manage containers, using dozens of configuration files.
 
-Therefore, I have a personal interest to keep it working and maintain backward compatibility with the lxops configuration file format.
-Nevertheless, changes may happen.  Some half-baked features may be removed.
 
-## configuration file format
-lxops supports multiple configuration file formats, via configuration file migrators.
-This mechanism was used to maintain backward-compatibility when the format changed.
 
-see *lxops help topics config-format*
+
+
+To create the image, run the commands:
+```
+cd tutorial/templates
+
+# launch a container called "ssh-template" and apply the cloud-config files
+lxops launch -name ssh-template ssh.yaml
+
+# if you script this, wait a few seconds to give some time
+# to the container installation scripts to complete
+sleep 5
+
+# create a snapshot from this container
+incus stop ssh-template
+incus snapshot create ssh-template copy
+incus publish ssh-template/copy --alias alpine-ssh
+
+# list the new image
+incus image list alpine-ssh
+
+# delete the container.  We no longer need it.
+lxops delete -name ssh-template ssh.yaml
+
+```
+
+We used a temporary container *ssh-template* and created image *alpine-ssh*.
+
+## create ssh containers
+We will create two ssh containers from this image.
+
+We could create containers simply by using "incus launch":
+```
+incus launch alpine-ssh ssh
+```
+
+But we want to do more:
+- create a user
+- use a container-specific disk device for the /home directory,
+so the user's home directory is stored independently from the guest OS.
+
+```
+cd tutorial/containers
+
+## lxops extract copies files from the image to a
+## "alpine-ssh" template container
+## It copies the files that are needed to create
+## instance-specific non-root disk devices
+lxops extract -name alpine-ssh ssh.yaml
+
+lxops launch -name ssh1 ssh.yaml
+lxops launch -name ssh2 ssh.yaml
+
+```
+
+If in the future, we rebuild the ssh image and want to rebuild the containers that use it:
+```
+#!/bin/sh
+
+incus stop ssh1
+lxops delete -name ssh1 ssh.yaml
+lxops launch -name ssh1 ssh.yaml
+
+```
+
+Rebuilding does not preserve container ip addresses.
+
+**./tutorial/containers/ssh.yaml**
+```
+#lxops-v1
+ostype: alpine
+image: alpine-ssh
+device-template: alpine-ssh
+include:
+- include/device.yaml
+cloud-config-files:
+- include/user.cfg
+
+```
+
+The lxops file includes other lxops files listed in **include**.
+After includes are merged with the current file, the resulting configuration is:
+```
+ostype: alpine
+image: alpine-ssh
+device-template: alpine-ssh
+profile-pattern: (instance).lxops
+device-owner: 1000000:1000000
+filesystems:
+  host:
+    pattern: (fshost)/(instance)
+    destroy: true
+devices:
+  home:
+    path: /home
+    filesystem: host
+cloud-config-files:
+- tutorial/containers/include/user.cfg
+
+```
+
+It launches a container with the image *alpine-ssh*.
+
+
+### filesystems
+
+Each filesystem is created using
+```
+   sudo zfs create $pattern
+```
+where $pattern is the value of the **pattern** field,
+after variable substitution.
+Each parenthesized expression is replaced with the value of the lxops property
+that is in the parenthesis.
+
+(instance) is replaced by the instance name.
+
+If $pattern begins with '/', it is not treated as a zfs filesystem,
+but as a directory, which is created using
+```
+   sudo mkdir -p $pattern
+```
+
+I hardly ever use non-zfs filesystems, so they are not tested as much.
+zfs filesystems can be managed independently, snapshotted, rolled-back, synchronized, etc.
+
+### disk devices
+
+Each device is a subdirectory of its corresponding filesystem,
+except for a devices with *dir* set to '.', which is mapped to the filesystem directory itself,
+without using a subdirectory.
+
+If the device directory of a disk device already exists, it is left alone.
+
+
+### device-template
+
+If device-template is specified:
+```
+device-template: *alpine-ssh*
+```
+
+The device is created with *sudo mkdir -p*.
+
+Its content is initialized using:
+```
+   rsync -av $template_device_dir/ $device_dir/
+```
+- $device_dir is the full path of the device,
+composed from the filesystem directory and the device subdirectory
+
+- $template_device_dir is composed the same, way, except that the **(instance)**
+variable in the filesystem pattern is replaced by the value of the *device-template*
+field (*alpine-ssh*) in the lxops config file.
+
+### device-template initialization
+
+The *device-template* disk device directories can be initialized from the image,
+using:
+```
+  lxops extract -name alpine-ssh ./tutorial/containers/ssh.yaml
+```
+
+
+
+The **device-owner** field indicates the uid and gid of the root user in the container,
+as seen by the host.
+*lxops extract* copies the device files from the image, using *rsync*, and then
+modifies the ownership of each file and directory by adding the *device-owner* values.
+
+After the filesystems are created and the disk device directories populated,
+a profile is created for the instance, using the profile name specified in the *profile-pattern* field.
+This profile specifies the disk devices and is attached to the new instance.
+
+
+
+After the container is launched and started,
+the *cloud-config-files* are applied to it:
+
+**tutorial/containers/include/user.cfg**
+```
+#cloud-config
+users:
+- name: demo
+  uid: 1000
+  sudo: true
+  groups: wheel,adm
+
+```
+
+
+
+
+
+
 
 # Compile
 This project is provided only as Go source code at this point.
@@ -182,4 +301,18 @@ cd ./impl/lxd/main
 go install lxops-lxd.go
 ```
 
-I have stopped using lxops-lxd, so I don't know if it still works.
+lxops can also compile with LXD instead of incus, but
+I have stopped using and testing the LXD version.
+Some recent features were added only to the Incus version.
+
+When I migrated from LXD to incus, I did not actually migrate anything.
+I rebuild my containers with Incus, as I was already doing with LXD.
+
+I used the same lxops configuration files to build new Incus images and containers,
+and attached the existing disk devices to the new containers.
+The disk devices and their contents are not tied to either Incus or LXD.
+They are simply zfs filesystems and directories.
+
+
+
+# [Further Documentation](md/index.md)

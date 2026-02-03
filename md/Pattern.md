@@ -1,0 +1,49 @@
+
+# Pattern
+```
+Pattern is a string that goes through property substitution.
+Any parenthesized expression in a pattern is substituted by the
+value of the property with the name inside the parenthesis.
+
+Properties are specified in several places:
+User properties are stored in the file lxops/properties.yaml,
+in the user's config directory, usually ~/.config/.
+They can be managed by the "lxops property" commands, or edited manually.
+
+config properties are specified in the lxops config files,
+in the properties field.
+
+command-line properties are specified in the lxops command line.
+
+Built-in properties:
+instance: The name of the instance.
+
+
+Filesystem example:
+If you want each instance to have a ZFS filesystem in tank/host, then:
+Set a user property "fshost" for "tank/host":
+  lxops property set fshost tank/host
+Set the pattern field in the filesystem:
+  filesystems:
+    host:
+      pattern: (fshost)/(instance)
+      
+When instance "a" is created with this config file,
+it will have the filesystem: tank/host/a
+
+Image example:
+If you use the latest alpine image in your lxops config files,
+you can put the name of the image in a property:
+  lxops property set alpine-image images:alpine/3.18
+
+Use it in the config files:
+  image: (alpine-image)
+
+When you upgrade to the next alpine image, when it comes out, you can
+change the value of the alpine-image property,
+without changing the config files.
+  
+You can also do this with custom images that you use for your instances.
+When you update the image, give it a new name,
+and set the image property to the new name.
+```
