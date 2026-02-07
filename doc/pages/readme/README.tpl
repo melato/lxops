@@ -15,14 +15,14 @@ This has been designed and tested for zfs filesystems.
 This allows separating the OS from your data and applications,
 and upgrading a container by replacing the OS with a new image.
 
-To do this, you must have arranged for all application configuration and data to
-either be stored in non-root disk devices, or re-generated when re-launching the container.
+To do this, you must store application data to non-root disk devices.
+
+You can store configuration files in non-root disk devices,
+or re-generate them when re-launching the container, or a combination of the two.
 
 The [lxops.examples](https://github.com/melato/lxops.examples) repository
 shows how to do this for a few applications.
 
-{{template "tutorial.tpl" .}}
-
-{{template "compile.tpl" .}}
+{{template "example.tpl" .}}
 
 # [Further Documentation](md/index.md)

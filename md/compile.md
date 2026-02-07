@@ -28,9 +28,8 @@ lxops can also compile with LXD instead of incus, but
 I have stopped using and testing the LXD version.
 Some recent features were added only to the Incus version.
 
-When I migrated from LXD to incus, I did not actually migrate anything.
-I rebuild my containers with Incus, as I was already doing with LXD.
-
+When I migrated from LXD to incus, I did not actually migrate any containers.
+I rebuilt my containers with Incus, as I was already doing with LXD.
 I used the same lxops configuration files to build new Incus images and containers,
 and attached the existing disk devices to the new containers.
 The disk devices and their contents are not tied to either Incus or LXD.

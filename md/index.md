@@ -1,5 +1,7 @@
 # Documentation
 
+- [Compiling](compile.md)
+- [Tutorial](tutorial.md)
 - [lxops configuration files](types.md)
 - [Disk Devices](disk-devices.md)
 - [Commands](commands.md)

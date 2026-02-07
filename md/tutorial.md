@@ -1,35 +1,30 @@
-lxops is a tool that assists launching Incus containers.
+# Tutorial
+## setup
 
-# Goals
-It provides the following facilities on top of incus:
+First, create an lxops properties file:
+```
+mkdir -p ~/.config/lxops
+touch ~/.config/lxops/properties.yaml
+```
 
-## scriptable launch and configure
-Launch and configure instances from *lxops* yaml configuration files
-and [cloud-config](https://cloud-init.io/) files.
+Initially we will need an *fshost* property with the name of a zfs filesystem to use
+for creating instance-specific disk devices.
 
-## instance-specific disk devices
-Create instance-specific filesystems when launching an instance,
-and attach disk devices from these filesystems to the instance.
-This has been designed and tested for zfs filesystems.
+You can edit ~/.config/lxops/properties.yaml by hand:
+```
+fshost: tank/demo/host
+```
 
-This allows separating the OS from your data and applications,
-and upgrading a container by replacing the OS with a new image.
+or use:
+```
+lxops property set fshost tank/demo/host
+```
 
-To do this, you must store application data to non-root disk devices.
+Replace *tank/demo/host* with a valid empty zfs filesystem.
 
-You can store configuration files in non-root disk devices,
-or re-generate them when re-launching the container, or a combination of the two.
-
-The [lxops.examples](https://github.com/melato/lxops.examples) repository
-shows how to do this for a few applications.
-
-# Examples
-These examples demonstrate the capabilities of lxops configuration files.
-The commands to run them are described in the [Tutorial](md/tutorial.md)
-
-## install packages
-This *lxops* configuration file can be used to install packages to a base alpine image,
-which can then be published to an image containing the selected packages:
+## create an alpine ssh image
+We will start with a base alpine image and install packages to it,
+using this lxops file:
 
 
 **./tutorial/templates/ssh.yaml**
@@ -64,14 +59,70 @@ packages:
 
 
 
-## create a container with attached disk device
-This *lxops* configuration file creates a container
-with an external disk device, mounted at /home
+To create the image, run the commands:
+```
+cd tutorial/templates
 
-It also creates a user in the container.
+# launch a container called "ssh-template" and apply the cloud-config files
+lxops launch -name ssh-template ssh.yaml
 
-If we rebuild the container by deleting it and launching it again, the user will be created during each launch,
-but the files in the user's home directory will be preserved across the rebuild.
+# if you script this, wait a few seconds to give some time
+# to the container installation scripts to complete
+sleep 5
+
+# create a snapshot from this container
+incus stop ssh-template
+incus snapshot create ssh-template copy
+incus publish ssh-template/copy --alias alpine-ssh
+
+# list the new image
+incus image list alpine-ssh
+
+# delete the container.  We no longer need it.
+lxops delete -name ssh-template ssh.yaml
+
+```
+
+We used a temporary container *ssh-template* and created image *alpine-ssh*.
+
+## create ssh containers
+We will create two ssh containers from this image.
+
+We could create containers simply by using "incus launch":
+```
+incus launch alpine-ssh ssh
+```
+
+But we want to do more:
+- create a user
+- use a container-specific disk device for the /home directory,
+so the user's home directory is stored independently from the guest OS.
+
+```
+cd tutorial/containers
+
+## lxops extract copies files from the image to a
+## "alpine-ssh" template container
+## It copies the files that are needed to create
+## instance-specific non-root disk devices
+lxops extract -name alpine-ssh ssh.yaml
+
+lxops launch -name ssh1 ssh.yaml
+lxops launch -name ssh2 ssh.yaml
+
+```
+
+If in the future, we rebuild the ssh image and want to rebuild the containers that use it:
+```
+#!/bin/sh
+
+incus stop ssh1
+lxops delete -name ssh1 ssh.yaml
+lxops launch -name ssh1 ssh.yaml
+
+```
+
+Rebuilding does not preserve container ip addresses.
 
 **./tutorial/containers/ssh.yaml**
 ```
@@ -207,6 +258,3 @@ users:
 
 
 
-
-
-# [Further Documentation](md/index.md)
