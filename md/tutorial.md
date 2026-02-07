@@ -168,7 +168,7 @@ The **pattern** field of each filesystem, specifies the host location of the fil
 It first goes through variable substitution:
 - (instance) is replaced by the instance name.
 - Any other parenthesized expression is treated as the name of
-an lxops propertiy, and it is replaced by the corresponding property value.
+an lxops property, and it is replaced by the corresponding property value.
 
 If the resulting $pattern does not begin with '/', it is treated as a zfs filesystem,
 and it is created using
