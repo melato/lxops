@@ -7,7 +7,7 @@ The commands to run them are described in the [Tutorial](md/tutorial.md)
 This *lxops* configuration file can be used to install packages to a base alpine image,
 which can then be published to an image containing the selected packages:
 
-{{template "config.tpl" (Config.Args (printf "%s/templates/ssh.yaml" .tutorial) .).WithHeading "##"}}
+{{template "config.tpl" (Config.Args (printf "%s/templates/ssh.yaml" .tutorial) .).WithAnnotations.WithHeading "##"}}
 
 {{- $build := printf "%s/templates/build.sh" .tutorial}}
 
@@ -21,4 +21,4 @@ If we rebuild the container by deleting it and launching it again, the user will
 but the files in the user's home directory will be preserved across the rebuild.
 
 {{- $path := (printf "%s/containers/ssh.yaml" .tutorial)}}
-{{template "config.tpl" (Config.Args (printf "%s/containers/ssh.yaml" .tutorial) .).WithHeading "##"}}
+{{template "config.tpl" (Config.Args (printf "%s/containers/ssh.yaml" .tutorial) .).WithAnnotations.WithHeading "##"}}

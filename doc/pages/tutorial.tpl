@@ -27,7 +27,7 @@ Replace *tank/demo/host* with a valid empty zfs filesystem.
 We will start with a base alpine image and install packages to it,
 using this lxops file:
 
-{{template "config.tpl" (Config.Args (printf "%s/templates/ssh.yaml" .tutorial) .).WithHeading "##"}}
+{{template "config.tpl" (Config.Args (printf "%s/templates/ssh.yaml" .tutorial) .).WithAnnotations.WithHeading "##"}}
 
 {{- $build := printf "%s/templates/build.sh" .tutorial}}
 
@@ -65,4 +65,4 @@ If in the future, we rebuild the ssh image and want to rebuild the containers th
 Rebuilding does not preserve container ip addresses.
 
 {{- $path := (printf "%s/containers/ssh.yaml" .tutorial)}}
-{{template "config.tpl" (Config.Args (printf "%s/containers/ssh.yaml" .tutorial) .).WithHeading "##"}}
+{{template "config.tpl" (Config.Args (printf "%s/containers/ssh.yaml" .tutorial) .).WithAnnotations.WithHeading "##"}}
