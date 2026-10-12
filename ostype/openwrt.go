@@ -10,7 +10,7 @@ type Openwrt struct {
 func (t *Openwrt) NeedUserPasswords() bool { return false }
 
 func (t *Openwrt) InstallPackageCommand(pkg string) string {
-	return "opkg install " + pkg
+	return "apk add " + pkg
 }
 
 func (t *Openwrt) AddUserCommand(u *cloudconfig.User) []string {

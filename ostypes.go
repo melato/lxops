@@ -11,4 +11,5 @@ func InitOSTypes() {
 	cfg.OSTypes["debian"] = &ostype.Debian{}
 	cfg.OSTypes["ubuntu"] = &ostype.Debian{}
 	cfg.OSTypes["openwrt"] = &lxostype.Openwrt{}
+	cfg.OSTypes["openwrt-opkg"] = &lxostype.OpenwrtOpkg{}
 }
