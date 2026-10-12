@@ -512,14 +512,21 @@ func (t *Launcher) DestroyContainer(instance *Instance) error {
 			return s.Error()
 		}
 	}
-	var firstError error
+	var failedDirs []string
 	for _, dir := range dirFilesystems {
 		err := os.RemoveAll(dir)
-		if err != nil && firstError == nil {
-			firstError = err
+		if err != nil {
+			failedDirs = append(failedDirs, dir)
+			fmt.Printf("%v\n", err)
 		}
 	}
-	return firstError
+	if len(failedDirs) > 0 {
+		fmt.Printf("\nPlease delete the following directories manually:\n")
+		for _, dir := range failedDirs {
+			fmt.Printf("%s\n", dir)
+		}
+	}
+	return nil
 }
 
 func (t *Launcher) Rename(configFile string, newname string) error {
