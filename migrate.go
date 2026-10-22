@@ -42,9 +42,6 @@ func (t *Migrate) Configured() error {
 	if t.Snapshot == "" {
 		t.Snapshot = time.Now().UTC().Format("20060102150405")
 		t.makeSnapshot = true
-		if !filepath.IsAbs(t.ConfigFile) {
-			return errors.New("config file should be absolute to make a remote snapshot ")
-		}
 	}
 	return t.PropertyOptions.Configured()
 }
@@ -85,7 +82,12 @@ func (t *Migrate) CopyFilesystems() error {
 	}
 	s := script.Script{Trace: true, DryRun: t.DryRun}
 	if t.makeSnapshot {
-		s.RunCmd(t.hostCommand(t.FromHost, "lxops", "snapshot", "-s", t.Snapshot, "--name", t.FromContainer, t.ConfigFile))
+		file, err := filepath.Abs(t.ConfigFile)
+		if err != nil {
+			return err
+		}
+
+		s.RunCmd(t.hostCommand(t.FromHost, "lxops", "snapshot", "-s", t.Snapshot, "--name", t.FromContainer, file))
 	}
 	for _, fs := range filesystems {
 		if fs.IsZfs() && !fs.Filesystem.Transient {

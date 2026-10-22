@@ -334,5 +334,5 @@ commands:
         [ssh <from-host>] lxops snapshot -s <generated-snapshot> ...
       
       This command assumes that the config file is at the same path on the other host,
-      and has the same filesystems.
+      and has the same filesystems.  If it is not an absolute path, it is converted to one.
       
