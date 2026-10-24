@@ -9,6 +9,10 @@ type Openwrt struct {
 
 func (t *Openwrt) NeedUserPasswords() bool { return false }
 
+func (t *Openwrt) UpdatePackagesCommand() string { return "apk update" }
+
+func (t *Openwrt) UpgradePackagesCommand() string { return "apk upgrade" }
+
 func (t *Openwrt) InstallPackageCommand(pkg string) string {
 	return "apk add " + pkg
 }
