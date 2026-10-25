@@ -132,12 +132,7 @@ func (t *PropertyOptions) File() {
 	fmt.Println(t.PropertiesFile)
 }
 
-func (t *PropertyOptions) Set(key, value string) error {
-	if t.userProperties == nil {
-		t.userProperties = make(map[string]string)
-	}
-	t.userProperties[key] = value
-	t.GlobalProperties[key] = value
+func (t *PropertyOptions) save() error {
 	if t.PropertiesFile != "" {
 		dir := filepath.Dir(t.PropertiesFile)
 		err := os.MkdirAll(dir, os.FileMode(0775))
@@ -147,6 +142,25 @@ func (t *PropertyOptions) Set(key, value string) error {
 		return yaml.WriteFile(t.userProperties, t.PropertiesFile)
 	}
 	return nil
+}
+
+func (t *PropertyOptions) Set(key, value string) error {
+	if t.userProperties == nil {
+		t.userProperties = make(map[string]string)
+	}
+	t.userProperties[key] = value
+	t.GlobalProperties[key] = value
+	return t.save()
+}
+
+func (t *PropertyOptions) Copy(fromKey, key string) error {
+	if t.userProperties == nil {
+		t.userProperties = make(map[string]string)
+	}
+	value := t.GlobalProperties[fromKey]
+	t.userProperties[key] = value
+	t.GlobalProperties[key] = value
+	return t.save()
 }
 
 func (t *PropertyOptions) Get(key string) error {
