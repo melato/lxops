@@ -71,7 +71,7 @@ func (t *DeviceConfigurer) CreateFilesystem(fs *InstanceFS, originDataset string
 	args = append(args, fs.Path)
 	s := t.NewScript()
 	s.Run("sudo", args...)
-	if originDataset == "" {
+	if ! doClone {
 		t.chownDir(s, fs.Dir(), owner)
 		fs.IsNew = true
 	}
