@@ -89,11 +89,6 @@ func (t *DeviceConfigurer) CreateFilesystems(instance, origin *Instance, snapsho
 		if err != nil {
 			return err
 		}
-		for id, path := range paths {
-			if !path.IsZfs() {
-				return errors.New("cannot use origin with non-zfs filesystem: " + id)
-			}
-		}
 	}
 	var pathList []*InstanceFS
 	for _, path := range paths {
