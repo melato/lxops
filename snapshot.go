@@ -47,11 +47,15 @@ func (t *Snapshot) DestroySnapshot(instance *Instance) error {
 	if t.Recursive {
 		roots := InstanceFSList(filesystems).Roots()
 		for _, fs := range roots {
-			s.Run("sudo", "zfs", "destroy", "-R", fs.Path+"@"+t.Snapshot)
+			if fs.IsZfs() {
+				s.Run("sudo", "zfs", "destroy", "-R", fs.Path+"@"+t.Snapshot)
+			}
 		}
 	} else {
 		for _, fs := range filesystems {
-			s.Run("sudo", "zfs", "destroy", fs.Path+"@"+t.Snapshot)
+			if fs.IsZfs() {
+				s.Run("sudo", "zfs", "destroy", fs.Path+"@"+t.Snapshot)
+			}
 		}
 	}
 	return s.Error()
