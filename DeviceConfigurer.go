@@ -48,7 +48,7 @@ func (t *DeviceConfigurer) CreateDir(dir string, owner string) error {
 func (t *DeviceConfigurer) CreateFilesystem(fs *InstanceFS, originDataset string, originfs *InstanceFS, owner string) error {
 	if fs.IsDir() {
 		fs.IsNew = true
-		return t.CreateDir(fs.Dir(), "")
+		return t.CreateDir(fs.Dir(), owner)
 	}
 
 	doClone := originDataset != "" && !originfs.Filesystem.Transient
