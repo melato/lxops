@@ -234,7 +234,7 @@ func (instance *Instance) Rollback(name string) error {
 	}
 	s := &script.Script{Trace: true}
 	for _, fs := range filesystems {
-		if fs.IsZfs() && !fs.Filesystem.Transient {
+		if fs.IsZfs() && !fs.Filesystem.Transient && fs.Filesystem.Destroy {
 			s.Run("sudo", "zfs", "rollback", "-r", fs.Path+"@"+name)
 		}
 	}
