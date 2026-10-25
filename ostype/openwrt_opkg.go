@@ -9,6 +9,11 @@ type OpenwrtOpkg struct {
 
 func (t *OpenwrtOpkg) NeedUserPasswords() bool { return false }
 
+func (t *OpenwrtOpkg) UpdatePackagesCommand() string { return "opkg update" }
+
+// UpgradePackagesCommand returns "": opkg has no command that upgrades all packages.
+func (t *OpenwrtOpkg) UpgradePackagesCommand() string { return "" }
+
 func (t *OpenwrtOpkg) InstallPackageCommand(pkg string) string {
 	return "opkg install " + pkg
 }

@@ -9,3 +9,7 @@ require (
 	melato.org/script v1.0.0
 	melato.org/table3 v0.1.1
 )
+
+replace (
+	melato.org/cloudconfig => ../cloudconfig
+)
