@@ -90,14 +90,29 @@ func (t *Migrate) CopyFilesystems() error {
 		s.RunCmd(t.hostCommand(t.FromHost, "lxops", "snapshot", "-s", t.Snapshot, "--name", t.FromContainer, file))
 	}
 	for _, fs := range filesystems {
-		if fs.IsZfs() && !fs.Filesystem.Transient {
-			fromFS, ok := fromFilesystems[fs.Id]
-			if !ok {
-				continue
-			}
+		if fs.Filesystem.Transient {
+			continue
+		}
+		fromFS, ok := fromFilesystems[fs.Id]
+		if !ok {
+			continue
+		}
+		if fs.IsZfs() {
 			send := t.hostCommand(t.FromHost, "sudo", "zfs", "send", fromFS.Path+"@"+t.Snapshot)
 			receive := t.hostCommand(t.ToHost, "sudo", "zfs", "receive", fs.Path)
 			s.RunCmd(send, receive)
+		} else {
+			rsyncDir := func(host string, dir string) string {
+				if host == "" {
+					return dir + "/"
+				} else {
+					return host + ":" + dir + "/"
+				}
+			}
+			s.RunCmd(exec.Command("sudo", "rsync", "-a",
+				rsyncDir(t.FromHost, fromFS.Path),
+				rsyncDir(t.ToHost, fs.Path),
+			))
 		}
 	}
 	return s.Error()
