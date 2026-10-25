@@ -60,6 +60,7 @@ func RootCommand(client srv.Client) *command.SimpleCommand {
 	propertyCmd.Command("list").RunFunc(propertyOps.List)
 	propertyCmd.Command("set").RunFunc(propertyOps.Set)
 	propertyCmd.Command("get").RunFunc(propertyOps.Get)
+	propertyCmd.Command("copy").RunFunc(propertyOps.Copy)
 	propertyCmd.Command("file").RunFunc(propertyOps.File)
 
 	parse := &ParseOps{}

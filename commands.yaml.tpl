@@ -311,6 +311,9 @@ commands:
       get:
         short: get a global property
         use: <key>
+      copy:
+        short: (copy a global property)
+        use: <from-key> <to-key>
   ostypes:
     short: (list supported ostypes)
   export:
