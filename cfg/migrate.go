@@ -65,7 +65,11 @@ func ReadConfigYaml(file string) (*Config, error) {
 	if Trace {
 		fmt.Printf("target config type: %s\n", Comment)
 	}
-	return Unmarshal(data)
+	c, err := Unmarshal(data)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", file, err)
+	}
+	return c, nil
 }
 
 func Marshal(config *Config) ([]byte, error) {
