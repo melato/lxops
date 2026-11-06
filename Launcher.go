@@ -481,8 +481,34 @@ func (t *Launcher) DeleteContainer(instance *Instance) error {
 	return nil
 }
 
+func (t *Launcher) destroyBlockVolumes(instance *Instance) error {
+	for name, block := range instance.Config.BlockDevices {
+		if !block.Destroy {
+			continue
+		}
+		volume, err := block.Volume.Substitute(instance.Properties)
+		if err != nil {
+			return err
+		}
+		if volume == "" {
+			return fmt.Errorf("block device %s: missing volume", name)
+		}
+		s := t.NewScript()
+		s.Run("sudo", "zfs", "destroy", volume)
+		err = s.Error()
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (t *Launcher) DestroyContainer(instance *Instance) error {
 	err := t.deleteContainer(instance, false)
+	if err != nil {
+		return err
+	}
+	err = t.destroyBlockVolumes(instance)
 	if err != nil {
 		return err
 	}

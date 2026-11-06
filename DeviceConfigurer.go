@@ -124,6 +124,28 @@ func (t *DeviceConfigurer) CreateFilesystems(instance, origin *Instance, snapsho
 	return nil
 }
 
+func (t *DeviceConfigurer) CreateBlockVolumes(instance *Instance) error {
+	for name, block := range t.Config.BlockDevices {
+		if block.Size <= 0 {
+			return fmt.Errorf("non-positive block size: %d", block.Size)
+		}
+		volume, err := block.Volume.Substitute(instance.Properties)
+		if err != nil {
+			return err
+		}
+		if volume == "" {
+			return fmt.Errorf("block device %s: missing volume", name)
+		}
+		s := t.NewScript()
+		s.Run("sudo", "zfs", "create", "-p", "-V", fmt.Sprintf("%0.3fg", block.Size), volume)
+		err = s.Error()
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (t *DeviceConfigurer) ConfigureDevices(instance *Instance) error {
 	owner, err := instance.GetOwner()
 	if err != nil {
@@ -138,6 +160,11 @@ func (t *DeviceConfigurer) ConfigureDevices(instance *Instance) error {
 	if err != nil {
 		return err
 	}
+	err = t.CreateBlockVolumes(instance)
+	if err != nil {
+		return err
+	}
+
 	filesystems, err := instance.Filesystems()
 	if err != nil {
 		return err

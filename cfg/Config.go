@@ -56,6 +56,8 @@ type ConfigInherit struct {
 	Devices map[string]*Device `yaml:"devices,omitempty"`
 	// Profiles are attached to the container.  The instance profile should not be listed here.
 
+	BlockDevices map[string]BlockDevice `yaml:"block-devices"`
+
 	// Properties provide key-value pairs used for pattern substitution.
 	Properties map[string]string `yaml:"properties,omitempty"`
 
@@ -148,4 +150,15 @@ type Device struct {
 
 	// readonly - make the device readonly
 	Readonly bool `yaml:"readonly,omitempty"`
+}
+
+// A BlockDevice is a disk block device that is attached to a VM
+// Only zfs volumes are supported
+type BlockDevice struct {
+	// The zfs dataset path
+	Volume Pattern `yaml:"volume"`
+	// The volume size in GB
+	Size float32 `yaml:"size"`
+	// destroy the volume when the instance is destroyed with lxops destroy
+	Destroy bool `yaml:"destroy"`
 }

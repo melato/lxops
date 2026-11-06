@@ -277,6 +277,15 @@ func (t *Instance) GetOwner() (string, error) {
 func (t *Instance) NewDeviceMap() (map[string]*srv.Device, error) {
 	devices := make(map[string]*srv.Device)
 
+	for name, device := range t.Config.BlockDevices {
+		volume, err := device.Volume.Substitute(t.Properties)
+		if err != nil {
+			return nil, fmt.Errorf("%s block device volume %q: %w", name, device.Volume, err)
+		}
+		devices[name] = &srv.Device{
+			Source: "/dev/zvol/" + volume,
+		}
+	}
 	for deviceName, device := range t.Config.Devices {
 		dir, err := t.DeviceDir(deviceName, device)
 		if err != nil {
