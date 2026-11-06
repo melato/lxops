@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strings"
 
 	"melato.org/lxops/cfg"
 	"melato.org/lxops/internal/util"
@@ -45,13 +46,21 @@ func (t *DeviceConfigurer) CreateDir(dir string, owner string) error {
 	return nil
 }
 
-func (t *DeviceConfigurer) CreateFilesystem(fs *InstanceFS, originDataset string, originfs *InstanceFS, owner string) error {
+func (t *DeviceConfigurer) CreateFilesystem(fs *InstanceFS, originDataset string, owner string) error {
+	if TraceDevice {
+		parts := []string{"CreateFilesystem", fs.Path}
+		if originDataset != "" {
+			parts = append(parts, "origin="+originDataset)
+		}
+		parts = append(parts, "owner="+owner)
+		fmt.Printf("%s\n", strings.Join(parts, " "))
+	}
 	if fs.IsDir() {
 		fs.IsNew = true
 		return t.CreateDir(fs.Dir(), owner)
 	}
 
-	doClone := originDataset != "" && !originfs.Filesystem.Transient
+	doClone := originDataset != ""
 	var args []string
 	if doClone {
 		args = []string{"zfs", "clone", "-p"}
@@ -100,15 +109,14 @@ func (t *DeviceConfigurer) CreateFilesystems(instance, origin *Instance, snapsho
 
 	for _, path := range pathList {
 		var originDataset string
-		var originPath *InstanceFS
 		if path.IsZfs() {
 			var exists bool
-			originPath, exists = originPaths[path.Id]
-			if exists {
+			originPath, exists := originPaths[path.Id]
+			if exists && !originPath.Filesystem.Transient {
 				originDataset = originPath.Path + "@" + snapshot
 			}
 		}
-		err := t.CreateFilesystem(path, originDataset, originPath, owner)
+		err := t.CreateFilesystem(path, originDataset, owner)
 		if err != nil {
 			return err
 		}
