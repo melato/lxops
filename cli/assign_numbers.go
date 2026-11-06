@@ -17,7 +17,7 @@ type AssignNumbers struct {
 	File    string `name:"f" usage:"numbers CSV file (container,number)"`
 	First   int    `name:"first" usage:"first number"`
 	Last    int    `name:"last" usage:"last number (optional)"`
-	Project string `name:"project" usage:"add containers from LXD project"`
+	Project string `name:"project" usage:"add containers from Incus project"`
 	Running bool   `name:"r" usage:"use only running containers from specified project"`
 	Clean   bool   `name:"clean" usage:"remove numbers for containers that are not selected"`
 }
@@ -34,7 +34,7 @@ func (t *AssignNumbers) Configured() error {
 
 func (t *AssignNumbers) selectContainers(names []string, f func(name string) error) error {
 	selectedNames := make(map[string]bool)
-	// add names from LXD project
+	// add names from Incus project
 	if t.Project != "" {
 		server, err := t.Client.ProjectInstanceServer(t.Project)
 		if err != nil {

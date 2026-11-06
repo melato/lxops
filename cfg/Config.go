@@ -24,7 +24,7 @@ type ConfigInherit struct {
 	// image - the image name (with optional remote), used when launching a container.
 	Image Pattern `yaml:"image,omitempty"`
 
-	// Project is the LXD or Incus project where the container is
+	// Project is the Incus project where the container is
 	Project string `yaml:"project,omitempty"`
 
 	// profile-config (deprecated)
@@ -94,7 +94,7 @@ type Source struct {
 	DeviceOrigin Pattern `yaml:"device-origin,omitempty"`
 
 	// Experimental: source-config specifies a config file that is used to determine:
-	//   - The LXD project, container, and snapshot to clone when launching the instance.
+	//   - The Incus project, container, and snapshot to clone when launching the instance.
 	//   - The source filesystems used for cloning filesystems or copying device directories.
 	// The name of the instance used for the source filesystems
 	// is the base name of the filename, without the extension.
@@ -107,11 +107,10 @@ type OS struct {
 	// Name if the name of the container image, without the version number.
 	// All included configuration files should have the same OS Name.
 	// Supported OS names are "alpine", "debian", "ubuntu".
-	// Support for an OS is the ability to determine the LXD image, install packages, create users, set passwords
+	// Support for an OS is the ability to install packages, create users, set passwords
 	Name string `yaml:"name"`
 
-	// Image is the image name (with optional remote), used when launching a container.
-	// If Image is missing, an image name is constructed from Version.
+	// Image is the image name (with optional remote), used when launching an instance.
 	Image Pattern `yaml:"image"`
 }
 
@@ -130,9 +129,9 @@ type Filesystem struct {
 	Transient bool `yaml:"transient,omitempty"`
 }
 
-// A Device is an LXD disk device that is attached to the instance profile, which in turn is attached to a container
+// A Device is a disk device that is attached to the instance profile, which in turn is attached to a container
 type Device struct {
-	// path is the device "path" in the LXD disk device
+	// path is the device "path" in the disk device
 	Path string `yaml:"path"`
 
 	// filesystem is the Filesystem Id that this device belongs to
