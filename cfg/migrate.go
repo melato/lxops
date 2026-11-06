@@ -22,7 +22,7 @@ func SetMigrateFunc(comment string, fn MigrateFunc) {
 }
 
 /** Unmarshal config, from any supported format */
-func Unmarshal(data []byte) (*Config, error) {
+func Unmarshal(data []byte, c *Config) error {
 	migrated := make(map[string]bool)
 	var err error
 	for {
@@ -34,26 +34,20 @@ func Unmarshal(data []byte) (*Config, error) {
 			break
 		}
 		if migrated[comment] {
-			return nil, fmt.Errorf("config file migration loop: %s", comment)
+			return fmt.Errorf("config file migration loop: %s", comment)
 		}
 		migrated[comment] = true
 
 		fn, supported := ConfigFormats[comment]
 		if !supported {
-			return nil, fmt.Errorf("no migration from config type %s", comment)
+			return fmt.Errorf("no migration from config type %s", comment)
 		}
 		data, err = fn(data)
 		if err != nil {
-			return nil, fmt.Errorf("config type %s migration: %w", comment, err)
+			return fmt.Errorf("config type %s migration: %w", comment, err)
 		}
 	}
-	var c Config
-	err = yaml.Unmarshal(data, &c)
-	if err != nil {
-		return nil, err
-	}
-	return &c, nil
-
+	return yaml.Unmarshal(data, c)
 }
 
 /** Read config from yaml, without dependencies */
@@ -65,11 +59,12 @@ func ReadConfigYaml(file string) (*Config, error) {
 	if Trace {
 		fmt.Printf("target config type: %s\n", Comment)
 	}
-	c, err := Unmarshal(data)
+	var c Config
+	err = Unmarshal(data, &c)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", file, err)
 	}
-	return c, nil
+	return &c, nil
 }
 
 func Marshal(config *Config) ([]byte, error) {

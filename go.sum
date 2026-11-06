@@ -10,3 +10,5 @@ melato.org/script v1.0.0 h1:ytNRMPI5u6JyCVX7AZSTuqOOb5QPcA6Cyioos3XBVKg=
 melato.org/script v1.0.0/go.mod h1:vO7ex/iDKE5xa5LtElJ5H7EDpSHxef/IgwnAWreec2Q=
 melato.org/table3 v0.1.1 h1:7Z788HqtOjGQ7t1Z9GHyL464rzYipdQBzAE+zNPK7vQ=
 melato.org/table3 v0.1.1/go.mod h1:FQV5u9FcNRAzqNJywy9XY5NPVO16hx5+/TDr1NqaHbU=
+melato.org/trace v1.2.1 h1:BxWqcUmExQDb1NSBNIZ5d+uLMe4Z6fRinPrguOvMJxE=
+melato.org/trace v1.2.1/go.mod h1:JlkqjjSYwRGawMu2jZgzIPS4JF3zpPjIsD6FZOZVIw4=

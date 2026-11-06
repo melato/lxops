@@ -61,10 +61,10 @@ type ConfigInherit struct {
 
 	// Include is a list of other configs that are to be included.
 	// Include paths are either absolute or relative to the path of the including config.
-	Include []HostPath `yaml:"include,omitempty"`
+	Include []HostPath `yaml:"include,omitempty" merge:"include"`
 
 	// cloud-config-files is a list of cloud-config files to run during instance configuration.
-	CloudConfigFiles []HostPath `yaml:"cloud-config-files,omitempty"`
+	CloudConfigFiles []HostPath `yaml:"cloud-config-files,omitempty" merge:"path"`
 }
 
 // Source specifies how to copy or clone the instance container, filesystem, and device directories.
@@ -99,7 +99,7 @@ type Source struct {
 	// The name of the instance used for the source filesystems
 	// is the base name of the filename, without the extension.
 	// Various parts of these items can be overriden by other source properties above
-	SourceConfig HostPath `yaml:"source-config,omitempty"`
+	SourceConfig HostPath `yaml:"source-config,omitempty" merge:"path"`
 }
 
 // OS specifies the container OS

@@ -24,7 +24,8 @@ func (t *ConvertOps) ConvertFile(inputFile, outputFile string) error {
 			return nil
 		}
 	}
-	c, err := cfg.Unmarshal(data)
+	c := &cfg.Config{}
+	err = cfg.Unmarshal(data, c)
 	if err != nil {
 		return err
 	}

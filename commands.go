@@ -5,13 +5,25 @@ import (
 	"melato.org/command/usage"
 	"melato.org/lxops/cli"
 	"melato.org/lxops/srv"
+	"melato.org/trace"
 )
+
+type RootFlags struct {
+	Trace  trace.Flags
+	Client srv.Client
+}
+
+func (t *RootFlags) Configured() error {
+	return t.Trace.Configured()
+}
 
 func RootCommand(client srv.Client) *command.SimpleCommand {
 	serverType := client.ServerType()
 	usageData := getUsage(serverType)
 	var cmd command.SimpleCommand
-	cmd.Flags(client)
+	var flags RootFlags
+	cmd.Flags(&flags)
+	flags.Trace.Add("", &Trace{})
 	launcher := &Launcher{Client: client}
 	//cmd.Command("create").Flags(launcher).RunFunc(launcher.InstanceFunc(launcher.CreateContainer, true))
 	cmd.Command("extract").Flags(launcher).RunFunc(launcher.InstanceFunc(launcher.ExtractDevices, true))
