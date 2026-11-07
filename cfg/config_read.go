@@ -19,20 +19,30 @@ func NewConfigReader(getVariable GetVariable) *ConfigReader {
 	return &ConfigReader{getVariable: getVariable}
 }
 
+func (r *ConfigReader) unmarshal(data []byte, v any) error {
+	switch c := v.(type) {
+	case *Config:
+		err := Unmarshal(data, c)
+		if err != nil {
+			return err
+		}
+		err = c.filterPaths(r.getVariable)
+		if err != nil {
+			return err
+		}
+		return nil
+	default:
+		return fmt.Errorf("unexpected type: %T", v)
+	}
+}
+
 func (r *ConfigReader) Read(file string) (*Config, error) {
 	r.warned = false
 	r.file = file
 	if r.Verbose {
 		r.warned = true
 	}
-	c, err := configfile.LoadFile[Config](file, func(data []byte, v any) error {
-		switch c := v.(type) {
-		case *Config:
-			return Unmarshal(data, c)
-		default:
-			return fmt.Errorf("unexpected type: %T", v)
-		}
-	})
+	c, err := configfile.LoadFile[Config](file, r.unmarshal)
 	if err != nil {
 		return nil, err
 	}
