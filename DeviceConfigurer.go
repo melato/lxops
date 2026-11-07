@@ -126,21 +126,26 @@ func (t *DeviceConfigurer) CreateFilesystems(instance, origin *Instance, snapsho
 
 func (t *DeviceConfigurer) CreateBlockVolumes(instance *Instance) error {
 	for name, block := range t.Config.BlockDevices {
-		if block.Size <= 0 {
-			return fmt.Errorf("non-positive block size: %d", block.Size)
+		wrapError := func(err error) error {
+			return fmt.Errorf("device %q: %$w", name, err)
+		}
+		size, err := util.FormatZfsSize(block.Size)
+		if err != nil {
+			return wrapError(err)
 		}
 		volume, err := block.Volume.Substitute(instance.Properties)
 		if err != nil {
-			return err
+			return wrapError(err)
 		}
 		if volume == "" {
-			return fmt.Errorf("block device %s: missing volume", name)
+			return wrapError(errors.New("missing volume"))
 		}
 		s := t.NewScript()
-		s.Run("sudo", "zfs", "create", "-p", "-V", fmt.Sprintf("%0.3fg", block.Size), volume)
+		args := []string{"zfs", "create", "-p", "-V", size, volume}
+		s.Run("sudo", args...)
 		err = s.Error()
 		if err != nil {
-			return err
+			return wrapError(errors.New(strings.Join(args, " ")))
 		}
 	}
 	return nil
