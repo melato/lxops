@@ -13,11 +13,6 @@ type Config struct {
 	// Description is provided for documentation
 	Description string `yaml:"description,omitempty"`
 
-	// ConfigInherit fields are merged with all included files, depth first
-	ConfigInherit `yaml:",inline"`
-}
-
-type ConfigInherit struct {
 	// ostype - OS type for cloudconfig.  "alpine", "debian", etc.
 	Ostype string `yaml:"ostype,omitempty"`
 
