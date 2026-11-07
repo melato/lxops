@@ -4,8 +4,12 @@ import (
 	"errors"
 	"fmt"
 	"io"
+
+	"io/fs"
 	"os"
 	"os/exec"
+
+	"strings"
 	"time"
 
 	"melato.org/lxops/cfg"
@@ -431,15 +435,23 @@ func (t *Launcher) deleteContainer(instance *Instance, stop bool) error {
 
 	if !t.DryRun {
 		err := server.DeleteProfile(profileName)
-		if err != nil {
-			fmt.Printf("DeleteProfile(%s): %v\n", profileName, err)
-		} else {
+		if err == nil {
 			fmt.Printf("deleted profile %s\n", profileName)
+		} else if errors.Is(err, fs.ErrNotExist) {
+			// profile does not exist, do nothing
+		} else if strings.HasSuffix(err.Error(), "Profile not found") {
+			// profile does not exist, do nothing
+		} else {
+			fmt.Printf("DeleteProfile(%s): %v\n", profileName, err)
 		}
 	}
 	return nil
 }
 
+func printError(err error) {
+	fmt.Printf("%v\n", err)
+
+}
 func (t *Launcher) DeleteContainer(instance *Instance) error {
 	err := t.deleteContainer(instance, false)
 	if err != nil {
@@ -451,6 +463,13 @@ func (t *Launcher) DeleteContainer(instance *Instance) error {
 	}
 	var zfsFilesystems []string
 	var dirFilesystems []string
+	for _, block := range instance.Config.BlockDevices {
+		volume, err := block.Volume.Substitute(instance.Properties)
+		if err != nil {
+			return err
+		}
+		zfsFilesystems = append(zfsFilesystems, volume)
+	}
 	for _, fs := range filesystems {
 		if fs.IsZfs() {
 			zfsFilesystems = append(zfsFilesystems, fs.Path)

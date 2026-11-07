@@ -2,6 +2,8 @@ package lxops_incus
 
 import (
 	"fmt"
+	"io/fs"
+	"strings"
 
 	"github.com/lxc/incus/v6/shared/api"
 	"melato.org/lxops/srv"
@@ -64,7 +66,11 @@ func (t *InstanceServer) CreateProfile(profile *srv.Profile) error {
 func (t *InstanceServer) DeleteProfile(profile string) error {
 	err := t.Server.DeleteProfile(profile)
 	if err != nil {
-		return fmt.Errorf("delete profile %s: %w", profile, err)
+		msg := err.Error()
+		if strings.HasSuffix(msg, "Profile not found") {
+			err = fs.ErrNotExist
+		}
+		return fmt.Errorf("delete profile %s: %w", profile, fs.ErrNotExist)
 	}
 	return nil
 }
