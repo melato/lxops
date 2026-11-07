@@ -117,27 +117,6 @@ func (t *Config) filterPaths(getVariable GetVariable) error {
 	return nil
 }
 
-/*
-func (t *Config) ResolvePaths(dir string, getVariable GetVariable) error {
-	var err error
-	t.Include, err = filterPaths(t.Include, getVariable)
-	if err == nil {
-		t.CloudConfigFiles, err = filterPaths(t.CloudConfigFiles, getVariable)
-	}
-	if err != nil {
-		return err
-	}
-	for i, f := range t.Include {
-		t.Include[i] = f.Resolve(dir)
-	}
-	t.SourceConfig = t.SourceConfig.Resolve(dir)
-	for i, path := range t.CloudConfigFiles {
-		t.CloudConfigFiles[i] = path.Resolve(dir)
-	}
-	return nil
-}
-*/
-
 // Return the filesystem for the given id, or nil if it doesn't exist.
 func (t *Config) Filesystem(id string) *Filesystem {
 	return t.Filesystems[id]
@@ -155,6 +134,10 @@ func (t *Config) getDuplicates(lists ...[]string) []string {
 		}
 	}
 	return duplicates
+}
+
+func (t *Config) HasDevices() bool {
+	return len(t.Devices) > 0 || len(t.BlockDevices) > 0
 }
 
 func (t *Config) AbsFilename() string {
