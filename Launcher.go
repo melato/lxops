@@ -382,7 +382,7 @@ func (t *Launcher) launchContainer(instance *Instance) error {
 
 	var profiles []string
 	profiles = append(profiles, config.Profiles...)
-	if config.Devices != nil {
+	if config.HasDevices() {
 		if len(profiles) == 0 {
 			profiles = append(profiles, "default")
 		}
