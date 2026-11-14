@@ -50,6 +50,8 @@ require (
 	gopkg.in/retry.v1 v1.0.3 // indirect
 	gopkg.in/square/go-jose.v2 v2.6.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-	melato.org/cloudconfig v0.3.0 // indirect
+	melato.org/cloudconfig v0.4.0 // indirect
+	melato.org/configfile v0.1.1 // indirect
 	melato.org/table3 v0.1.1 // indirect
+	melato.org/trace v1.2.1 // indirect
 )

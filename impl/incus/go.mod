@@ -4,8 +4,6 @@ go 1.23
 
 replace melato.org/lxops => ../../
 
-replace melato.org/configfile => /var/opt/dev/go/configfile
-
 require (
 	github.com/lxc/incus/v6 v6.1.0
 	melato.org/command v1.0.1
@@ -39,7 +37,7 @@ require (
 	golang.org/x/text v0.14.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	melato.org/cloudconfig v0.4.0 // indirect
-	melato.org/configfile v0.0.0-00010101000000-000000000000 // indirect
+	melato.org/configfile v0.1.1 // indirect
 	melato.org/table3 v0.1.1 // indirect
 	melato.org/trace v1.2.1 // indirect
 )
